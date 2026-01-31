@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @Table(name = "substitute_requests")
 @NoArgsConstructor
-public class SubsituteRequest extends BaseTimeEntity {
+public class SubstituteRequest extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
