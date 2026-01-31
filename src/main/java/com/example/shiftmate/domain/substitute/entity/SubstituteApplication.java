@@ -8,9 +8,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Getter@Table(name = "subsitute_applications")
+@Getter
+@Table(name = "substitute_applications")
 @NoArgsConstructor
-
 public class SubstituteApplication extends BaseTimeEntity {
 
     @Id
