@@ -19,7 +19,7 @@ public class SubstituteApplication extends BaseTimeEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "request_id")
-    private SubsituteRequest request; // 어떤 대타 요청을 지원한건지
+    private SubstituteRequest request; // 어떤 대타 요청을 지원한건지
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "applicant_id")
