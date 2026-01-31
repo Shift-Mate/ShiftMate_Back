@@ -15,7 +15,8 @@ public class SubstituteApplication extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long application_id;
+    @Column(name = "application_id")
+    private Long applicationId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "request_id")

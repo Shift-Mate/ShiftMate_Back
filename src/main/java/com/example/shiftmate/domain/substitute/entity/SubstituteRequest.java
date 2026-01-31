@@ -16,7 +16,8 @@ public class SubstituteRequest extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long subsitute_id;
+    @Column(name = "subsitute_id")
+    private Long subsituteId;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "schedule_id")
