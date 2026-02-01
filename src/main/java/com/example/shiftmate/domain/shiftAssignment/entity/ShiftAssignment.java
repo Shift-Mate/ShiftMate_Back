@@ -1,7 +1,7 @@
 package com.example.shiftmate.domain.shiftAssignment.entity;
 
 import com.example.shiftmate.domain.shiftTemplate.entity.ShiftTemplate;
-//import com.example.shiftmate.domain.store.entity.StoreMember;
+import com.example.shiftmate.domain.storeMember.entity.StoreMember;
 import com.example.shiftmate.global.common.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -21,10 +21,9 @@ public class ShiftAssignment extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    //TODO : 엔티티 생성시 주석 제거
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "member_id", nullable = false)
-//    private StoreMember member;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id", nullable = false)
+    private StoreMember member;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "shift_template_id", nullable = false)
@@ -39,20 +38,13 @@ public class ShiftAssignment extends BaseTimeEntity {
     @Column(nullable = false)
     private LocalDateTime updatedEndTime;
 
+
     @Builder
-    public ShiftAssignment(ShiftTemplate shiftTemplate, LocalDate workDate, LocalDateTime updatedStartTime, LocalDateTime updatedEndTime) {
+    public ShiftAssignment(StoreMember member, ShiftTemplate shiftTemplate, LocalDate workDate, LocalDateTime updatedStartTime, LocalDateTime updatedEndTime) {
+        this.member = member;
         this.shiftTemplate = shiftTemplate;
         this.workDate = workDate;
         this.updatedStartTime = updatedStartTime;
         this.updatedEndTime = updatedEndTime;
     }
-    //TODO : 엔티티 생성시 해당 생성자 사용
-//    @Builder
-//    public ShiftAssignment(StoreMember member, ShiftTemplate shiftTemplate, LocalDate workDate, LocalDateTime updatedStartTime, LocalDateTime updatedEndTime) {
-//        this.member = member;
-//        this.shiftTemplate = shiftTemplate;
-//        this.workDate = workDate;
-//        this.updatedStartTime = updatedStartTime;
-//        this.updatedEndTime = updatedEndTime;
-//    }
 }

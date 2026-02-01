@@ -1,7 +1,7 @@
 package com.example.shiftmate.domain.employeePreference.entity;
 
 import com.example.shiftmate.domain.shiftTemplate.entity.ShiftTemplate;
-//import com.example.shiftmate.domain.store.entity.StoreMember;
+import com.example.shiftmate.domain.storeMember.entity.StoreMember;
 import com.example.shiftmate.global.common.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -19,10 +19,9 @@ public class EmployeePreference extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    //TODO: 엔티티 추가시 주석 제거
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "member_id", nullable = false)
-//    private StoreMember member;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id", nullable = false)
+    private StoreMember member;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "shift_template_id", nullable = false)
@@ -36,18 +35,11 @@ public class EmployeePreference extends BaseTimeEntity {
     private PreferenceType type;
 
     @Builder
-    public EmployeePreference( ShiftTemplate shiftTemplate, Integer dayOfSeek, PreferenceType type) {
+    public EmployeePreference(StoreMember member, ShiftTemplate shiftTemplate, Integer dayOfSeek, PreferenceType type) {
+        this.member = member;
         this.shiftTemplate = shiftTemplate;
         this.dayOfSeek = dayOfSeek;
         this.type = type;
     }
-    //TODO : 엔티티 추가시 아래 생성자 사용
-//    @Builder
-//    public EmployeePreference(StoreMember member, ShiftTemplate shiftTemplate, Integer dayOfSeek, PreferenceType type) {
-//        this.member = member;
-//        this.shiftTemplate = shiftTemplate;
-//        this.dayOfSeek = dayOfSeek;
-//        this.type = type;
-//    }
 
 }
