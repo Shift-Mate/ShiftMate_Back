@@ -1,6 +1,6 @@
-package com.example.shiftmate.domain.employeePreferences.entity;
+package com.example.shiftmate.domain.employeePreference.entity;
 
-import com.example.shiftmate.domain.shiftTemplates.entity.ShiftTemplate;
+import com.example.shiftmate.domain.shiftTemplate.entity.ShiftTemplate;
 //import com.example.shiftmate.domain.store.entity.StoreMember;
 import com.example.shiftmate.global.common.entity.BaseTimeEntity;
 import jakarta.persistence.*;

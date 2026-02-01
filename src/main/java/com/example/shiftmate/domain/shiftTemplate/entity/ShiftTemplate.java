@@ -1,4 +1,4 @@
-package com.example.shiftmate.domain.shiftTemplates.entity;
+package com.example.shiftmate.domain.shiftTemplate.entity;
 
 import com.example.shiftmate.domain.store.entity.Store;
 import jakarta.persistence.*;
