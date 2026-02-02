@@ -1,6 +1,6 @@
 package com.example.shiftmate.domain.substitute.entity;
 
-import com.example.shiftmate.domain.schedule.entity.Schedule;
+import com.example.shiftmate.domain.shiftAssignment.entity.ShiftAssignment;
 import com.example.shiftmate.domain.substitute.status.RequestStatus;
 import com.example.shiftmate.domain.user.entity.User;
 import com.example.shiftmate.global.common.entity.BaseTimeEntity;
@@ -17,11 +17,11 @@ public class SubstituteRequest extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "substitute_id")
-    private Long substituteId;
+    private Long id;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "schedule_id")
-    private Schedule schedule; // 대타 요청 스케줄
+    @JoinColumn(name = "shiftassignment_id")
+    private ShiftAssignment shiftassignment; // 대타 요청 스케줄
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "requester_id")
