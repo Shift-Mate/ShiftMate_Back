@@ -28,17 +28,17 @@ public class EmployeePreference extends BaseTimeEntity {
     private ShiftTemplate shiftTemplate;
 
     @Column(nullable = false)
-    private Integer dayOfSeek;
+    private Integer dayOfWeek;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private PreferenceType type;
 
     @Builder
-    public EmployeePreference(StoreMember member, ShiftTemplate shiftTemplate, Integer dayOfSeek, PreferenceType type) {
+    public EmployeePreference(StoreMember member, ShiftTemplate shiftTemplate, Integer dayOfWeek, PreferenceType type) {
         this.member = member;
         this.shiftTemplate = shiftTemplate;
-        this.dayOfSeek = dayOfSeek;
+        this.dayOfWeek = dayOfWeek;
         this.type = type;
     }
 
