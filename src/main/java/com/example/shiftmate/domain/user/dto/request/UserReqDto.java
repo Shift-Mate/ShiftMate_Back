@@ -1,5 +1,5 @@
 package com.example.shiftmate.domain.user.dto.request;
 
-public class ExReqDto {
+public class UserReqDto {
 
 }
