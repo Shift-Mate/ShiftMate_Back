@@ -60,10 +60,10 @@ public class StoreMember extends BaseTimeEntity {
     private MemberStatus status;
 
     @Column(nullable = false)
-    private Integer pinCode;
+    private String pinCode;
 
     @Builder
-    public StoreMember(Store store, User user, StoreRole role, StoreRank rank, Department department, Integer hourlyWage, Integer minHoursPerWeek, MemberStatus status, Integer pinCode) {
+    public StoreMember(Store store, User user, StoreRole role, StoreRank rank, Department department, Integer hourlyWage, Integer minHoursPerWeek, MemberStatus status, String pinCode) {
         this.store = store;
         this.user = user;
         this.role = role;
@@ -72,7 +72,7 @@ public class StoreMember extends BaseTimeEntity {
         this.hourlyWage = hourlyWage;
         this.minHoursPerWeek = minHoursPerWeek;
         this.status = status;
-        this.pinCode = (pinCode != null) ? pinCode : 0000;
+        this.pinCode = (pinCode != null) ? pinCode : "0000";
     }
 
 
