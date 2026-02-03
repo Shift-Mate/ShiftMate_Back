@@ -2,6 +2,7 @@ package com.example.shiftmate.domain.attendance.service;
 
 import com.example.shiftmate.domain.attendance.dto.request.AttendanceReqDto;
 import com.example.shiftmate.domain.attendance.dto.response.AttendanceResDto;
+import com.example.shiftmate.domain.attendance.dto.response.TodayAttendanceResDto;
 import com.example.shiftmate.domain.attendance.entity.Attendance;
 import com.example.shiftmate.domain.attendance.entity.AttendanceStatus;
 import com.example.shiftmate.domain.attendance.repository.AttendanceRepository;
@@ -13,7 +14,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -106,5 +110,41 @@ public class AttendanceService {
                 .time(now)
                 .message(message)
                 .build();
+    }
+
+    public List<TodayAttendanceResDto> getTodayAttendance(Long storeId, LocalDate date) {
+        // 해당 매장에 해당 날짜에 존재하는 모든 스케줄 조회
+        List<ShiftAssignment> assignments = shiftAssignmentRepository.findAllByStoreIdAndDate(storeId, date);
+
+        // 스케줄이 없다면 빈 리스트 반환
+        if(assignments.isEmpty()) {
+            return List.of();
+        }
+
+        // 조회한 모든 스케줄에 연결된 출퇴근 기록 조회
+        List<Attendance> attendances = attendanceRepository.findAllByShiftAssignmentIn(assignments);
+
+        // 일일 근태 조회를 위한 리스트 생성
+        List<TodayAttendanceResDto> results = new ArrayList<>();
+
+        // 해당 배정 스케줄에 속한 attendance를 연결하는 로직
+        for(ShiftAssignment assignment : assignments) {
+            // matchAttendance가 null인 경우는 아직 출근하지 않았거나 결근한 상태라서 출퇴근 기록이 없는 상황
+            // 마지막에 DTO 변환 시 null 처리
+            Attendance matchAttendance = null;
+
+            for(Attendance attendance : attendances) {
+                // attendance의 배정 스케줄의 id와 해당 배정 스케줄의 id가 일치하는지 확인 후 연결
+                if(attendance.getShiftAssignment().getId().equals(assignment.getId())) {
+                    matchAttendance = attendance;
+                    break;
+                }
+            }
+
+            // 결과 리스트에 해당 assignment와 attendance를 연결해서 추가
+            results.add(TodayAttendanceResDto.of(assignment, matchAttendance));
+        }
+
+        return results;
     }
 }
