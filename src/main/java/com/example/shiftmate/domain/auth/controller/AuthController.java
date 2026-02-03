@@ -1,5 +1,6 @@
 package com.example.shiftmate.domain.auth.controller;
 
+import com.example.shiftmate.domain.auth.dto.request.LogoutRequest;
 import com.example.shiftmate.domain.auth.dto.request.SignUpRequest;
 import com.example.shiftmate.domain.auth.dto.response.SignUpResponse;
 import com.example.shiftmate.domain.auth.service.AuthService;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.example.shiftmate.domain.auth.dto.request.LoginRequest;
 import com.example.shiftmate.domain.auth.dto.response.AuthResponse;
+import com.example.shiftmate.domain.auth.dto.request.RefreshRequest;
 
 @RestController
 @RequiredArgsConstructor
@@ -34,5 +36,19 @@ public class AuthController {
         // 로그인 처리 후 access/refresh 토큰 반환
         AuthResponse response = authService.login(request);
         return ApiResponse.success(response);
+    }
+
+    @PostMapping("/reissue")
+    public ApiResponse<AuthResponse> reissue(@Valid @RequestBody RefreshRequest request) {
+        // refresh 토큰으로 access/refresh 재발급
+        AuthResponse response = authService.reissue(request);
+        return ApiResponse.success(response);
+    }
+
+    @PostMapping("/logout")
+    public ApiResponse<String> logout(@Valid @RequestBody LogoutRequest request) {
+        // refresh 토큰을 Redis에서 삭제하여 로그아웃 처리
+        authService.logout(request);
+        return ApiResponse.success("로그아웃 완료");
     }
 }

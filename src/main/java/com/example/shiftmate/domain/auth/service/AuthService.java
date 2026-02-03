@@ -1,6 +1,7 @@
 package com.example.shiftmate.domain.auth.service;
 
 import com.example.shiftmate.domain.auth.dto.request.LoginRequest;
+import com.example.shiftmate.domain.auth.dto.request.LogoutRequest;
 import com.example.shiftmate.domain.auth.dto.request.SignUpRequest;
 import com.example.shiftmate.domain.auth.dto.response.AuthResponse;
 import com.example.shiftmate.domain.auth.dto.response.SignUpResponse;
@@ -13,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.example.shiftmate.domain.auth.dto.request.RefreshRequest;
 
 @Service
 @RequiredArgsConstructor
@@ -21,6 +23,7 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
+    private final RefreshTokenService refreshTokenService;
 
     public SignUpResponse signUp(SignUpRequest request) {
         // 1) 이메일 중복 체크: 동일 이메일로 중복 가입 방지
@@ -54,7 +57,61 @@ public class AuthService {
         String accessToken = jwtProvider.createAccessToken(user.getId(), user.getEmail());
         String refreshToken = jwtProvider.createRefreshToken(user.getId(), user.getEmail());
 
-        // 4) 토큰을 응답 DTO로 반환
+        // 4) refresh 토큰을 Redis에 저장 (로그아웃/재발급 검증용)
+        refreshTokenService.save(user.getEmail(), refreshToken);
+
+        // 5) 토큰을 응답 DTO로 반환
         return AuthResponse.from(accessToken, refreshToken);
+    }
+
+    public AuthResponse reissue(RefreshRequest request) {
+        String refreshToken = request.getRefreshToken();
+
+        // 1) 토큰 자체 유효성 검사
+        if (!jwtProvider.validateToken(refreshToken)) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST);
+        }
+
+        // 2) refresh 토큰인지 확인
+        if (!"refresh".equals(jwtProvider.getCategory(refreshToken))) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST);
+        }
+
+        // 3) 토큰에서 이메일 추출
+        String email = jwtProvider.getEmail(refreshToken);
+
+        // 4) Redis에 저장된 토큰과 일치 확인
+        if (!refreshTokenService.matches(email, refreshToken)) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST);
+        }
+
+        // 5) 새 토큰 발급
+        Long userId = jwtProvider.getUserId(refreshToken);
+        String newAccess = jwtProvider.createAccessToken(userId, email);
+        String newRefresh = jwtProvider.createRefreshToken(userId, email);
+
+        // 6) Redis 갱신
+        refreshTokenService.save(email, newRefresh);
+
+        // 7) 응답 반환
+        return AuthResponse.from(newAccess, newRefresh);
+    }
+
+    public void logout(LogoutRequest request) {
+        String refreshToken = request.getRefreshToken();
+
+        // 1) 토큰 유효성 확인
+        if (!jwtProvider.validateToken(refreshToken)) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST);
+        }
+
+        // 2) refresh 토큰인지 확인
+        if (!"refresh".equals(jwtProvider.getCategory(refreshToken))) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST);
+        }
+
+        // 3) 이메일 추출 후 Redis에서 삭제
+        String email = jwtProvider.getEmail(refreshToken);
+        refreshTokenService.delete(email);
     }
 }
