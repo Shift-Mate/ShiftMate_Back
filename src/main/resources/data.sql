@@ -16,11 +16,11 @@ VALUES ('시프트메이트 강남점', '서울시 강남구', '09:00:00', '22:0
 
 -- 3. StoreMembers
 -- 1번 유저 -> 매장 매니저(점장)
-INSERT INTO store_members (store_id, user_id, role, rank, department, hourly_wage, min_hours_per_week, status, pin_code, created_at, updated_at)
+INSERT INTO store_members (store_id, user_id, role, member_rank, department, hourly_wage, min_hours_per_week, status, pin_code, created_at, updated_at)
 VALUES (1, 1, 'MANAGER', 'MANAGER', 'HALL', 0, 50, 'ACTIVE', 1111, NOW(), NOW());
 
 -- 2번 유저 -> 매장 직원(알바)
-INSERT INTO store_members (store_id, user_id, role, rank, department, hourly_wage, min_hours_per_week, status, pin_code, created_at, updated_at)
+INSERT INTO store_members (store_id, user_id, role, member_rank, department, hourly_wage, min_hours_per_week, status, pin_code, created_at, updated_at)
 VALUES (1, 2, 'STAFF', 'STAFF', 'KITCHEN', 12000, 20, 'ACTIVE', 2222, NOW(), NOW());
 
 
@@ -56,15 +56,15 @@ VALUES (2, 1, '2026-02-03', '2026-02-03 09:00:00', '2026-02-03 13:00:00', NOW(),
 
 -- 7. Attendance (출퇴근 기록)
 -- 1번 배정(2/2)에 대해서는 정상 출근 기록 생성
-INSERT INTO attendance (assignment_id, clock_in_at, clock_out_at, status, created_at, updated_at)
-VALUES (1, '2026-02-02 08:55:00', '2026-02-02 13:05:00', 'NORMAL', NOW(), NOW());
+-- INSERT INTO attendance (assignment_id, clock_in_at, clock_out_at, status, created_at, updated_at)
+-- VALUES (1, '2026-02-02 08:55:00', '2026-02-02 13:05:00', 'NORMAL', NOW(), NOW());
 
 
 -- [추가 데이터] 대타 시나리오를 위한 제3의 인물 (박대타)
 INSERT INTO users (email, name, password, created_at)
 VALUES ('sub@test.com', '박대타', '1234', NOW());
 
-INSERT INTO store_members (store_id, user_id, role, rank, department, hourly_wage, min_hours_per_week, status, pin_code, created_at, updated_at)
+INSERT INTO store_members (store_id, user_id, role, member_rank, department, hourly_wage, min_hours_per_week, status, pin_code, created_at, updated_at)
 VALUES (1, 3, 'STAFF', 'PART_TIME', 'HALL', 11000, 15, 'ACTIVE', 3333, NOW(), NOW());
 
 
