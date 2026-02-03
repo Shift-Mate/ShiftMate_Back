@@ -37,4 +37,8 @@ public class Attendance extends BaseTimeEntity {
         this.clockOutAt = clockOutAt;
         this.status = status;
     }
+
+    public void clockOut(LocalDateTime time) {
+        this.clockOutAt = time;
+    }
 }

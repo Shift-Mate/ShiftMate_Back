@@ -43,7 +43,7 @@ public class StoreMember extends BaseTimeEntity {
 
     @Enumerated(EnumType.STRING)
     @Column
-    private StoreRank rank;
+    private StoreRank member_rank;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -63,11 +63,11 @@ public class StoreMember extends BaseTimeEntity {
     private String pinCode;
 
     @Builder
-    public StoreMember(Store store, User user, StoreRole role, StoreRank rank, Department department, Integer hourlyWage, Integer minHoursPerWeek, MemberStatus status, String pinCode) {
+    public StoreMember(Store store, User user, StoreRole role, StoreRank member_rank, Department department, Integer hourlyWage, Integer minHoursPerWeek, MemberStatus status, String pinCode) {
         this.store = store;
         this.user = user;
         this.role = role;
-        this.rank = rank;
+        this.member_rank = member_rank;
         this.department = department;
         this.hourlyWage = hourlyWage;
         this.minHoursPerWeek = minHoursPerWeek;
