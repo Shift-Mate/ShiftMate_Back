@@ -1,8 +1,10 @@
 package com.example.shiftmate.domain.store.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import lombok.Getter;
 
@@ -20,6 +22,12 @@ public class StoreReqDto {
 
     @NotNull(message = "영업 종료 시간은 필수입니다.")
     private LocalTime closeTime;
+
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private LocalDateTime createdAt;
+
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private LocalDateTime updatedAt;
 
     @NotNull(message = "교대 설정값은 필수입니다.")
     private Integer nShifts;
