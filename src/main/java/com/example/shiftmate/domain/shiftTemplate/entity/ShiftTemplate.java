@@ -22,7 +22,7 @@ public class ShiftTemplate {
     @JoinColumn(name = "store_id", nullable = false)
     private Store store;
 
-    @Column(nullable = false)
+    @Column
     private String name;
 
     @Column(nullable = false)
@@ -31,19 +31,27 @@ public class ShiftTemplate {
     @Column(nullable = false)
     private LocalTime endTime;
 
-    @Column(nullable = false)
+    // 템플릿이 생성 된 후 인원을 입력하기때문에 null 을 허용
+    @Column
     private Integer requiredStaff;
+
+
+    // 해당 template가 어느 type에 속하는지 구분 ( 중첩-COSTSAVER , 분리-HIGHSERVICE )
+    @Enumerated(EnumType.STRING)
+    @Column
+    private TemplateType templateType;
+
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ShiftType shiftType;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column
     private DayType dayType;
 
     @Builder
-    public ShiftTemplate(Store store, String name, LocalTime startTime, LocalTime endTime, Integer requiredStaff, ShiftType shiftType, DayType dayType) {
+    public ShiftTemplate(Store store, String name, LocalTime startTime, LocalTime endTime, Integer requiredStaff, ShiftType shiftType, DayType dayType,TemplateType templateType) {
         this.store = store;
         this.name = name;
         this.startTime = startTime;
@@ -51,5 +59,6 @@ public class ShiftTemplate {
         this.requiredStaff = requiredStaff;
         this.shiftType = shiftType;
         this.dayType = dayType;
+        this.templateType = templateType;
     }
 }
