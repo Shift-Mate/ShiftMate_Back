@@ -10,12 +10,12 @@ VALUES ('staff@test.com', '이알바', '1234', NOW());
 
 -- 2. Stores
 -- 관리자(1번 유저)가 운영하는 매장
-INSERT INTO stores (name, location, open_time, close_time, n_shifts, brn, user_id, alias, created_at, updated_at)
-VALUES ('시프트메이트 강남점', '서울시 강남구', '09:00:00', '22:00:00', 3, '123-45-67890', 1, '본점', NOW(), NOW());
+INSERT INTO stores (name, location, open_time, close_time, n_shifts, brn, user_id, alias, created_at, updated_at,template_type)
+VALUES ('시프트메이트 강남점', '서울시 강남구', '09:00:00', '22:00:00', 3, '123-45-67890', 1, '본점', NOW(), NOW(),null);
 
 -- 관리자(1번 유저)가 운영하는 두 번째 매장
-INSERT INTO stores (name, location, open_time, close_time, n_shifts, brn, user_id, alias, created_at, updated_at)
-VALUES ('시프트메이트 홍대점', '서울시 마포구', '10:00:00', '23:00:00', 2, '987-65-43210', 1, '홍대', NOW(), NOW());
+INSERT INTO stores (name, location, open_time, close_time, n_shifts, brn, user_id, alias, created_at, updated_at,template_type)
+VALUES ('시프트메이트 홍대점', '서울시 마포구', '10:00:00', '23:00:00', 2, '987-65-43210', 1, '홍대', NOW(), NOW(), null);
 
 -- 3. StoreMembers
 -- 1번 유저 -> 매장 매니저(점장)

@@ -52,6 +52,9 @@ public class Store extends BaseTimeEntity {
     @Column(nullable = true)
     private String alias;
 
+    @Column
+    private String template_type;
+
     @Builder
     public Store(String name, String location, LocalTime openTime, LocalTime closeTime, Integer nShifts, String brn, User user, String alias) {
         this.name = name;
@@ -62,5 +65,10 @@ public class Store extends BaseTimeEntity {
         this.brn = brn;
         this.user = user;
         this.alias = alias;
+        this.template_type = null;
+    }
+
+    public void updateTemplateType(String templateType){
+        this.template_type = templateType;
     }
 }
