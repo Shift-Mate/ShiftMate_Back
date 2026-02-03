@@ -1,5 +1,6 @@
 package com.example.shiftmate.domain.shiftTemplate.entity;
 
+import com.example.shiftmate.domain.shiftTemplate.dto.request.TemplateShiftStaff;
 import com.example.shiftmate.domain.store.entity.Store;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -60,5 +61,9 @@ public class ShiftTemplate {
         this.shiftType = shiftType;
         this.dayType = dayType;
         this.templateType = templateType;
+    }
+
+    public void shiftStaff(Integer staffCount){
+        this.requiredStaff = staffCount;
     }
 }

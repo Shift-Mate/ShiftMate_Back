@@ -1,6 +1,8 @@
 package com.example.shiftmate.domain.shiftTemplate.service;
 
 import com.example.shiftmate.domain.shiftTemplate.dto.request.TemplateCreateReqDto;
+import com.example.shiftmate.domain.shiftTemplate.dto.request.TemplateShiftStaff;
+import com.example.shiftmate.domain.shiftTemplate.dto.request.UpdateTemplateTypeReqDto;
 import com.example.shiftmate.domain.shiftTemplate.dto.response.TemplateResDto;
 import com.example.shiftmate.domain.shiftTemplate.entity.DayType;
 import com.example.shiftmate.domain.shiftTemplate.entity.ShiftTemplate;
@@ -11,6 +13,7 @@ import com.example.shiftmate.domain.store.entity.Store;
 import com.example.shiftmate.domain.store.repository.StoreRepository;
 import com.example.shiftmate.global.exception.CustomException;
 import com.example.shiftmate.global.exception.ErrorCode;
+import jakarta.validation.Valid;
 import java.time.Duration;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -28,7 +31,7 @@ public class ShiftTemplateService {
     private final StoreRepository storeRepository;
 
     @Transactional
-    public List<TemplateResDto> createTemplate(Long storeId, TemplateCreateReqDto templateCreateReqDto) {
+    public void createTemplate(Long storeId, TemplateCreateReqDto templateCreateReqDto) {
 
         if (shiftTemplateRepository.existsByStoreId(storeId)) {
             throw new CustomException(ErrorCode.TEMPLATE_ALREADY_EXISTS);
@@ -61,9 +64,9 @@ public class ShiftTemplateService {
 
         shiftTemplateRepository.saveAll(shifts);
 
-        return shifts.stream()
-            .map(TemplateResDto::from)
-            .collect(Collectors.toList());
+//        return shifts.stream()
+//            .map(TemplateResDto::from)
+//            .collect(Collectors.toList());
     }
 
     // 기본 n교대 생성 로직 (시간 변형 없음)
@@ -188,5 +191,26 @@ public class ShiftTemplateService {
         return shifts.stream()
             .map(TemplateResDto::from)
             .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public TemplateResDto shiftStaff(Long templateId, TemplateShiftStaff templateShiftStaff) {
+        ShiftTemplate template = shiftTemplateRepository.findById(templateId).orElseThrow(
+            ()-> new CustomException(ErrorCode.TEMPLATE_NOT_FOUND)
+        );
+
+        template.shiftStaff(templateShiftStaff.getRequired_staff());
+
+
+        return TemplateResDto.from(template);
+    }
+
+    @Transactional
+    public void updateTemplateType(Long storeId, UpdateTemplateTypeReqDto updateTemplateTypeReqDto) {
+        Store store = storeRepository.findById(storeId).orElseThrow(
+            () -> new CustomException(ErrorCode.STORE_NOT_FOUND)
+        );
+
+        store.updateTemplateType(updateTemplateTypeReqDto.getTemplateType());
     }
 }
