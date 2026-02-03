@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,13 +17,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/store")
+@RequestMapping("/store/{storeId}/shift-template")
 @RequiredArgsConstructor
 public class ShiftTemplateController {
 
     private final ShiftTemplateService shiftTemplateService;
 
-    @PostMapping("/{storeId}/shift-template")
+    @PostMapping
     public ResponseEntity<ApiResponse<List<TemplateResDto>>> createTemplate(
         @PathVariable Long storeId,
         @RequestBody @Valid TemplateCreateReqDto templateCreateReqDto
@@ -30,5 +31,12 @@ public class ShiftTemplateController {
 
         return ResponseEntity.ok(ApiResponse.success(
             shiftTemplateService.createTemplate(storeId, templateCreateReqDto)));
+    }
+
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<TemplateResDto>>> getTemplate(
+        @PathVariable Long storeId
+    ){
+       return ResponseEntity.ok(ApiResponse.success(shiftTemplateService.getTemplate(storeId)));
     }
 }

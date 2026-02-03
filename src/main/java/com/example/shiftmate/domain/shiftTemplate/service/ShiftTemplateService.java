@@ -31,7 +31,7 @@ public class ShiftTemplateService {
     public List<TemplateResDto> createTemplate(Long storeId, TemplateCreateReqDto templateCreateReqDto) {
 
         if (shiftTemplateRepository.existsByStoreId(storeId)) {
-            throw new CustomException(ErrorCode.STORETEMPLATE_ALREADY_EXISTS);
+            throw new CustomException(ErrorCode.TEMPLATE_ALREADY_EXISTS);
         }
 
         Store store = storeRepository.findById(storeId).orElseThrow(
@@ -178,5 +178,15 @@ public class ShiftTemplateService {
     private boolean isTimeBetween(LocalTime target, LocalTime start, LocalTime end) {
         // start < end 전제
         return target.isAfter(start) && target.isBefore(end);
+    }
+
+    public List<TemplateResDto> getTemplate(Long storeId) {
+        List<ShiftTemplate> shifts = shiftTemplateRepository.findByStoreId(storeId).orElseThrow(
+            () -> new CustomException(ErrorCode.TEMPLATE_NOT_FOUND)
+        );
+
+        return shifts.stream()
+            .map(TemplateResDto::from)
+            .collect(Collectors.toList());
     }
 }
