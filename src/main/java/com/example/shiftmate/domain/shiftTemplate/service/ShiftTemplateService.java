@@ -105,7 +105,8 @@ public class ShiftTemplateService {
         return shifts;
     }
 
-    private List<ShiftTemplate> createHighServiceShifts(Store store, LocalTime pStart, LocalTime pEnd) {
+    private List<ShiftTemplate> createHighServiceShifts(Store store, LocalTime pStart,
+        LocalTime pEnd) {
         // 기존 Normal Shift 생성 (Tag: HIGHSERVICE)
         List<ShiftTemplate> shifts = createBaseShifts(store, TemplateType.HIGHSERVICE);
 
@@ -122,7 +123,8 @@ public class ShiftTemplateService {
         return shifts;
     }
 
-    private List<ShiftTemplate> createCostSaverShifts(Store store, LocalTime pStart, LocalTime pEnd) {
+    private List<ShiftTemplate> createCostSaverShifts(Store store, LocalTime pStart,
+        LocalTime pEnd) {
         List<ShiftTemplate> shifts = new ArrayList<>();
         LocalTime openTime = store.getOpenTime();
         LocalTime closeTime = store.getCloseTime();
@@ -189,28 +191,49 @@ public class ShiftTemplateService {
         );
 
         return shifts.stream()
-            .map(TemplateResDto::from)
-            .collect(Collectors.toList());
+                   .map(TemplateResDto::from)
+                   .collect(Collectors.toList());
     }
 
     @Transactional
     public TemplateResDto shiftStaff(Long templateId, TemplateShiftStaff templateShiftStaff) {
         ShiftTemplate template = shiftTemplateRepository.findById(templateId).orElseThrow(
-            ()-> new CustomException(ErrorCode.TEMPLATE_NOT_FOUND)
+            () -> new CustomException(ErrorCode.TEMPLATE_NOT_FOUND)
         );
 
         template.shiftStaff(templateShiftStaff.getRequired_staff());
-
 
         return TemplateResDto.from(template);
     }
 
     @Transactional
-    public void updateTemplateType(Long storeId, UpdateTemplateTypeReqDto updateTemplateTypeReqDto) {
+    public void updateTemplateType(Long storeId,
+        UpdateTemplateTypeReqDto updateTemplateTypeReqDto) {
         Store store = storeRepository.findById(storeId).orElseThrow(
             () -> new CustomException(ErrorCode.STORE_NOT_FOUND)
         );
 
         store.updateTemplateType(updateTemplateTypeReqDto.getTemplateType());
+    }
+
+    public List<TemplateResDto> getTemplateByType(Long storeId) {
+        Store store = storeRepository.findById(storeId).orElseThrow(
+            () -> new CustomException(ErrorCode.STORE_NOT_FOUND)
+        );
+
+        if (store.getTemplate_type().equals("COSTSAVER")) {
+            List<ShiftTemplate> template = shiftTemplateRepository.findByStoreIdAndTemplateType(storeId, TemplateType.COSTSAVER).orElseThrow(
+                () -> new CustomException(ErrorCode.TEMPLATE_NOT_FOUND)
+            );
+            return template.stream().map(TemplateResDto::from).collect(Collectors.toList());
+        } else if (store.getTemplate_type().equals("HIGHSERVICE")) {
+            List<ShiftTemplate> template = shiftTemplateRepository.findByStoreIdAndTemplateType(storeId, TemplateType.HIGHSERVICE).orElseThrow(
+                () -> new CustomException(ErrorCode.TEMPLATE_NOT_FOUND)
+            );
+            return template.stream().map(TemplateResDto::from).collect(Collectors.toList());
+        } else {
+            throw new CustomException(ErrorCode.TYPE_NOT_FOUND);
+        }
+
     }
 }

@@ -12,9 +12,11 @@ public enum ErrorCode {
     STORE_NOT_FOUND(HttpStatus.NOT_FOUND, "가게 정보를 찾을 수 없습니다."),
     INVALID_TIME_RANGE(HttpStatus.BAD_REQUEST, "시작 시간은 종료 시간보다 빨라야 합니다."),
 
+
     //Template
     TEMPLATE_NOT_FOUND(HttpStatus.NOT_FOUND,"템플릿이 존재하지 않습니다."),
     TEMPLATE_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 가게 템플릿이 생성되어 있습니다."),
+    TYPE_NOT_FOUND(HttpStatus.NOT_FOUND,"타입이 존재하지 않습니다."),
 
     //Token
     EXPIRED_TOKEN(HttpStatus.UNAUTHORIZED, "토큰이 만료되었습니다."),

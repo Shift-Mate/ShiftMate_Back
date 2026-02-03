@@ -67,4 +67,10 @@ public class ShiftTemplateController {
     }
 
     // 가게에서 template_type 이 동일한 shift 불러오기
+    @GetMapping("/type")
+    public ResponseEntity<ApiResponse<List<TemplateResDto>>> getTemplateByType(
+        @PathVariable Long storeId
+    ) {
+        return ResponseEntity.ok(ApiResponse.success(shiftTemplateService.getTemplateByType(storeId)));
+    }
 }
