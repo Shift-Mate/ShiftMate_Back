@@ -23,11 +23,11 @@ public class StoreReqDto {
     @NotNull(message = "영업 종료 시간은 필수입니다.")
     private LocalTime closeTime;
 
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    private LocalDateTime createdAt;
-
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    private LocalDateTime updatedAt;
+//    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+//    private LocalDateTime createdAt;
+//
+//    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+//    private LocalDateTime updatedAt;
 
     @NotNull(message = "교대 설정값은 필수입니다.")
     private Integer nShifts;
