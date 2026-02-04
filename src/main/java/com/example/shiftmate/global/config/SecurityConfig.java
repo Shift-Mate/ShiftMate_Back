@@ -34,7 +34,7 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll()
-                        .anyRequest().authenticated()
+                        .anyRequest().permitAll()
                 )
                 // JWT 필터를 UsernamePasswordAuthenticationFilter 전에 등록
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
