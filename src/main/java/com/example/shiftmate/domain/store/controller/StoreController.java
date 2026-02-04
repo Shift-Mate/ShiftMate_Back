@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -53,4 +54,16 @@ public class StoreController {
     // 유저가 속해있는 매장 조회
 
 
+
+    @PutMapping("/{storeId}")
+    public ResponseEntity<ApiResponse<StoreResDto>> updateStore(
+        @PathVariable Long storeId,
+        @Valid @RequestBody StoreReqDto request
+        // todo 임시: 인증(secu, jwt) 구현 후 수정 필요
+        // @CurrentUserId Long userId) 으로 수정
+    ){
+        StoreResDto response = storeService.update(storeId, request, 1L);
+        return ResponseEntity.ok(ApiResponse.success(response));
+
+    }
 }

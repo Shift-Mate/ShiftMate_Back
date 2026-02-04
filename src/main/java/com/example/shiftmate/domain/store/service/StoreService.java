@@ -62,8 +62,36 @@ public class StoreService {
             .toList();
     }
 
-    // 유저가 속해있는 매장 조회
+    // todo 유저가 속해있는 매장 조회(StoreMember)
 
+    // Store Update, PUT /stores/{storeId}
+    @Transactional
+    public StoreResDto update(Long storeId, StoreReqDto request, Long userId) {
+        // store 조회
+        Store store = storeRepository.findById(storeId)
+                .orElseThrow(() -> new CustomException(ErrorCode.STORE_NOT_FOUND)); // 매장 없음
+
+        // 권한 확인
+        if (!store.getUser().getId().equals(userId)) {
+            throw new CustomException(ErrorCode.STORE_ACCESS_DENIED);   // 권한 없음
+        }
+
+        // store update
+        store.update(
+            request.getName(),
+            request.getLocation(),
+            request.getOpenTime(),
+            request.getCloseTime(),
+            request.getNShifts(),
+            request.getBrn(),
+            null, // user는 업데이트x
+            request.getAlias()
+        );
+
+        // dto 변환
+        return toResponseDto(store);
+
+    }
 
     // Store -> StoreResDto 변환
     private StoreResDto toResponseDto(Store store) {
