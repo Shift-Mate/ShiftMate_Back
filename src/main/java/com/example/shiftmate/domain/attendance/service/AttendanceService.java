@@ -101,6 +101,7 @@ public class AttendanceService {
         AttendanceStatus status = AttendanceStatus.OFFWORK;
         String message = "퇴근 처리되었습니다.";
         attendance.clockOut(now);
+        attendance.changeStatus(status);
 
         return AttendanceResDto.builder()
                 .attendanceId(attendance.getId())
