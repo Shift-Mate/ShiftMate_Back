@@ -1,8 +1,8 @@
 package com.example.shiftmate.global.security;
 
-import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.JwtBuilder;
+import com.example.shiftmate.global.exception.CustomException;
+import com.example.shiftmate.global.exception.ErrorCode;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
@@ -72,13 +72,21 @@ public class JwtProvider {
     }
 
     // 토큰 유효성 검사 (서명/만료 체크)
-    public boolean validateToken(String token) {
+    public void validateToken(String token) {
         try {
             Jwts.parser().verifyWith(key).build().parseSignedClaims(token);
-            return true;
-        } catch (JwtException | IllegalArgumentException e) {
-            return false;
+        } catch (SecurityException e) {
+            throw new CustomException(ErrorCode.INVALID_SIGNATURE);
+        } catch (MalformedJwtException e) {
+            throw new CustomException(ErrorCode.MALFORMED_TOKEN);
+        } catch (ExpiredJwtException e) {
+            throw new CustomException(ErrorCode.EXPIRED_TOKEN);
+        } catch (UnsupportedJwtException e) {
+            throw new CustomException(ErrorCode.UNSUPPORTED_TOKEN);
+        } catch (IllegalArgumentException e) {
+            throw new CustomException(ErrorCode.EMPTY_TOKEN);
         }
+
     }
 
     // 공통 Claims 파싱

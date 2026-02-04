@@ -67,10 +67,8 @@ public class AuthService {
     public AuthResponse reissue(RefreshRequest request) {
         String refreshToken = request.getRefreshToken();
 
-        // 1) 토큰 자체 유효성 검사
-        if (!jwtProvider.validateToken(refreshToken)) {
-            throw new CustomException(ErrorCode.INVALID_REQUEST);
-        }
+        // 1) 토큰 자체 유효성 검사 (유효하지 않으면 예외 발생)
+        jwtProvider.validateToken(refreshToken);
 
         // 2) refresh 토큰인지 확인
         if (!"refresh".equals(jwtProvider.getCategory(refreshToken))) {
@@ -100,10 +98,8 @@ public class AuthService {
     public void logout(LogoutRequest request) {
         String refreshToken = request.getRefreshToken();
 
-        // 1) 토큰 유효성 확인
-        if (!jwtProvider.validateToken(refreshToken)) {
-            throw new CustomException(ErrorCode.INVALID_REQUEST);
-        }
+        // 1) 토큰 유효성 확인 (유효하지 않으면 예외 발생)
+        jwtProvider.validateToken(refreshToken);
 
         // 2) refresh 토큰인지 확인
         if (!"refresh".equals(jwtProvider.getCategory(refreshToken))) {

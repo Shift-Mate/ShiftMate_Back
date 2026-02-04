@@ -32,8 +32,10 @@ public class JwtFilter extends OncePerRequestFilter {
         // Authorization 헤더에서 토큰 추출
         String token = resolveToken(request);
 
-        // 토큰이 있고 유효하면 인증 처리
-        if (StringUtils.hasText(token) && jwtProvider.validateToken(token)) {
+        // 토큰이 있으면 유효성 검사 후 인증 처리
+        if (StringUtils.hasText(token)) {
+            // 유효하지 않으면 예외 발생
+            jwtProvider.validateToken(token);
 
             // access 토큰인지 확인 (refresh면 인증 처리 안 함)
             String category = jwtProvider.getCategory(token);
