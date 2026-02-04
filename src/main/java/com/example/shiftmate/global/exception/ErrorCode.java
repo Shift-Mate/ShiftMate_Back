@@ -11,6 +11,7 @@ public enum ErrorCode {
     //Store
     STORE_NOT_FOUND(HttpStatus.NOT_FOUND, "가게 정보를 찾을 수 없습니다."),
     INVALID_TIME_RANGE(HttpStatus.BAD_REQUEST, "시작 시간은 종료 시간보다 빨라야 합니다."),
+    STORE_ACCESS_DENIED(HttpStatus.FORBIDDEN, "매장 수정 권한이 없습니다."),
 
 
     //Template
@@ -33,9 +34,6 @@ public enum ErrorCode {
     MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "회원 정보를 찾을 수 없습니다."),
     EMAIL_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 사용 중인 이메일입니다."),
 
-    // Store
-    STORE_NOT_FOUND(HttpStatus.NOT_FOUND, "매장 정보를 찾을 수 없습니다."),
-    STORE_ACCESS_DENIED(HttpStatus.FORBIDDEN, "매장 수정 권한이 없습니다."),
 
     // ShiftAssignment
     SHIFT_ASSIGNMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "배정된 스케줄을 찾을 수 없습니다."),
