@@ -5,9 +5,12 @@ import com.example.shiftmate.domain.store.dto.response.StoreResDto;
 import com.example.shiftmate.domain.store.service.StoreService;
 import com.example.shiftmate.global.common.dto.ApiResponse;
 import jakarta.validation.Valid;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -32,6 +35,22 @@ public class StoreController {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success(response));
     }
+
+    // 단일 매장 조회, GET /stores/{storeId}
+    @GetMapping("/{storeId}")
+    public ResponseEntity<ApiResponse<StoreResDto>> getStore(@PathVariable Long storeId){
+        StoreResDto response = storeService.findById(storeId);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    // 전체 매장 목록 조회(테스트용), GET /stores
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<StoreResDto>>> getAllStores(){
+        List<StoreResDto> response = storeService.findAll();
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    // 유저가 속해있는 매장 조회
 
 
 }

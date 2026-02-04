@@ -8,6 +8,7 @@ import com.example.shiftmate.domain.user.entity.User;
 import com.example.shiftmate.domain.user.repository.UserRepository;
 import com.example.shiftmate.global.exception.CustomException;
 import com.example.shiftmate.global.exception.ErrorCode;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,6 +45,24 @@ public class StoreService {
         // DTO 변환
         return toResponseDto(savedStore);
     }
+
+    // 단일 매장 조회, GET /stores/{storeId}
+    public StoreResDto findById(Long storeId) {
+        Store store = storeRepository.findById(storeId)
+                .orElseThrow(() -> new CustomException(ErrorCode.STORE_NOT_FOUND));
+
+        return toResponseDto(store);
+    }
+
+    // 전체 매장 목록 조회(테스트용), GET /stores
+    public List<StoreResDto> findAll() {
+        List<Store> stores = storeRepository.findAll();
+        return stores.stream()
+            .map(this::toResponseDto)
+            .toList();
+    }
+
+    // 유저가 속해있는 매장 조회
 
 
     // Store -> StoreResDto 변환

@@ -63,4 +63,32 @@ public class Store extends BaseTimeEntity {
         this.user = user;
         this.alias = alias;
     }
+
+    // update
+    public void update(String name, String location, LocalTime openTime, LocalTime closeTime, Integer nShifts, String brn, User user, String alias) {
+        if(name != null) {
+            this.name = name;
+        }
+        if(location != null) {
+            this.location = location;
+        }
+        if(openTime != null) {
+            this.openTime = openTime;
+        }
+        if(closeTime != null) {
+            this.closeTime = closeTime;
+        }
+        if(nShifts != null) {
+            this.nShifts = nShifts;
+        }
+        if(brn != null) {
+            this.brn = brn;
+        }
+        if(user != null) {
+            this.user = user;
+        }
+        if(alias != null) {
+            this.alias = alias;
+        }
+    }
 }
