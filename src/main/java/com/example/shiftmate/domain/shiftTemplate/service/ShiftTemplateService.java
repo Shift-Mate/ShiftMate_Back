@@ -13,8 +13,6 @@ import com.example.shiftmate.domain.store.entity.Store;
 import com.example.shiftmate.domain.store.repository.StoreRepository;
 import com.example.shiftmate.global.exception.CustomException;
 import com.example.shiftmate.global.exception.ErrorCode;
-import jakarta.validation.Valid;
-import java.awt.Stroke;
 import java.time.Duration;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -65,9 +63,6 @@ public class ShiftTemplateService {
 
         shiftTemplateRepository.saveAll(shifts);
 
-//        return shifts.stream()
-//            .map(TemplateResDto::from)
-//            .collect(Collectors.toList());
     }
 
     // 기본 n교대 생성 로직 (시간 변형 없음)
@@ -202,7 +197,7 @@ public class ShiftTemplateService {
             () -> new CustomException(ErrorCode.TEMPLATE_NOT_FOUND)
         );
 
-        template.shiftStaff(templateShiftStaff.getRequired_staff());
+        template.shiftStaff(templateShiftStaff.getRequiredStaff());
 
         return TemplateResDto.from(template);
     }
@@ -223,12 +218,14 @@ public class ShiftTemplateService {
         );
 
         if (store.getTemplate_type().equals("COSTSAVER")) {
-            List<ShiftTemplate> template = shiftTemplateRepository.findByStoreIdAndTemplateType(storeId, TemplateType.COSTSAVER).orElseThrow(
+            List<ShiftTemplate> template = shiftTemplateRepository.findByStoreIdAndTemplateType(
+                storeId, TemplateType.COSTSAVER).orElseThrow(
                 () -> new CustomException(ErrorCode.TEMPLATE_NOT_FOUND)
             );
             return template.stream().map(TemplateResDto::from).collect(Collectors.toList());
         } else if (store.getTemplate_type().equals("HIGHSERVICE")) {
-            List<ShiftTemplate> template = shiftTemplateRepository.findByStoreIdAndTemplateType(storeId, TemplateType.HIGHSERVICE).orElseThrow(
+            List<ShiftTemplate> template = shiftTemplateRepository.findByStoreIdAndTemplateType(
+                storeId, TemplateType.HIGHSERVICE).orElseThrow(
                 () -> new CustomException(ErrorCode.TEMPLATE_NOT_FOUND)
             );
             return template.stream().map(TemplateResDto::from).collect(Collectors.toList());
@@ -241,25 +238,32 @@ public class ShiftTemplateService {
     @Transactional
     public void removeUnusedShiftTemplates(Long storeId) {
         Store store = storeRepository.findById(storeId).orElseThrow(
-            ()-> new CustomException(ErrorCode.STORE_NOT_FOUND)
+            () -> new CustomException(ErrorCode.STORE_NOT_FOUND)
         );
 
-        List<ShiftTemplate> shiftTemplate = shiftTemplateRepository.findByStoreId(storeId).orElseThrow(
-            ()-> new CustomException(ErrorCode.TEMPLATE_NOT_FOUND)
-        );
+        List<ShiftTemplate> shiftTemplate = shiftTemplateRepository.findByStoreId(storeId)
+                                                .orElseThrow(
+                                                    () -> new CustomException(
+                                                        ErrorCode.TEMPLATE_NOT_FOUND)
+                                                );
 
         List<ShiftTemplate> unusedTemplates = shiftTemplate.stream()
 //            .filter(template -> !template.getTemplateType().equals(store.getTemplate_type()))
-            .filter(template -> !template.getTemplateType().name().equals(store.getTemplate_type()))
-            .collect(Collectors.toList());
+                                                  .filter(
+                                                      template -> !template.getTemplateType().name()
+                                                                       .equals(
+                                                                           store.getTemplate_type()))
+                                                  .collect(Collectors.toList());
 
         shiftTemplateRepository.deleteAll(unusedTemplates);
     }
 
     public void deleteTemplate(Long storeId) {
-        List<ShiftTemplate> shiftTemplate = shiftTemplateRepository.findByStoreId(storeId).orElseThrow(
-            ()-> new CustomException(ErrorCode.TEMPLATE_NOT_FOUND)
-        );
+        List<ShiftTemplate> shiftTemplate = shiftTemplateRepository.findByStoreId(storeId)
+                                                .orElseThrow(
+                                                    () -> new CustomException(
+                                                        ErrorCode.TEMPLATE_NOT_FOUND)
+                                                );
 
         shiftTemplateRepository.deleteAll(shiftTemplate);
     }

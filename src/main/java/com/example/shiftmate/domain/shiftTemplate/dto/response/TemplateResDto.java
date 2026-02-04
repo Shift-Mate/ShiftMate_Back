@@ -3,7 +3,6 @@ package com.example.shiftmate.domain.shiftTemplate.dto.response;
 import com.example.shiftmate.domain.shiftTemplate.entity.ShiftTemplate;
 import com.example.shiftmate.domain.shiftTemplate.entity.ShiftType;
 import com.example.shiftmate.domain.shiftTemplate.entity.TemplateType;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import lombok.Builder;
 import lombok.Getter;

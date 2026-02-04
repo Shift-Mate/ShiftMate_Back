@@ -5,9 +5,7 @@ import com.example.shiftmate.domain.shiftTemplate.dto.request.TemplateCreateReqD
 import com.example.shiftmate.domain.shiftTemplate.dto.request.TemplateShiftStaff;
 import com.example.shiftmate.domain.shiftTemplate.dto.request.UpdateTemplateTypeReqDto;
 import com.example.shiftmate.domain.shiftTemplate.dto.response.TemplateResDto;
-import com.example.shiftmate.domain.shiftTemplate.entity.ShiftTemplate;
 import com.example.shiftmate.domain.shiftTemplate.service.ShiftTemplateService;
-import com.example.shiftmate.domain.store.entity.Store;
 import com.example.shiftmate.global.common.dto.ApiResponse;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -54,8 +52,8 @@ public class ShiftTemplateController {
     public ResponseEntity<ApiResponse<Void>> updateTemplateType(
         @PathVariable Long storeId,
         @RequestBody @Valid UpdateTemplateTypeReqDto updateTemplateTypeReqDto
-    ){
-        shiftTemplateService.updateTemplateType(storeId , updateTemplateTypeReqDto);
+    ) {
+        shiftTemplateService.updateTemplateType(storeId, updateTemplateTypeReqDto);
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
@@ -72,14 +70,15 @@ public class ShiftTemplateController {
     public ResponseEntity<ApiResponse<List<TemplateResDto>>> getTemplateByType(
         @PathVariable Long storeId
     ) {
-        return ResponseEntity.ok(ApiResponse.success(shiftTemplateService.getTemplateByType(storeId)));
+        return ResponseEntity.ok(
+            ApiResponse.success(shiftTemplateService.getTemplateByType(storeId)));
     }
 
     // 템플릿 자체를 제거
     @DeleteMapping
     public ResponseEntity<ApiResponse<Void>> deleteTemplate(
         @PathVariable Long storeId
-    ){
+    ) {
         shiftTemplateService.deleteTemplate(storeId);
         return ResponseEntity.ok(ApiResponse.success(null));
     }
