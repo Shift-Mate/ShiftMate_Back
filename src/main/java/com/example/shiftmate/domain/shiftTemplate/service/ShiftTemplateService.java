@@ -14,6 +14,7 @@ import com.example.shiftmate.domain.store.repository.StoreRepository;
 import com.example.shiftmate.global.exception.CustomException;
 import com.example.shiftmate.global.exception.ErrorCode;
 import jakarta.validation.Valid;
+import java.awt.Stroke;
 import java.time.Duration;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -235,5 +236,23 @@ public class ShiftTemplateService {
             throw new CustomException(ErrorCode.TYPE_NOT_FOUND);
         }
 
+    }
+
+    @Transactional
+    public void removeUnusedShiftTemplates(Long storeId) {
+        Store store = storeRepository.findById(storeId).orElseThrow(
+            ()-> new CustomException(ErrorCode.STORE_NOT_FOUND)
+        );
+
+        List<ShiftTemplate> shiftTemplate = shiftTemplateRepository.findByStoreId(storeId).orElseThrow(
+            ()-> new CustomException(ErrorCode.TEMPLATE_NOT_FOUND)
+        );
+
+        List<ShiftTemplate> unusedTemplates = shiftTemplate.stream()
+//            .filter(template -> !template.getTemplateType().equals(store.getTemplate_type()))
+            .filter(template -> !template.getTemplateType().name().equals(store.getTemplate_type()))
+            .collect(Collectors.toList());
+
+        shiftTemplateRepository.deleteAll(unusedTemplates);
     }
 }

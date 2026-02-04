@@ -75,14 +75,14 @@ public class ShiftTemplateController {
         return ResponseEntity.ok(ApiResponse.success(shiftTemplateService.getTemplateByType(storeId)));
     }
 
-    // 템플릿 자체를 제거
-    @DeleteMapping
-    public ResponseEntity<ApiResponse<Void>> deleteTemplate(
-        @PathVariable Long storeId
-    ){
-        shiftTemplateService.deleteTemplate(storeId);
-        return ResponseEntity.ok(ApiResponse.success(null));
-    }
+//    // 템플릿 자체를 제거
+//    @DeleteMapping
+//    public ResponseEntity<ApiResponse<Void>> deleteTemplate(
+//        @PathVariable Long storeId
+//    ){
+//        shiftTemplateService.deleteTemplate(storeId);
+//        return ResponseEntity.ok(ApiResponse.success(null));
+//    }
 
     // 가게 entity의 templateType 과 일치하지 않는 template 제거 ( 템플릿 생성 완료 버튼을 누르면 동작하는 기능 )
     @DeleteMapping
