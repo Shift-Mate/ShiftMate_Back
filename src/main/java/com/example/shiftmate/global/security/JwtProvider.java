@@ -72,12 +72,17 @@ public class JwtProvider {
     }
 
     // 토큰 유효성 검사 (서명/만료 체크)
-    public boolean validateToken(String token) {
+    public void validateToken(String token) {
         try {
             Jwts.parser().verifyWith(key).build().parseSignedClaims(token);
-            return true;
-        } catch (JwtException | IllegalArgumentException e) {
-            return false;
+        } catch (io.jsonwebtoken.security.SecurityException | io.jsonwebtoken.MalformedJwtException e) {
+            throw new com.example.shiftmate.global.exception.CustomException(com.example.shiftmate.global.exception.ErrorCode.MALFORMED_TOKEN);
+        } catch (io.jsonwebtoken.ExpiredJwtException e) {
+            throw new com.example.shiftmate.global.exception.CustomException(com.example.shiftmate.global.exception.ErrorCode.EXPIRED_TOKEN);
+        } catch (io.jsonwebtoken.UnsupportedJwtException e) {
+            throw new com.example.shiftmate.global.exception.CustomException(com.example.shiftmate.global.exception.ErrorCode.UNSUPPORTED_TOKEN);
+        } catch (IllegalArgumentException e) {
+            throw new com.example.shiftmate.global.exception.CustomException(com.example.shiftmate.global.exception.ErrorCode.EMPTY_TOKEN);
         }
     }
 
