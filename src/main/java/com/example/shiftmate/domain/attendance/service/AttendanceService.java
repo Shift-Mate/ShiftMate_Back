@@ -2,6 +2,7 @@ package com.example.shiftmate.domain.attendance.service;
 
 import com.example.shiftmate.domain.attendance.dto.request.AttendanceReqDto;
 import com.example.shiftmate.domain.attendance.dto.response.AttendanceResDto;
+import com.example.shiftmate.domain.attendance.dto.response.TodayAttendanceResDto;
 import com.example.shiftmate.domain.attendance.entity.Attendance;
 import com.example.shiftmate.domain.attendance.entity.AttendanceStatus;
 import com.example.shiftmate.domain.attendance.repository.AttendanceRepository;
@@ -13,8 +14,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -106,5 +109,32 @@ public class AttendanceService {
                 .time(now)
                 .message(message)
                 .build();
+    }
+
+    public List<TodayAttendanceResDto> getTodayAttendance(Long storeId, LocalDate date) {
+        // 해당 매장에 해당 날짜에 존재하는 모든 스케줄 조회
+        List<ShiftAssignment> assignments = shiftAssignmentRepository.findAllByStoreIdAndDate(storeId, date);
+
+        // 스케줄이 없다면 빈 리스트 반환
+        if(assignments.isEmpty()) {
+            return List.of();
+        }
+
+        // 조회한 모든 스케줄에 연결된 출퇴근 기록 조회
+        List<Attendance> attendances = attendanceRepository.findAllByShiftAssignmentIn(assignments);
+
+        // 일일 근태 조회를 위한 리스트 생성
+        List<TodayAttendanceResDto> results = new ArrayList<>();
+
+        // 해당 배정 스케줄에 속한 attendance를 연결하는 로직
+        Map<Long, Attendance> attendanceMap = attendances.stream()
+                .collect(Collectors.toMap(attendance -> attendance.getShiftAssignment().getId(), attendance -> attendance));
+
+        return assignments.stream()
+                .map(assignment -> TodayAttendanceResDto.of(assignment, attendanceMap.get(assignment.getId())))
+                .collect(Collectors.toList());
+
+
+
     }
 }

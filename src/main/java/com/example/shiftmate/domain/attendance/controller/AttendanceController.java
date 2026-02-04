@@ -2,12 +2,16 @@ package com.example.shiftmate.domain.attendance.controller;
 
 import com.example.shiftmate.domain.attendance.dto.request.AttendanceReqDto;
 import com.example.shiftmate.domain.attendance.dto.response.AttendanceResDto;
+import com.example.shiftmate.domain.attendance.dto.response.TodayAttendanceResDto;
 import com.example.shiftmate.domain.attendance.service.AttendanceService;
 import com.example.shiftmate.global.common.dto.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDate;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -25,4 +29,12 @@ public class AttendanceController {
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
+    @GetMapping("/daily")
+    public ResponseEntity<ApiResponse<List<TodayAttendanceResDto>>> getAttendance(
+            @PathVariable Long storeId,
+            @RequestParam LocalDate date
+    ) {
+        List<TodayAttendanceResDto> response = attendanceService.getTodayAttendance(storeId, date);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
 }
