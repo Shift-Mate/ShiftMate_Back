@@ -14,6 +14,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -72,5 +73,23 @@ public class ShiftTemplateController {
         @PathVariable Long storeId
     ) {
         return ResponseEntity.ok(ApiResponse.success(shiftTemplateService.getTemplateByType(storeId)));
+    }
+
+    // 템플릿 자체를 제거
+    @DeleteMapping
+    public ResponseEntity<ApiResponse<Void>> deleteTemplate(
+        @PathVariable Long storeId
+    ){
+        shiftTemplateService.deleteTemplate(storeId);
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
+    // 가게 entity의 templateType 과 일치하지 않는 template 제거 ( 템플릿 생성 완료 버튼을 누르면 동작하는 기능 )
+    @DeleteMapping
+    public ResponseEntity<ApiResponse<Void>> removeUnusedShiftTemplates(
+        @PathVariable Long storeId
+    ) {
+        shiftTemplateService.removeUnusedShiftTemplates(storeId);
+        return ResponseEntity.ok(ApiResponse.success(null));
     }
 }
