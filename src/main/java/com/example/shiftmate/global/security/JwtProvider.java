@@ -1,8 +1,8 @@
 package com.example.shiftmate.global.security;
 
-import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.JwtBuilder;
+import com.example.shiftmate.global.exception.CustomException;
+import com.example.shiftmate.global.exception.ErrorCode;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
@@ -75,15 +75,18 @@ public class JwtProvider {
     public void validateToken(String token) {
         try {
             Jwts.parser().verifyWith(key).build().parseSignedClaims(token);
-        } catch (io.jsonwebtoken.security.SecurityException | io.jsonwebtoken.MalformedJwtException e) {
-            throw new com.example.shiftmate.global.exception.CustomException(com.example.shiftmate.global.exception.ErrorCode.MALFORMED_TOKEN);
-        } catch (io.jsonwebtoken.ExpiredJwtException e) {
-            throw new com.example.shiftmate.global.exception.CustomException(com.example.shiftmate.global.exception.ErrorCode.EXPIRED_TOKEN);
-        } catch (io.jsonwebtoken.UnsupportedJwtException e) {
-            throw new com.example.shiftmate.global.exception.CustomException(com.example.shiftmate.global.exception.ErrorCode.UNSUPPORTED_TOKEN);
+        } catch (SecurityException e) {
+            throw new CustomException(ErrorCode.INVALID_SIGNATURE);
+        } catch (MalformedJwtException e) {
+            throw new CustomException(ErrorCode.MALFORMED_TOKEN);
+        } catch (ExpiredJwtException e) {
+            throw new CustomException(ErrorCode.EXPIRED_TOKEN);
+        } catch (UnsupportedJwtException e) {
+            throw new CustomException(ErrorCode.UNSUPPORTED_TOKEN);
         } catch (IllegalArgumentException e) {
-            throw new com.example.shiftmate.global.exception.CustomException(com.example.shiftmate.global.exception.ErrorCode.EMPTY_TOKEN);
+            throw new CustomException(ErrorCode.EMPTY_TOKEN);
         }
+
     }
 
     // 공통 Claims 파싱
