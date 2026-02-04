@@ -52,12 +52,7 @@ public class StoreController {
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
-
-
     // 유저가 속해있는 매장 조회
-
-
-
     @PutMapping("/{storeId}")
     public ResponseEntity<ApiResponse<StoreResDto>> updateStore(
         @PathVariable Long storeId,
