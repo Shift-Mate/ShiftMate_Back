@@ -1,5 +1,7 @@
 package com.example.shiftmate.domain.storeMember.repository;
 
-public interface StoreMemberRepository {
+import com.example.shiftmate.domain.storeMember.entity.StoreMember;
+import org.springframework.data.jpa.repository.JpaRepository;
 
+public interface StoreMemberRepository extends JpaRepository<StoreMember, Long> {
 }
