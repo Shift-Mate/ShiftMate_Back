@@ -98,9 +98,6 @@ public class StoreService {
 
         // Soft Delete 실행
         store.softDelete();
-
-        // 명시적으로 저장 (필요한 경우)
-        storeRepository.save(store);
     }
 
     // Store -> StoreResDto 변환
