@@ -37,7 +37,6 @@ public enum ErrorCode {
     STORE_NOT_FOUND(HttpStatus.NOT_FOUND, "매장 정보를 찾을 수 없습니다."),
     STORE_ACCESS_DENIED(HttpStatus.FORBIDDEN, "매장 수정 권한이 없습니다."),
 
-
     // ShiftAssignment
     SHIFT_ASSIGNMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "배정된 스케줄을 찾을 수 없습니다."),
 
