@@ -255,4 +255,12 @@ public class ShiftTemplateService {
 
         shiftTemplateRepository.deleteAll(unusedTemplates);
     }
+
+    public void deleteTemplate(Long storeId) {
+        List<ShiftTemplate> shiftTemplate = shiftTemplateRepository.findByStoreId(storeId).orElseThrow(
+            ()-> new CustomException(ErrorCode.TEMPLATE_NOT_FOUND)
+        );
+
+        shiftTemplateRepository.deleteAll(shiftTemplate);
+    }
 }
