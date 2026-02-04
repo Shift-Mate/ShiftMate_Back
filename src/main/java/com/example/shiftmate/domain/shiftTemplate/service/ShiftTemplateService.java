@@ -217,13 +217,13 @@ public class ShiftTemplateService {
             () -> new CustomException(ErrorCode.STORE_NOT_FOUND)
         );
 
-        if (store.getTemplateType().equals("COSTSAVER")) {
+        if (store.getTemplateType().equals(TemplateType.COSTSAVER)) {
             List<ShiftTemplate> template = shiftTemplateRepository.findByStoreIdAndTemplateType(
                 storeId, TemplateType.COSTSAVER).orElseThrow(
                 () -> new CustomException(ErrorCode.TEMPLATE_NOT_FOUND)
             );
             return template.stream().map(TemplateResDto::from).collect(Collectors.toList());
-        } else if (store.getTemplateType().equals("HIGHSERVICE")) {
+        } else if (store.getTemplateType().equals(TemplateType.HIGHSERVICE)) {
             List<ShiftTemplate> template = shiftTemplateRepository.findByStoreIdAndTemplateType(
                 storeId, TemplateType.HIGHSERVICE).orElseThrow(
                 () -> new CustomException(ErrorCode.TEMPLATE_NOT_FOUND)
