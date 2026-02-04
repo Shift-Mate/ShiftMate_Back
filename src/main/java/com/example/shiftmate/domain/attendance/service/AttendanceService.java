@@ -16,9 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -128,23 +127,14 @@ public class AttendanceService {
         List<TodayAttendanceResDto> results = new ArrayList<>();
 
         // 해당 배정 스케줄에 속한 attendance를 연결하는 로직
-        for(ShiftAssignment assignment : assignments) {
-            // matchAttendance가 null인 경우는 아직 출근하지 않았거나 결근한 상태라서 출퇴근 기록이 없는 상황
-            // 마지막에 DTO 변환 시 null 처리
-            Attendance matchAttendance = null;
+        Map<Long, Attendance> attendanceMap = attendances.stream()
+                .collect(Collectors.toMap(attendance -> attendance.getShiftAssignment().getId(), attendance -> attendance));
 
-            for(Attendance attendance : attendances) {
-                // attendance의 배정 스케줄의 id와 해당 배정 스케줄의 id가 일치하는지 확인 후 연결
-                if(attendance.getShiftAssignment().getId().equals(assignment.getId())) {
-                    matchAttendance = attendance;
-                    break;
-                }
-            }
+        return assignments.stream()
+                .map(assignment -> TodayAttendanceResDto.of(assignment, attendanceMap.get(assignment.getId())))
+                .collect(Collectors.toList());
 
-            // 결과 리스트에 해당 assignment와 attendance를 연결해서 추가
-            results.add(TodayAttendanceResDto.of(assignment, matchAttendance));
-        }
 
-        return results;
+
     }
 }
