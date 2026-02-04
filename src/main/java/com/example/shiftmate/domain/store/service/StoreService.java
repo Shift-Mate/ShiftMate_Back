@@ -48,7 +48,7 @@ public class StoreService {
 
     // 단일 매장 조회, GET /stores/{storeId}
     public StoreResDto findById(Long storeId) {
-        Store store = storeRepository.findById(storeId)
+        Store store = storeRepository.findByIdAndDeletedAtIsNull(storeId)
                 .orElseThrow(() -> new CustomException(ErrorCode.STORE_NOT_FOUND));
 
         return toResponseDto(store);
@@ -56,7 +56,7 @@ public class StoreService {
 
     // 전체 매장 목록 조회(테스트용), GET /stores
     public List<StoreResDto> findAll() {
-        List<Store> stores = storeRepository.findAll();
+        List<Store> stores = storeRepository.findAllByDeletedAtIsNull();
         return stores.stream()
             .map(this::toResponseDto)
             .toList();
@@ -67,14 +67,9 @@ public class StoreService {
     // Store Update, PUT /stores/{storeId}
     @Transactional
     public StoreResDto update(Long storeId, StoreReqDto request, Long userId) {
-        // store 조회
-        Store store = storeRepository.findById(storeId)
-                .orElseThrow(() -> new CustomException(ErrorCode.STORE_NOT_FOUND)); // 매장 없음
-
-        // 권한 확인
-        if (!store.getUser().getId().equals(userId)) {
-            throw new CustomException(ErrorCode.STORE_ACCESS_DENIED);   // 권한 없음
-        }
+        // store 조회 (삭제되지 않은 + 삭제 권한 확인)
+        Store store = storeRepository.findByIdAndUserIdAndDeletedAtIsNull(storeId, userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.STORE_NOT_FOUND)); // 매장 or 권한 없음
 
         // store update
         store.update(
@@ -91,6 +86,21 @@ public class StoreService {
         // dto 변환
         return toResponseDto(store);
 
+    }
+
+    // Store Delete(Soft Delete)
+    // DELETE /stores/{storeId}
+    @Transactional
+    public void delete(Long storeId, Long userId) {
+        // store 조회 (삭제되지 않은 + 삭제 권한 확인)
+        Store store = storeRepository.findByIdAndUserIdAndDeletedAtIsNull(storeId, userId)
+            .orElseThrow(() -> new CustomException(ErrorCode.STORE_NOT_FOUND)); // 매장 없음 or 권한 없음
+
+        // Soft Delete 실행
+        store.softDelete();
+
+        // 명시적으로 저장 (필요한 경우)
+        storeRepository.save(store);
     }
 
     // Store -> StoreResDto 변환

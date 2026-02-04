@@ -2,15 +2,7 @@ package com.example.shiftmate.domain.store.entity;
 
 import com.example.shiftmate.domain.user.entity.User;
 import com.example.shiftmate.global.common.entity.BaseTimeEntity;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import java.time.LocalTime;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -53,7 +45,8 @@ public class Store extends BaseTimeEntity {
     private String alias;
 
     @Builder
-    public Store(String name, String location, LocalTime openTime, LocalTime closeTime, Integer nShifts, String brn, User user, String alias) {
+    public Store(String name, String location, LocalTime openTime, LocalTime closeTime,
+        Integer nShifts, String brn, User user, String alias) {
         this.name = name;
         this.location = location;
         this.openTime = openTime;
@@ -64,31 +57,15 @@ public class Store extends BaseTimeEntity {
         this.alias = alias;
     }
 
-    // update
-    public void update(String name, String location, LocalTime openTime, LocalTime closeTime, Integer nShifts, String brn, User user, String alias) {
-        if(name != null) {
-            this.name = name;
-        }
-        if(location != null) {
-            this.location = location;
-        }
-        if(openTime != null) {
-            this.openTime = openTime;
-        }
-        if(closeTime != null) {
-            this.closeTime = closeTime;
-        }
-        if(nShifts != null) {
-            this.nShifts = nShifts;
-        }
-        if(brn != null) {
-            this.brn = brn;
-        }
-        if(user != null) {
-            this.user = user;
-        }
-        if(alias != null) {
-            this.alias = alias;
-        }
+    public void update(String name, String location, LocalTime openTime, LocalTime closeTime,
+        Integer nShifts, String brn, User user, String alias) {
+        if (name != null) this.name = name;
+        if (location != null) this.location = location;
+        if (openTime != null) this.openTime = openTime;
+        if (closeTime != null) this.closeTime = closeTime;
+        if (nShifts != null) this.nShifts = nShifts;
+        if (brn != null) this.brn = brn;
+        if (user != null) this.user = user;
+        if (alias != null) this.alias = alias;
     }
 }
