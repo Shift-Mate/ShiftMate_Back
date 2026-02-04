@@ -1,5 +1,5 @@
 package com.example.shiftmate.domain.user.service;
 
-public class ExService {
+public class UserService {
 
 }
