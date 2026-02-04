@@ -67,16 +67,16 @@ public class AuthService {
     public AuthResponse reissue(RefreshRequest request) {
         String refreshToken = request.getRefreshToken();
 
-        // 1) 토큰 자체 유효성 검사 (유효하지 않으면 예외 발생)
-        jwtProvider.validateToken(refreshToken);
+        // 1) 토큰 자체 유효성 검사 + Claims 한번만 파싱
+        io.jsonwebtoken.Claims claims = jwtProvider.parseClaims(refreshToken);
 
         // 2) refresh 토큰인지 확인
-        if (!"refresh".equals(jwtProvider.getCategory(refreshToken))) {
+        if (!"refresh".equals(claims.get("category", String.class))) {
             throw new CustomException(ErrorCode.INVALID_REQUEST);
         }
 
         // 3) 토큰에서 이메일 추출
-        String email = jwtProvider.getEmail(refreshToken);
+        String email = claims.get("email", String.class);
 
         // 4) Redis에 저장된 토큰과 일치 확인
         if (!refreshTokenService.matches(email, refreshToken)) {
@@ -84,7 +84,7 @@ public class AuthService {
         }
 
         // 5) 새 토큰 발급
-        Long userId = jwtProvider.getUserId(refreshToken);
+        Long userId = Long.valueOf(claims.getSubject());
         String newAccess = jwtProvider.createAccessToken(userId, email);
         String newRefresh = jwtProvider.createRefreshToken(userId, email);
 
@@ -98,16 +98,16 @@ public class AuthService {
     public void logout(LogoutRequest request) {
         String refreshToken = request.getRefreshToken();
 
-        // 1) 토큰 유효성 확인 (유효하지 않으면 예외 발생)
-        jwtProvider.validateToken(refreshToken);
+        // 1) 토큰 유효성 확인 + Claims 한번만 파싱
+        io.jsonwebtoken.Claims claims = jwtProvider.parseClaims(refreshToken);
 
         // 2) refresh 토큰인지 확인
-        if (!"refresh".equals(jwtProvider.getCategory(refreshToken))) {
+        if (!"refresh".equals(claims.get("category", String.class))) {
             throw new CustomException(ErrorCode.INVALID_REQUEST);
         }
 
         // 3) 이메일 추출 후 Redis에서 삭제
-        String email = jwtProvider.getEmail(refreshToken);
+        String email = claims.get("email", String.class);
         refreshTokenService.delete(email);
     }
 }
