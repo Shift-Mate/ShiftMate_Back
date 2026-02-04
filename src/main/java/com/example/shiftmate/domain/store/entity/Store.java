@@ -1,9 +1,12 @@
 package com.example.shiftmate.domain.store.entity;
 
+import com.example.shiftmate.domain.shiftTemplate.entity.TemplateType;
 import com.example.shiftmate.domain.user.entity.User;
 import com.example.shiftmate.global.common.entity.BaseTimeEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -52,8 +55,9 @@ public class Store extends BaseTimeEntity {
     @Column(nullable = true)
     private String alias;
 
+    @Enumerated(EnumType.STRING)
     @Column
-    private String template_type;
+    private TemplateType templateType;
 
     @Builder
     public Store(String name, String location, LocalTime openTime, LocalTime closeTime, Integer nShifts, String brn, User user, String alias) {
@@ -68,7 +72,7 @@ public class Store extends BaseTimeEntity {
         this.templateType = null;
     }
 
-    public void updateTemplateType(String templateType){
-        this.template_type = templateType;
+    public void updateTemplateType(TemplateType templateType){
+        this.templateType = templateType;
     }
 }

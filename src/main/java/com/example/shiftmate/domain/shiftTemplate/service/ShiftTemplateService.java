@@ -217,13 +217,13 @@ public class ShiftTemplateService {
             () -> new CustomException(ErrorCode.STORE_NOT_FOUND)
         );
 
-        if (store.getTemplate_type().equals("COSTSAVER")) {
+        if (store.getTemplateType().equals("COSTSAVER")) {
             List<ShiftTemplate> template = shiftTemplateRepository.findByStoreIdAndTemplateType(
                 storeId, TemplateType.COSTSAVER).orElseThrow(
                 () -> new CustomException(ErrorCode.TEMPLATE_NOT_FOUND)
             );
             return template.stream().map(TemplateResDto::from).collect(Collectors.toList());
-        } else if (store.getTemplate_type().equals("HIGHSERVICE")) {
+        } else if (store.getTemplateType().equals("HIGHSERVICE")) {
             List<ShiftTemplate> template = shiftTemplateRepository.findByStoreIdAndTemplateType(
                 storeId, TemplateType.HIGHSERVICE).orElseThrow(
                 () -> new CustomException(ErrorCode.TEMPLATE_NOT_FOUND)
@@ -250,9 +250,9 @@ public class ShiftTemplateService {
         List<ShiftTemplate> unusedTemplates = shiftTemplate.stream()
 //            .filter(template -> !template.getTemplateType().equals(store.getTemplate_type()))
                                                   .filter(
-                                                      template -> !template.getTemplateType().name()
+                                                      template -> !template.getTemplateType()
                                                                        .equals(
-                                                                           store.getTemplate_type()))
+                                                                           store.getTemplateType()))
                                                   .collect(Collectors.toList());
 
         shiftTemplateRepository.deleteAll(unusedTemplates);
