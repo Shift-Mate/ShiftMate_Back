@@ -65,7 +65,7 @@ public class Store extends BaseTimeEntity {
         this.brn = brn;
         this.user = user;
         this.alias = alias;
-        this.template_type = null;
+        this.templateType = null;
     }
 
     public void updateTemplateType(String templateType){
