@@ -5,6 +5,6 @@ import lombok.Getter;
 @Getter
 public class TemplateShiftStaff {
 
-    private Integer required_staff;
+    private Integer requiredStaff;
 
 }
