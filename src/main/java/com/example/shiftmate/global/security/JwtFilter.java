@@ -34,15 +34,15 @@ public class JwtFilter extends OncePerRequestFilter {
 
         // 토큰이 있으면 유효성 검사 후 인증 처리
         if (StringUtils.hasText(token)) {
-            // 유효하지 않으면 예외 발생
-            jwtProvider.validateToken(token);
+            // 유효하지 않으면 예외 발생 + Claims 한번만 파싱
+            io.jsonwebtoken.Claims claims = jwtProvider.parseClaims(token);
 
             // access 토큰인지 확인 (refresh면 인증 처리 안 함)
-            String category = jwtProvider.getCategory(token);
+            String category = claims.get("category", String.class);
             if (TOKEN_TYPE_ACCESS.equals(category)) {
 
                 // 토큰에서 이메일 추출 후 사용자 로딩
-                String email = jwtProvider.getEmail(token);
+                String email = claims.get("email", String.class);
                 UserDetails userDetails = userDetailsService.loadUserByUsername(email);
 
                 // 인증 객체를 SecurityContext에 등록

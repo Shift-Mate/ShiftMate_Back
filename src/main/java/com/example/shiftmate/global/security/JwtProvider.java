@@ -73,8 +73,13 @@ public class JwtProvider {
 
     // 토큰 유효성 검사 (서명/만료 체크)
     public void validateToken(String token) {
+        parseClaims(token);
+    }
+
+    // 토큰을 파싱하여 Claims 반환 (예외는 CustomException으로 변환)
+    public Claims parseClaims(String token) {
         try {
-            Jwts.parser().verifyWith(key).build().parseSignedClaims(token);
+            return Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
         } catch (SecurityException e) {
             throw new CustomException(ErrorCode.INVALID_SIGNATURE);
         } catch (MalformedJwtException e) {
@@ -86,11 +91,10 @@ public class JwtProvider {
         } catch (IllegalArgumentException e) {
             throw new CustomException(ErrorCode.EMPTY_TOKEN);
         }
-
     }
 
-    // 공통 Claims 파싱
-    private io.jsonwebtoken.Claims getClaims(String token) {
-        return Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
+    // 공통 Claims 파싱 (기존 메서드 유지)
+    private Claims getClaims(String token) {
+        return parseClaims(token);
     }
 }
