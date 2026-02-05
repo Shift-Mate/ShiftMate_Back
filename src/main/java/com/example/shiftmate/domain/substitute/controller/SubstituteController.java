@@ -1,7 +1,9 @@
 package com.example.shiftmate.domain.substitute.controller;
 
 import com.example.shiftmate.domain.substitute.dto.request.SubstituteReqDto;
+import com.example.shiftmate.domain.substitute.dto.response.SubstituteApplicationResDto;
 import com.example.shiftmate.domain.substitute.dto.response.SubstituteResDto;
+import com.example.shiftmate.domain.substitute.entity.SubstituteApplication;
 import com.example.shiftmate.domain.substitute.service.SubstituteService;
 import com.example.shiftmate.global.common.dto.ApiResponse;
 import com.example.shiftmate.global.security.CustomUserDetails;
@@ -51,6 +53,7 @@ public class SubstituteController {
         return ResponseEntity.ok(ApiResponse.success(responses));
     }
 
+    // 본인 대타 요청 취소
     @DeleteMapping("/{requestId}")
     public ResponseEntity<ApiResponse<Void>> deleteSubstitute(
             @PathVariable Long storeId,
@@ -60,4 +63,16 @@ public class SubstituteController {
         substituteService.cancelSubstitute(storeId, userDetails.getId(), requestId);
         return ResponseEntity.ok(ApiResponse.success(null));
     }
+
+    // 대타 지원 생성
+    @PostMapping("/{requestId}/apply")
+    public ResponseEntity<ApiResponse<Void>> applySubstitute(
+            @PathVariable Long storeId,
+            @PathVariable Long requestId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        substituteService.createApplication(storeId, requestId, userDetails.getId());
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
 }
