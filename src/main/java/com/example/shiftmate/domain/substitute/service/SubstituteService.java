@@ -172,4 +172,14 @@ public class SubstituteService {
 
         request.changeStatus();
     }
+
+    public List<SubstituteApplicationResDto> getMyApplications(Long storeId, Long userId) {
+        // 직원 조회
+        StoreMember member = storeMemberRepository.findByStoreIdAndUserId(storeId, userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+
+        return substituteApplicationRepository.findAllByApplicantId(member.getId()).stream()
+                .map(SubstituteApplicationResDto::from)
+                .collect(Collectors.toList());
+    }
 }

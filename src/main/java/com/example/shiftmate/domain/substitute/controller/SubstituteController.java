@@ -75,4 +75,13 @@ public class SubstituteController {
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
+    // 본인 대타 지원 내역 조회
+    @GetMapping("/applications/my")
+    public ResponseEntity<ApiResponse<List<SubstituteApplicationResDto>>> getMyApplications(
+            @PathVariable Long storeId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        List<SubstituteApplicationResDto> responses = substituteService.getMyApplications(storeId, userDetails.getId());
+        return ResponseEntity.ok(ApiResponse.success(responses));
+    }
 }
