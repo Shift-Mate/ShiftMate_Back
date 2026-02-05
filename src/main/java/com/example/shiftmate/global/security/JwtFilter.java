@@ -44,7 +44,10 @@ public class JwtFilter extends OncePerRequestFilter {
             if (TOKEN_TYPE_ACCESS.equals(category)) {
 
                 // 토큰에서 이메일 추출 후 사용자 로딩
-                String email = java.util.Optional.ofNullable(claims.get("email", String.class)).orElseThrow(() -> new CustomException(ErrorCode.MALFORMED_TOKEN));
+                String email = claims.get("email", String.class);
+                if (email == null) {
+                    throw new CustomException(ErrorCode.MALFORMED_TOKEN);
+                }
                 UserDetails userDetails = userDetailsService.loadUserByUsername(email);
 
                 // 인증 객체를 SecurityContext에 등록
