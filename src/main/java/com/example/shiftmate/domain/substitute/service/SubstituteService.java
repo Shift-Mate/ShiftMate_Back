@@ -72,4 +72,29 @@ public class SubstituteService {
         substituteRequestRepository.save(request);
     }
 
+    public List<SubstituteResDto> getOthersSubstitutes(Long storeId, Long userId) {
+        // 해당 매장의 직원이 맞는지 검증
+        StoreMember member = storeMemberRepository.findByStoreIdAndUserId(storeId, userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+
+        // 본인을 제외한 다른 직원들의 대타 요청 조회
+        List<SubstituteRequest> responses = substituteRequestRepository.findAllByRequester_Store_IdAndRequesterIdNotOrderByCreatedAtDesc(storeId, member.getId());
+
+        return responses.stream()
+                .map(SubstituteResDto::from)
+                .collect(Collectors.toList());
+    }
+
+    public List<SubstituteResDto> getMySubstitutes(Long storeId, Long userId) {
+        // 해당 매장의 직원이 맞는지 검증
+        StoreMember member = storeMemberRepository.findByStoreIdAndUserId(storeId, userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+
+        // 본인의 대타 요청만 조회
+        List<SubstituteRequest> responses = substituteRequestRepository.findAllByRequesterIdOrderByCreatedAtDesc(member.getId());
+
+        return responses.stream()
+                .map(SubstituteResDto::from)
+                .collect(Collectors.toList());
+    }
 }

@@ -31,4 +31,23 @@ public class SubstituteController {
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
+    // 다른 직원들의 대타 요청 조회
+    @GetMapping("/others")
+    public ResponseEntity<ApiResponse<List<SubstituteResDto>>> getOthersSubstitutes(
+            @PathVariable Long storeId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        List<SubstituteResDto> responses = substituteService.getOthersSubstitutes(storeId, userDetails.getId());
+        return ResponseEntity.ok(ApiResponse.success(responses));
+    }
+
+    // 내 대타 요청 조회
+    @GetMapping("/my")
+    public ResponseEntity<ApiResponse<List<SubstituteResDto>>> getMySubstitutes(
+            @PathVariable Long storeId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        List<SubstituteResDto> responses = substituteService.getMySubstitutes(storeId, userDetails.getId());
+        return ResponseEntity.ok(ApiResponse.success(responses));
+    }
 }
