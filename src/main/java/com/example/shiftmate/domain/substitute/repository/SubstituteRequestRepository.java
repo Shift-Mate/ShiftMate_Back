@@ -11,4 +11,10 @@ public interface SubstituteRequestRepository extends JpaRepository<SubstituteReq
 
     boolean existsByShiftAssignmentAndStatusIn(ShiftAssignment shiftAssignment, List<RequestStatus> statuses);
 
+    // 본인의 대타 요청 조회
+    List<SubstituteRequest> findAllByRequesterIdOrderByCreatedAtDesc(Long requesterId);
+
+    // 본인을 제외한 같은 매장의 다른 직원들의 대타 요청 조회
+    // Requester의 storeId가 일치하고(같은 매장 직원), requestId가 본인의 id와 다른 대타 요청
+    List<SubstituteRequest> findAllByRequester_Store_IdAndRequesterIdNotOrderByCreatedAtDesc(Long storeId, Long requesterId);
 }
