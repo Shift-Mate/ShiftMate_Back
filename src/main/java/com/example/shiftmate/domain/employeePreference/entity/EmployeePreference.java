@@ -42,4 +42,8 @@ public class EmployeePreference extends BaseTimeEntity {
         this.type = type;
     }
 
+    public void update(PreferenceType type){
+        this.type = type;
+    }
+
 }

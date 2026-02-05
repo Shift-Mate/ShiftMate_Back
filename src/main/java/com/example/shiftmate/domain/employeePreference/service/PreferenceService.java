@@ -3,18 +3,15 @@ package com.example.shiftmate.domain.employeePreference.service;
 import com.example.shiftmate.domain.employeePreference.dto.request.CreatePreferenceItemReqDto;
 import com.example.shiftmate.domain.employeePreference.dto.request.CreateWeeklyPreferenceReqDto;
 import com.example.shiftmate.domain.employeePreference.dto.request.PreferenceUpdateReqDto;
-import com.example.shiftmate.domain.employeePreference.dto.response.preferenceResDto;
+import com.example.shiftmate.domain.employeePreference.dto.response.PreferenceResDto;
 import com.example.shiftmate.domain.employeePreference.entity.EmployeePreference;
 import com.example.shiftmate.domain.employeePreference.repository.employeePreferenceRepository;
 import com.example.shiftmate.domain.shiftTemplate.entity.ShiftTemplate;
 import com.example.shiftmate.domain.shiftTemplate.repository.ShiftTemplateRepository;
-import com.example.shiftmate.domain.store.entity.Store;
-import com.example.shiftmate.domain.store.repository.StoreRepository;
 import com.example.shiftmate.domain.storeMember.entity.StoreMember;
 import com.example.shiftmate.domain.storeMember.repository.StoreMemberRepository;
 import com.example.shiftmate.global.exception.CustomException;
 import com.example.shiftmate.global.exception.ErrorCode;
-import jakarta.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -74,7 +71,7 @@ public class PreferenceService {
 
     }
 
-    public List<preferenceResDto> getPreference(Long storeId, Long memberId) {
+    public List<PreferenceResDto> getPreference(Long storeId, Long memberId) {
         if (!shiftTemplateRepository.existsByStoreId(storeId)) {
             throw new CustomException(ErrorCode.SHIFT_ASSIGNMENT_NOT_FOUND);}
         if (!storeMemberRepository.existsById(memberId)) {
@@ -84,7 +81,22 @@ public class PreferenceService {
             memberId);
 
         return preferences.stream()
-                   .map(preferenceResDto::from)
+                   .map(PreferenceResDto::from)
                    .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public PreferenceResDto updatePreference(Long storeId, Long memberId, Long preferenceId, PreferenceUpdateReqDto preferenceUpdateReqDto) {
+        if (!shiftTemplateRepository.existsByStoreId(storeId)) {
+            throw new CustomException(ErrorCode.SHIFT_ASSIGNMENT_NOT_FOUND);}
+        if (!storeMemberRepository.existsById(memberId)) {
+            throw new CustomException(ErrorCode.STORE_MEMBER_NOT_FOUND);}
+        EmployeePreference employeePreference = employeePreferenceRepository.findById(preferenceId).orElseThrow(
+            () -> new CustomException(ErrorCode.PREFERENCE_NOT_FOUND)
+        );
+
+        employeePreference.update(preferenceUpdateReqDto.getPreferenceType());
+
+        return PreferenceResDto.from(employeePreference);
     }
 }
