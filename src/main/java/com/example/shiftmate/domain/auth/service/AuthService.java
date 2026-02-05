@@ -77,6 +77,9 @@ public class AuthService {
 
         // 3) 토큰에서 이메일 추출
         String email = claims.get("email", String.class);
+        if (email == null) {
+            throw new CustomException(ErrorCode.MALFORMED_TOKEN);
+        }
 
         // 4) Redis에 저장된 토큰과 일치 확인
         if (!refreshTokenService.matches(email, refreshToken)) {
@@ -108,6 +111,9 @@ public class AuthService {
 
         // 3) 이메일 추출 후 Redis에서 삭제
         String email = claims.get("email", String.class);
+        if (email == null) {
+            throw new CustomException(ErrorCode.MALFORMED_TOKEN);
+        }
         refreshTokenService.delete(email);
     }
 }

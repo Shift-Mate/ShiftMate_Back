@@ -1,5 +1,7 @@
 package com.example.shiftmate.global.security;
 
+import com.example.shiftmate.global.exception.CustomException;
+import com.example.shiftmate.global.exception.ErrorCode;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -43,6 +45,9 @@ public class JwtFilter extends OncePerRequestFilter {
 
                 // 토큰에서 이메일 추출 후 사용자 로딩
                 String email = claims.get("email", String.class);
+                if (email == null) {
+                    throw new CustomException(ErrorCode.MALFORMED_TOKEN);
+                }
                 UserDetails userDetails = userDetailsService.loadUserByUsername(email);
 
                 // 인증 객체를 SecurityContext에 등록
