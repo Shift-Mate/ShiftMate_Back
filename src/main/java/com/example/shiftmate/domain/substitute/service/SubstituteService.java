@@ -97,4 +97,27 @@ public class SubstituteService {
                 .map(SubstituteResDto::from)
                 .collect(Collectors.toList());
     }
+
+    @Transactional
+    public void cancelSubstitute(Long storeId, Long userId, Long requestId) {
+        // 해당 매장의 직원인지 검증
+        StoreMember member = storeMemberRepository.findByStoreIdAndUserId(storeId, userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+
+        // 존재하는 대타 요청인지 검증
+        SubstituteRequest request = substituteRequestRepository.findById(requestId)
+                .orElseThrow(() -> new CustomException(ErrorCode.SUBSTITUTE_REQ_NOT_FOUND));
+
+        // 본인의 대타 요청인지 검증
+        if(!request.getRequester().getId().equals(member.getId())) {
+            throw new CustomException(ErrorCode.NOT_AUTHORIZED);
+        }
+
+        // 대타 요청의 상태가 PENDING, APPROVED면 취소 불가
+        if(request.getStatus().equals(RequestStatus.PENDING) ||  request.getStatus().equals(RequestStatus.APPROVED)) {
+            throw new CustomException(ErrorCode.ALREADY_REQUESTED);
+        }
+
+        request.cancel();
+    }
 }

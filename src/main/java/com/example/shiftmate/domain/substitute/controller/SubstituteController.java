@@ -50,4 +50,14 @@ public class SubstituteController {
         List<SubstituteResDto> responses = substituteService.getMySubstitutes(storeId, userDetails.getId());
         return ResponseEntity.ok(ApiResponse.success(responses));
     }
+
+    @DeleteMapping("/{requestId}")
+    public ResponseEntity<ApiResponse<Void>> deleteSubstitute(
+            @PathVariable Long storeId,
+            @PathVariable Long requestId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        substituteService.cancelSubstitute(storeId, userDetails.getId(), requestId);
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
 }
