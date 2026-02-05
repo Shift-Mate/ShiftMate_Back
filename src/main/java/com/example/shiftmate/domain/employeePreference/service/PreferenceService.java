@@ -47,21 +47,23 @@ public class PreferenceService {
             List<CreatePreferenceItemReqDto> preferenceItems = preference.getPreference();
             for (CreatePreferenceItemReqDto preferenceItem : preferenceItems) {
                 ArrayList<EmployeePreference> templates = new ArrayList<>();
-                for (ShiftTemplate shiftTemplate : template) {
-                    EmployeePreference employeePreference= EmployeePreference.builder()
-                        .member(member)
-                        .shiftTemplate(shiftTemplate)
-                        .dayOfWeek(preferenceItem.getDayOfWeek())
-                        .type(preferenceItem.getType())
-                        .build();
+                ShiftTemplate shiftTemplate = shiftTemplateRepository.findById(preferenceItem.getTemplateId())
+                                                  .orElseThrow(() -> new CustomException(ErrorCode.TEMPLATE_NOT_FOUND));
+
+                EmployeePreference employeePreference = EmployeePreference.builder()
+                                                            .member(member)
+                                                            .shiftTemplate(shiftTemplate)
+                                                            .dayOfWeek(preferenceItem.getDayOfWeek())
+                                                            .type(preferenceItem.getType())
+                                                            .build();
 //                   employeePreferenceRepository.save(employeePreference);
-                    templates.add(employeePreference);
-                }
+                templates.add(employeePreference);
+
                 employeePreferenceRepository.saveAll(templates);
             }
         }else{
             throw new CustomException(ErrorCode.PREFERENCE_ALREADY_EXISTS);
-        };
+        }
 
     }
 }
