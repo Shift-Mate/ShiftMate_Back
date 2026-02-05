@@ -6,9 +6,13 @@ import com.example.shiftmate.domain.store.entity.Store;
 import com.example.shiftmate.domain.storeMember.entity.StoreMember;
 import com.example.shiftmate.domain.storeMember.repository.StoreMemberRepository;
 import com.example.shiftmate.domain.substitute.dto.request.SubstituteReqDto;
+import com.example.shiftmate.domain.substitute.dto.response.SubstituteApplicationResDto;
 import com.example.shiftmate.domain.substitute.dto.response.SubstituteResDto;
+import com.example.shiftmate.domain.substitute.entity.SubstituteApplication;
 import com.example.shiftmate.domain.substitute.entity.SubstituteRequest;
+import com.example.shiftmate.domain.substitute.repository.SubstituteApplicationRepository;
 import com.example.shiftmate.domain.substitute.repository.SubstituteRequestRepository;
+import com.example.shiftmate.domain.substitute.status.ApplicationStatus;
 import com.example.shiftmate.domain.substitute.status.RequestStatus;
 import com.example.shiftmate.global.exception.CustomException;
 import com.example.shiftmate.global.exception.ErrorCode;
@@ -29,6 +33,7 @@ public class SubstituteService {
     private final SubstituteRequestRepository substituteRequestRepository;
     private final ShiftAssignmentRepository shiftAssignmentRepository;
     private final StoreMemberRepository storeMemberRepository;
+    private final SubstituteApplicationRepository substituteApplicationRepository;
 
     @Transactional
     public void createSubstitute(Long storeId, @Valid SubstituteReqDto reqDto, Long userId) {
@@ -119,5 +124,52 @@ public class SubstituteService {
         }
 
         request.cancel();
+    }
+
+    @Transactional
+    public void createApplication(Long storeId, Long requestId, Long userId) {
+        // 직원 정보 조회
+        StoreMember applicant = storeMemberRepository.findByStoreIdAndUserId(storeId, userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+
+        // 대타 요청 조회
+        SubstituteRequest request = substituteRequestRepository.findById(requestId)
+                .orElseThrow(() -> new CustomException(ErrorCode.SUBSTITUTE_REQ_NOT_FOUND));
+
+        // 해당 매장의 직원인지 검증
+        if(!applicant.getStore().getId().equals(storeId)) {
+            throw new CustomException(ErrorCode.STORE_MEMBER_NOT_FOUND);
+        }
+
+        // 해당 매장의 대타 요청인지 검증
+        if(!request.getRequester().getStore().getId().equals(storeId)) {
+            throw new CustomException(ErrorCode.SUBSTITUTE_REQ_NOT_FOUND);
+        }
+
+        // 본인의 대타 요청에는 지원 불가
+        if(request.getRequester().getId().equals(applicant.getId())) {
+            throw new CustomException(ErrorCode.NOT_AUTHORIZED);
+        }
+
+        // 이미 지원했으면 중복 지원 불가
+        boolean isAlreadyApply = substituteApplicationRepository.existsByRequestIdAndApplicantId(requestId, applicant.getId());
+        if(isAlreadyApply) {
+            throw new CustomException(ErrorCode.ALREADY_APPLIED);
+        }
+
+        // 대타 요청 상태가 OPEN, PENDING일 때만 지원 가능
+        if(request.getStatus() != RequestStatus.OPEN && request.getStatus() != RequestStatus.PENDING) {
+            throw new CustomException(ErrorCode.CANNOT_APPLY);
+        }
+
+        SubstituteApplication application = SubstituteApplication.builder()
+                .request(request)
+                .applicant(applicant)
+                .status(ApplicationStatus.WAITING)
+                .build();
+
+        substituteApplicationRepository.save(application);
+
+        request.changeStatus();
     }
 }
