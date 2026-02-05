@@ -17,8 +17,8 @@ public enum ErrorCode {
     STORE_MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "가게에 사용자 정보가 없습니다."),
 
     //Preference
-    PREFERENCE_ALREADY_EXISTS(HttpStatus.CONFLICT, "선호 시간이 존재합니다."),
-
+    PREFERENCE_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 선호 시간이 존재합니다."),
+    PREFERENCE_NOT_FOUND(HttpStatus.NOT_FOUND, "선호 선호 시간이 존재하지 않습니다."),
     //Template
     TEMPLATE_NOT_FOUND(HttpStatus.NOT_FOUND,"템플릿이 존재하지 않습니다."),
     TEMPLATE_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 가게 템플릿이 생성되어 있습니다."),
