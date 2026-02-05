@@ -2,6 +2,7 @@ package com.example.shiftmate.domain.employeePreference.service;
 
 import com.example.shiftmate.domain.employeePreference.dto.request.CreatePreferenceItemReqDto;
 import com.example.shiftmate.domain.employeePreference.dto.request.CreateWeeklyPreferenceReqDto;
+import com.example.shiftmate.domain.employeePreference.dto.request.PreferenceUpdateReqDto;
 import com.example.shiftmate.domain.employeePreference.dto.response.preferenceResDto;
 import com.example.shiftmate.domain.employeePreference.entity.EmployeePreference;
 import com.example.shiftmate.domain.employeePreference.repository.employeePreferenceRepository;
@@ -32,30 +33,34 @@ public class PreferenceService {
 
 
     @Transactional
-    public void createPreference(Long storeId,Long memberId, CreateWeeklyPreferenceReqDto preference) {
+    public void createPreference(Long storeId, Long memberId,
+        CreateWeeklyPreferenceReqDto preference) {
         // 직원을 초대할 때 선호하는 시간까지 입력하는 것으로 가정
         // 때문에 employeePreference가 존재하는지 확인하는 로직은 생략
         // 만약 요구사항이 직원 초대 후 별도의 트랜잭션으로 선호하는 시간을 입력하는거라면
         // 이미 입력된 선호시간이 잇는지 확인하는 로직 필요
 
         List<ShiftTemplate> template = shiftTemplateRepository.findByStoreId(storeId).orElseThrow(
-            ()-> new CustomException(ErrorCode.TEMPLATE_NOT_FOUND)
+            () -> new CustomException(ErrorCode.TEMPLATE_NOT_FOUND)
         );
         StoreMember member = storeMemberRepository.findById(memberId).orElseThrow(
-            ()-> new CustomException(ErrorCode.STORE_MEMBER_NOT_FOUND)
+            () -> new CustomException(ErrorCode.STORE_MEMBER_NOT_FOUND)
         );
 
-        if(!employeePreferenceRepository.existsByMemberId(memberId)){
+        if (!employeePreferenceRepository.existsByMemberId(memberId)) {
             List<CreatePreferenceItemReqDto> preferenceItems = preference.getPreference();
             for (CreatePreferenceItemReqDto preferenceItem : preferenceItems) {
                 ArrayList<EmployeePreference> templates = new ArrayList<>();
-                ShiftTemplate shiftTemplate = shiftTemplateRepository.findById(preferenceItem.getTemplateId())
-                                                  .orElseThrow(() -> new CustomException(ErrorCode.TEMPLATE_NOT_FOUND));
+                ShiftTemplate shiftTemplate = shiftTemplateRepository.findById(
+                        preferenceItem.getTemplateId())
+                                                  .orElseThrow(() -> new CustomException(
+                                                      ErrorCode.TEMPLATE_NOT_FOUND));
 
                 EmployeePreference employeePreference = EmployeePreference.builder()
                                                             .member(member)
                                                             .shiftTemplate(shiftTemplate)
-                                                            .dayOfWeek(preferenceItem.getDayOfWeek())
+                                                            .dayOfWeek(
+                                                                preferenceItem.getDayOfWeek())
                                                             .type(preferenceItem.getType())
                                                             .build();
 //                   employeePreferenceRepository.save(employeePreference);
@@ -63,23 +68,20 @@ public class PreferenceService {
 
                 employeePreferenceRepository.saveAll(templates);
             }
-        }else{
+        } else {
             throw new CustomException(ErrorCode.PREFERENCE_ALREADY_EXISTS);
         }
 
     }
 
     public List<preferenceResDto> getPreference(Long storeId, Long memberId) {
-        shiftTemplateRepository.findByStoreId(storeId).orElseThrow(
-            ()-> new CustomException(ErrorCode.SHIFT_ASSIGNMENT_NOT_FOUND)
-        );
+        if (!shiftTemplateRepository.existsByStoreId(storeId)) {
+            throw new CustomException(ErrorCode.SHIFT_ASSIGNMENT_NOT_FOUND);}
+        if (!storeMemberRepository.existsById(memberId)) {
+            throw new CustomException(ErrorCode.STORE_MEMBER_NOT_FOUND);}
 
-        storeMemberRepository.findById(memberId).orElseThrow(
-            () -> new CustomException(ErrorCode.STORE_MEMBER_NOT_FOUND)
-        );
-
-        List<EmployeePreference> preferences = employeePreferenceRepository.findByMemberId(memberId);
-
+        List<EmployeePreference> preferences = employeePreferenceRepository.findByMemberId(
+            memberId);
 
         return preferences.stream()
                    .map(preferenceResDto::from)
