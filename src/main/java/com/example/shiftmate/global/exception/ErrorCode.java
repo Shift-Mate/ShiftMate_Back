@@ -13,6 +13,9 @@ public enum ErrorCode {
     INVALID_TIME_RANGE(HttpStatus.BAD_REQUEST, "시작 시간은 종료 시간보다 빨라야 합니다."),
     STORE_ACCESS_DENIED(HttpStatus.FORBIDDEN, "매장 수정 권한이 없습니다."),
 
+    // Store Member
+    STORE_MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "매장 멤버 정보를 찾을 수 없습니다."),
+    STORE_MEMBER_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 해당 매장에 등록된 멤버입니다."),
 
     //Template
     TEMPLATE_NOT_FOUND(HttpStatus.NOT_FOUND,"템플릿이 존재하지 않습니다."),
