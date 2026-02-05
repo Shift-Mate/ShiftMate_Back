@@ -42,7 +42,15 @@ public enum ErrorCode {
     ATTENDANCE_NOT_FOUND(HttpStatus.NOT_FOUND, "출근 기록을 찾을 수 없습니다."),
     ATTENDANCE_ALREADY_CLOSED(HttpStatus.BAD_REQUEST, "이미 퇴근처리된 스케줄입니다."),
     INVALID_PIN_CODE(HttpStatus.UNAUTHORIZED, "핀번호가 일치하지 않습니다."),
-    STORE_MISMATCH(HttpStatus.BAD_REQUEST, "해당 매장의 스케줄이 아닙니다.");
+    STORE_MISMATCH(HttpStatus.BAD_REQUEST, "해당 매장의 스케줄이 아닙니다."),
+
+    // Substitute
+    SUBSTITUTE_REQ_NOT_FOUND(HttpStatus.NOT_FOUND, "대타 요청을 찾을 수 없습니다."),
+    ALREADY_REQUESTED(HttpStatus.CONFLICT, "이미 대타 요청이 진행 중인 스케줄입니다."),
+    NOT_AUTHORIZED(HttpStatus.FORBIDDEN, "권한이 없습니다."),
+    CANNOT_CANCEL(HttpStatus.BAD_REQUEST, "취소할 수 없는 상태입니다."),
+    PAST_SCHEDULE_CANNOT_REQUEST(HttpStatus.BAD_REQUEST, "이미 지난 스케줄에는 대타 요청을 할 수 없습니다.");
+
 
     private final HttpStatus status;
     private final String message;
