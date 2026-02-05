@@ -2,6 +2,7 @@ package com.example.shiftmate.domain.employeePreference.service;
 
 import com.example.shiftmate.domain.employeePreference.dto.request.CreatePreferenceItemReqDto;
 import com.example.shiftmate.domain.employeePreference.dto.request.CreateWeeklyPreferenceReqDto;
+import com.example.shiftmate.domain.employeePreference.dto.response.preferenceResDto;
 import com.example.shiftmate.domain.employeePreference.entity.EmployeePreference;
 import com.example.shiftmate.domain.employeePreference.repository.employeePreferenceRepository;
 import com.example.shiftmate.domain.shiftTemplate.entity.ShiftTemplate;
@@ -15,6 +16,7 @@ import com.example.shiftmate.global.exception.ErrorCode;
 import jakarta.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -65,5 +67,22 @@ public class PreferenceService {
             throw new CustomException(ErrorCode.PREFERENCE_ALREADY_EXISTS);
         }
 
+    }
+
+    public List<preferenceResDto> getPreference(Long storeId, Long memberId) {
+        shiftTemplateRepository.findByStoreId(storeId).orElseThrow(
+            ()-> new CustomException(ErrorCode.SHIFT_ASSIGNMENT_NOT_FOUND)
+        );
+
+        storeMemberRepository.findById(memberId).orElseThrow(
+            () -> new CustomException(ErrorCode.STORE_MEMBER_NOT_FOUND)
+        );
+
+        List<EmployeePreference> preferences = employeePreferenceRepository.findByMemberId(memberId);
+
+
+        return preferences.stream()
+                   .map(preferenceResDto::from)
+                   .collect(Collectors.toList());
     }
 }
