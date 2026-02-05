@@ -11,7 +11,7 @@ import lombok.Getter;
 public class StoreMemberReqDto {
 
     @NotNull(message = "매장 ID는 필수입니다.")
-    private Long memberId;
+    private Long storeId;
 
     @NotNull(message = "사용자 ID는 필수입니다.")
     private Long userId;
@@ -19,7 +19,7 @@ public class StoreMemberReqDto {
     @NotNull(message = "역할은 필수입니다.")
     private StoreRole role;
 
-    //2차
+    // 2차
     private StoreRank memberRank;
 
     @NotNull(message = "부서는 필수입니다.")
