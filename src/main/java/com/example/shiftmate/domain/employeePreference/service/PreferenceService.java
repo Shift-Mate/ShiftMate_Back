@@ -5,7 +5,7 @@ import com.example.shiftmate.domain.employeePreference.dto.request.CreateWeeklyP
 import com.example.shiftmate.domain.employeePreference.dto.request.PreferenceUpdateReqDto;
 import com.example.shiftmate.domain.employeePreference.dto.response.PreferenceResDto;
 import com.example.shiftmate.domain.employeePreference.entity.EmployeePreference;
-import com.example.shiftmate.domain.employeePreference.repository.employeePreferenceRepository;
+import com.example.shiftmate.domain.employeePreference.repository.EmployeePreferenceRepository;
 import com.example.shiftmate.domain.shiftTemplate.entity.ShiftTemplate;
 import com.example.shiftmate.domain.shiftTemplate.repository.ShiftTemplateRepository;
 import com.example.shiftmate.domain.storeMember.entity.StoreMember;
@@ -26,7 +26,7 @@ public class PreferenceService {
 
     private final ShiftTemplateRepository shiftTemplateRepository;
     private final StoreMemberRepository storeMemberRepository;
-    private final employeePreferenceRepository employeePreferenceRepository;
+    private final EmployeePreferenceRepository employeePreferenceRepository;
 
 
     @Transactional
@@ -98,5 +98,16 @@ public class PreferenceService {
         employeePreference.update(preferenceUpdateReqDto.getPreferenceType());
 
         return PreferenceResDto.from(employeePreference);
+    }
+
+    @Transactional
+    public void deletePreference(Long storeId, Long memberId) {
+        if (!shiftTemplateRepository.existsByStoreId(storeId)) {
+            throw new CustomException(ErrorCode.SHIFT_ASSIGNMENT_NOT_FOUND);}
+        if (!storeMemberRepository.existsById(memberId)) {
+            throw new CustomException(ErrorCode.STORE_MEMBER_NOT_FOUND);}
+
+        employeePreferenceRepository.deleteByMemberId(memberId);
+
     }
 }

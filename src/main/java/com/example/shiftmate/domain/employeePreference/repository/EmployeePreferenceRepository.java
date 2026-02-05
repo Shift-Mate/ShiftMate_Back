@@ -10,4 +10,6 @@ public interface EmployeePreferenceRepository extends JpaRepository<EmployeePref
     boolean existsByMemberId(Long memberId);
 
     List<EmployeePreference> findByMemberId(Long memberId);
+
+    void deleteByMemberId(Long memberId);
 }

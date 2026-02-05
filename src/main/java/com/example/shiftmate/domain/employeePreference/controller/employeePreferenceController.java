@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -53,6 +54,15 @@ public class employeePreferenceController {
     ){
 
         return ResponseEntity.ok(ApiResponse.success(preferenceService.updatePreference(storeId,memberId,preferenceId,preferenceUpdateReqDto)));
+    }
+
+    @DeleteMapping
+    public ResponseEntity<ApiResponse<Void>> deletePreference(
+        @PathVariable Long storeId,
+        @PathVariable Long memberId
+    ){
+        preferenceService.deletePreference(storeId,memberId);
+        return ResponseEntity.ok(ApiResponse.success(null));
     }
 
 }
