@@ -8,7 +8,7 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class preferenceResDto {
+public class PreferenceResDto {
 
     private Integer dayOfWeek;
     private String name;
@@ -16,8 +16,8 @@ public class preferenceResDto {
     private LocalTime startTime;
     private LocalTime endTime;
 
-    public static preferenceResDto from(EmployeePreference employeePreference){
-        return preferenceResDto.builder()
+    public static PreferenceResDto from(EmployeePreference employeePreference){
+        return PreferenceResDto.builder()
                    .dayOfWeek(employeePreference.getDayOfWeek())
                    .name(employeePreference.getShiftTemplate().getName())
                    .preferenceType(employeePreference.getType())
