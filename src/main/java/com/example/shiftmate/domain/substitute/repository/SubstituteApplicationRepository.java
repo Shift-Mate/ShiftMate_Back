@@ -10,7 +10,7 @@ import java.util.List;
 
 public interface SubstituteApplicationRepository extends JpaRepository<SubstituteApplication, Long> {
 
-    boolean existsByRequestIdAndApplicantId(Long requestId, Long id);
+    boolean existsByRequestIdAndApplicantId(Long requestId, Long applicantId);
 
     // 내 지원 내역 조회
     @Query("SELECT sa FROM SubstituteApplication sa " +
@@ -24,4 +24,6 @@ public interface SubstituteApplicationRepository extends JpaRepository<Substitut
             "WHERE sa.applicant.id = :applicantId " +
             "ORDER BY sa.createdAt DESC")
     List<SubstituteApplication> findAllByApplicantId(@Param("applicantId") Long applicantId);
+
+    boolean existsByRequestIdAndStatus(Long requestId, ApplicationStatus status);
 }
