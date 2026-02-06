@@ -84,4 +84,17 @@ public class SubstituteController {
         List<SubstituteApplicationResDto> responses = substituteService.getMyApplications(storeId, userDetails.getId());
         return ResponseEntity.ok(ApiResponse.success(responses));
     }
+
+    // 대타 지원 취소
+    @DeleteMapping("/applications/{applicationId}")
+    public ResponseEntity<ApiResponse<Void>> cancelApplication(
+            @PathVariable Long storeId,
+            @PathVariable Long applicationId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        substituteService.cancelApplication(storeId, applicationId, userDetails.getId());
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
+
 }

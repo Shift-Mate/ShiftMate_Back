@@ -182,4 +182,34 @@ public class SubstituteService {
                 .map(SubstituteApplicationResDto::from)
                 .collect(Collectors.toList());
     }
+
+    @Transactional
+    public void cancelApplication(Long storeId, Long applicationId, Long userId) {
+        // 직원 조회
+        StoreMember member = storeMemberRepository.findByStoreIdAndUserId(storeId, userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+
+        // 대타 지원 조회
+        SubstituteApplication application = substituteApplicationRepository.findById(applicationId)
+                .orElseThrow(() -> new CustomException(ErrorCode.APPLICATION_NOT_FOUND));
+
+        // userId가 생성한 대타 지원인지 검증
+        if(!application.getApplicant().getId().equals(member.getId())) {
+            throw new CustomException(ErrorCode.NOT_AUTHORIZED);
+        }
+
+        // 대타 지원 상태가 WAITING이 아닐 때는 취소 불가
+        if(!application.getStatus().equals(ApplicationStatus.WAITING)) {
+            throw new CustomException(ErrorCode.CANNOT_CANCEL);
+        }
+
+        // 지원 취소 처리 -> 지원 상태 변경
+        application.changeStatus(ApplicationStatus.CANCELED);
+
+        // 해당 대타 요청에 지원자가 아무도 없으면 대타 요청 상태 OPEN으로 변경
+        boolean hasApplicants = substituteApplicationRepository.existsByRequestIdAndStatus(application.getRequest().getId(), ApplicationStatus.WAITING);
+        if(!hasApplicants) {
+            application.getRequest().setStatus(RequestStatus.OPEN);
+        }
+    }
 }
