@@ -1,6 +1,7 @@
 package com.example.shiftmate.domain.storeMember.controller;
 
 import com.example.shiftmate.domain.storeMember.dto.request.StoreMemberReqDto;
+import com.example.shiftmate.domain.storeMember.dto.request.StoreMemberUpdateReqDto;
 import com.example.shiftmate.domain.storeMember.dto.response.StoreMemberListResDto;
 import com.example.shiftmate.domain.storeMember.dto.response.StoreMemberResDto;
 import com.example.shiftmate.domain.storeMember.dto.response.UserStoreListResDto;
@@ -83,7 +84,7 @@ public class StoreMemberController {
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<StoreMemberResDto>> updateStoreMember(
         @PathVariable Long id,
-        @Valid @RequestBody StoreMemberReqDto request
+        @Valid @RequestBody StoreMemberUpdateReqDto request
     ) {
         StoreMemberResDto response = storeMemberService.update(id, request);
         return ResponseEntity.ok(ApiResponse.success(response));

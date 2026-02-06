@@ -3,6 +3,7 @@ package com.example.shiftmate.domain.storeMember.service;
 import com.example.shiftmate.domain.store.entity.Store;
 import com.example.shiftmate.domain.store.repository.StoreRepository;
 import com.example.shiftmate.domain.storeMember.dto.request.StoreMemberReqDto;
+import com.example.shiftmate.domain.storeMember.dto.request.StoreMemberUpdateReqDto;
 import com.example.shiftmate.domain.storeMember.dto.response.StoreMemberListResDto;
 import com.example.shiftmate.domain.storeMember.dto.response.StoreMemberResDto;
 import com.example.shiftmate.domain.storeMember.dto.response.UserStoreListResDto;
@@ -17,7 +18,6 @@ import com.example.shiftmate.domain.user.repository.UserRepository;
 import com.example.shiftmate.global.exception.CustomException;
 import com.example.shiftmate.global.exception.ErrorCode;
 import java.util.List;
-import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -84,18 +84,10 @@ public class StoreMemberService {
     }
 
     @Transactional
-    public StoreMemberResDto update(Long id, StoreMemberReqDto request) {
+    public StoreMemberResDto update(Long id, StoreMemberUpdateReqDto request) {
         // StoreMember 조회
         StoreMember storeMember = storeMemberRepository.findByIdWithRelations(id)
             .orElseThrow(() -> new CustomException(ErrorCode.STORE_MEMBER_NOT_FOUND));
-
-        // storeId와 userId가 일치하는지 검증
-        if (!Objects.equals(storeMember.getStore().getId(), request.getStoreId())) {
-            throw new CustomException(ErrorCode.STORE_MEMBER_STORE_ID_MISMATCH);
-        }
-        if (!Objects.equals(storeMember.getUser().getId(), request.getUserId())) {
-            throw new CustomException(ErrorCode.STORE_MEMBER_USER_ID_MISMATCH);
-        }
 
         // 업데이트 실행
         storeMember.update(
