@@ -18,7 +18,7 @@ public enum ErrorCode {
 
     //Preference
     PREFERENCE_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 선호 시간이 존재합니다."),
-    PREFERENCE_NOT_FOUND(HttpStatus.NOT_FOUND, "선호 선호 시간이 존재하지 않습니다."),
+    PREFERENCE_NOT_FOUND(HttpStatus.NOT_FOUND, "선호 시간이 존재하지 않습니다."),
     //Template
     TEMPLATE_NOT_FOUND(HttpStatus.NOT_FOUND,"템플릿이 존재하지 않습니다."),
     TEMPLATE_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 가게 템플릿이 생성되어 있습니다."),

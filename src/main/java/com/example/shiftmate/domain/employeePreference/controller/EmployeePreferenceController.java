@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/stores/{storeId}/members/{memberId}/preferences")
 @RestController
 @RequiredArgsConstructor
-public class employeePreferenceController {
+public class EmployeePreferenceController {
 
     private final PreferenceService preferenceService;
 
@@ -31,7 +31,6 @@ public class employeePreferenceController {
         @PathVariable Long memberId,
         @RequestBody CreateWeeklyPreferenceReqDto preference
     ){
-        System.out.println("test");
         preferenceService.createPreference(storeId,memberId,preference);
         return ResponseEntity.ok(ApiResponse.success(null));
     }
