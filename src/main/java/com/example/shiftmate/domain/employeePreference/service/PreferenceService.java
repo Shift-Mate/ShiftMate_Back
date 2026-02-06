@@ -81,6 +81,7 @@ public class PreferenceService {
         List<EmployeePreference> preferences = employeePreferenceRepository.findByMemberId(
             memberId);
 
+        // Todo: Entity에서 Lazy 처리가 되고 있어서 N+1문제가 발생할 가능성이 높음
         return preferences.stream()
                    .map(PreferenceResDto::from)
                    .collect(Collectors.toList());
