@@ -82,6 +82,38 @@ public class StoreMemberService {
         return toResponseDto(storeMember);
     }
 
+    @Transactional
+    public StoreMemberResDto update(Long id, StoreMemberReqDto request) {
+        // StoreMember 조회
+        StoreMember storeMember = storeMemberRepository.findByIdWithRelations(id)
+            .orElseThrow(() -> new CustomException(ErrorCode.STORE_MEMBER_NOT_FOUND));
+
+        // storeId와 userId가 일치하는지 검증
+        if (!storeMember.getStore().getId().equals(request.getStoreId())) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST);
+        }
+        if (!storeMember.getUser().getId().equals(request.getUserId())) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST);
+        }
+
+        // update
+        storeMember.update(
+            request.getRole(),
+            request.getMemberRank(),
+            request.getDepartment(),
+            request.getHourlyWage(),
+            request.getMinHoursPerWeek(),
+            request.getStatus(),
+            request.getPinCode()
+        );
+
+        // 저장
+        StoreMember updatedStoreMember = storeMemberRepository.save(storeMember);
+
+        // DTO 변환
+        return toResponseDto(updatedStoreMember);
+    }
+
     // 유저 기준 조회 (유저가 소속된 가게 정보들)
     public List<UserStoreListResDto> getStoresByUserId(Long userId) {
         List<StoreMember> storeMembers = storeMemberRepository.findByUserId(userId);
