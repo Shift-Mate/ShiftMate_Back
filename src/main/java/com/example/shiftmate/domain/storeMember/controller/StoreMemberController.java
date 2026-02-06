@@ -92,6 +92,7 @@ public class StoreMemberController {
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteStoreMember(@PathVariable Long id) {
         storeMemberService.delete(id);
-        return ResponseEntity.ok(ApiResponse.success(null));
+        return ResponseEntity.status(HttpStatus.NO_CONTENT)
+            .body(ApiResponse.success(null));
     }
 }

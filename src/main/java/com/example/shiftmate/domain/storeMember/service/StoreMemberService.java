@@ -89,7 +89,7 @@ public class StoreMemberService {
         StoreMember storeMember = storeMemberRepository.findByIdWithRelations(id)
             .orElseThrow(() -> new CustomException(ErrorCode.STORE_MEMBER_NOT_FOUND));
 
-        // storeId와 userId가 일치하는지 검증 (구체적인 에러 코드 사용)
+        // storeId와 userId가 일치하는지 검증
         if (!Objects.equals(storeMember.getStore().getId(), request.getStoreId())) {
             throw new CustomException(ErrorCode.STORE_MEMBER_STORE_ID_MISMATCH);
         }
@@ -114,7 +114,7 @@ public class StoreMemberService {
 
     @Transactional
     public void delete(Long id) {
-        // StoreMember 조회 (삭제되지 않은 것만)
+        // StoreMember 조회->삭제되지 않은 것만
         StoreMember storeMember = storeMemberRepository.findByIdAndDeletedAtIsNull(id)
             .orElseThrow(() -> new CustomException(ErrorCode.STORE_MEMBER_NOT_FOUND));
 
@@ -128,7 +128,7 @@ public class StoreMemberService {
 
         // 결과가 비어있으면 유저가 없거나 가게가 없는 경우
         if (storeMembers.isEmpty()) {
-            // 유저 존재 여부 확인 (선택적)
+            // 유저 존재 여부 확인
             userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
         }
@@ -148,6 +148,7 @@ public class StoreMemberService {
         // Specification을 사용한 동적 쿼리
         Specification<StoreMember> spec = Specification
             .where(StoreMemberSpecification.hasStoreId(storeId))
+            .and(StoreMemberSpecification.isNotDeleted())
             .and(StoreMemberSpecification.hasStatus(status))
             .and(StoreMemberSpecification.hasRole(role))
             .and(StoreMemberSpecification.hasDepartment(department));
