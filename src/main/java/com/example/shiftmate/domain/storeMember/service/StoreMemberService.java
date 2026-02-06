@@ -75,7 +75,7 @@ public class StoreMemberService {
             .toList();
     }
 
-    // 단일 조회-> StorememberId로 단일 조회
+    // 단일 조회-> StoreMemberId로 단일 조회
     // ex.000이 스타벅스 강남점에서 매니저로 일하고 있음, 시급 00, 주당 최소 근무시간 00
     public StoreMemberResDto findById(Long id) {
         StoreMember storeMember = storeMemberRepository.findByIdWithRelations(id)
