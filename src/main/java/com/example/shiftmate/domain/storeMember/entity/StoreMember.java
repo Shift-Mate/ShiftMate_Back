@@ -42,7 +42,7 @@ public class StoreMember extends BaseTimeEntity {
     private StoreRole role;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = true)
+    @Column(name = "member_rank", nullable = true)
     private StoreRank memberRank;
 
     @Enumerated(EnumType.STRING)
