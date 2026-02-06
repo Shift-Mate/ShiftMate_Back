@@ -15,7 +15,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
+import org.springframework.beans.factory.annotation.Value;
 import java.util.List;
 
 @Configuration
@@ -27,6 +27,10 @@ public class SecurityConfig {
     private final JwtFilter jwtFilter;
     // 인증 실패 시 JSON 응답을 내려주는 EntryPoint
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+
+    // CORS 허용 출처 목록 (application.properties에서 주입)
+    @Value("${cors.allowed-origins}")
+    private String allowedOrigins;
 
     // 비밀번호 단방향 해시(BCrypt) Bean
     @Bean
@@ -66,10 +70,10 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
 
         // 어떤 프론트 주소에서 요청을 허용할지 지정
-        configuration.setAllowedOrigins(List.of("http://localhost:5173"));
+        configuration.setAllowedOrigins(List.of(allowedOrigins.split(",")));
 
         // 허용할 HTTP 메서드
-        configuration.setAllowedOrigins(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
 
         // 허용할 헤더 (Authorization 등)
         configuration.setAllowedHeaders(List.of("*"));
