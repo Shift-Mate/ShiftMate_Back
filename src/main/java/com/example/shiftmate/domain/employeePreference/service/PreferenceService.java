@@ -46,8 +46,8 @@ public class PreferenceService {
 
         if (!employeePreferenceRepository.existsByMemberId(memberId)) {
             List<CreatePreferenceItemReqDto> preferenceItems = preference.getPreference();
+            ArrayList<EmployeePreference> templates = new ArrayList<>();
             for (CreatePreferenceItemReqDto preferenceItem : preferenceItems) {
-                ArrayList<EmployeePreference> templates = new ArrayList<>();
                 ShiftTemplate shiftTemplate = shiftTemplateRepository.findById(
                         preferenceItem.getTemplateId())
                                                   .orElseThrow(() -> new CustomException(
@@ -61,10 +61,9 @@ public class PreferenceService {
                                                             .type(preferenceItem.getType())
                                                             .build();
 //                   employeePreferenceRepository.save(employeePreference);
-                templates.add(employeePreference);
-
-                employeePreferenceRepository.saveAll(templates);
+                    templates.add(employeePreference);
             }
+                employeePreferenceRepository.saveAll(templates);
         } else {
             throw new CustomException(ErrorCode.PREFERENCE_ALREADY_EXISTS);
         }

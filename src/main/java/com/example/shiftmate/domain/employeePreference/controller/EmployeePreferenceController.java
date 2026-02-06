@@ -45,6 +45,7 @@ public class EmployeePreferenceController {
             ApiResponse.success(preferenceService.getPreference(storeId, memberId)));
     }
 
+    // Todo: 업데이트 사용자가 데이터를 입력한 사용자인지 검증하는 로직 필요
     @PutMapping("/{preferenceId}")
     public ResponseEntity<ApiResponse<PreferenceResDto>> updatePreference(
         @PathVariable Long storeId,
