@@ -9,5 +9,6 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class CreateWeeklyPreferenceReqDto {
+
     private List<CreatePreferenceItemReqDto> preference;
 }

@@ -3,7 +3,17 @@ package com.example.shiftmate.domain.employeePreference.entity;
 import com.example.shiftmate.domain.shiftTemplate.entity.ShiftTemplate;
 import com.example.shiftmate.domain.storeMember.entity.StoreMember;
 import com.example.shiftmate.global.common.entity.BaseTimeEntity;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -35,14 +45,15 @@ public class EmployeePreference extends BaseTimeEntity {
     private PreferenceType type;
 
     @Builder
-    public EmployeePreference(StoreMember member, ShiftTemplate shiftTemplate, Integer dayOfWeek, PreferenceType type) {
+    public EmployeePreference(StoreMember member, ShiftTemplate shiftTemplate, Integer dayOfWeek,
+        PreferenceType type) {
         this.member = member;
         this.shiftTemplate = shiftTemplate;
         this.dayOfWeek = dayOfWeek;
         this.type = type;
     }
 
-    public void update(PreferenceType type){
+    public void update(PreferenceType type) {
         this.type = type;
     }
 

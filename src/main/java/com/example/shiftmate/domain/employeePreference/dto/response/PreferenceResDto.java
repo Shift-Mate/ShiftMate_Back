@@ -16,7 +16,7 @@ public class PreferenceResDto {
     private LocalTime startTime;
     private LocalTime endTime;
 
-    public static PreferenceResDto from(EmployeePreference employeePreference){
+    public static PreferenceResDto from(EmployeePreference employeePreference) {
         return PreferenceResDto.builder()
                    .dayOfWeek(employeePreference.getDayOfWeek())
                    .name(employeePreference.getShiftTemplate().getName())

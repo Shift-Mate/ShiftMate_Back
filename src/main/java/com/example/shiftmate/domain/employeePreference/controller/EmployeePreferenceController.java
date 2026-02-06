@@ -30,8 +30,8 @@ public class EmployeePreferenceController {
         @PathVariable Long storeId,
         @PathVariable Long memberId,
         @RequestBody CreateWeeklyPreferenceReqDto preference
-    ){
-        preferenceService.createPreference(storeId,memberId,preference);
+    ) {
+        preferenceService.createPreference(storeId, memberId, preference);
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
@@ -39,9 +39,10 @@ public class EmployeePreferenceController {
     public ResponseEntity<ApiResponse<List<PreferenceResDto>>> getPreference(
         @PathVariable Long storeId,
         @PathVariable Long memberId
-    ){
+    ) {
 
-        return ResponseEntity.ok(ApiResponse.success(preferenceService.getPreference(storeId,memberId)));
+        return ResponseEntity.ok(
+            ApiResponse.success(preferenceService.getPreference(storeId, memberId)));
     }
 
     @PutMapping("/{preferenceId}")
@@ -50,17 +51,19 @@ public class EmployeePreferenceController {
         @PathVariable Long memberId,
         @PathVariable Long preferenceId,
         @Valid @RequestBody PreferenceUpdateReqDto preferenceUpdateReqDto
-    ){
+    ) {
 
-        return ResponseEntity.ok(ApiResponse.success(preferenceService.updatePreference(storeId,memberId,preferenceId,preferenceUpdateReqDto)));
+        return ResponseEntity.ok(ApiResponse.success(
+            preferenceService.updatePreference(storeId, memberId, preferenceId,
+                preferenceUpdateReqDto)));
     }
 
     @DeleteMapping
     public ResponseEntity<ApiResponse<Void>> deletePreference(
         @PathVariable Long storeId,
         @PathVariable Long memberId
-    ){
-        preferenceService.deletePreference(storeId,memberId);
+    ) {
+        preferenceService.deletePreference(storeId, memberId);
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 

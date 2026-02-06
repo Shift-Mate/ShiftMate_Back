@@ -73,9 +73,11 @@ public class PreferenceService {
 
     public List<PreferenceResDto> getPreference(Long storeId, Long memberId) {
         if (!shiftTemplateRepository.existsByStoreId(storeId)) {
-            throw new CustomException(ErrorCode.SHIFT_ASSIGNMENT_NOT_FOUND);}
+            throw new CustomException(ErrorCode.SHIFT_ASSIGNMENT_NOT_FOUND);
+        }
         if (!storeMemberRepository.existsById(memberId)) {
-            throw new CustomException(ErrorCode.STORE_MEMBER_NOT_FOUND);}
+            throw new CustomException(ErrorCode.STORE_MEMBER_NOT_FOUND);
+        }
 
         List<EmployeePreference> preferences = employeePreferenceRepository.findByMemberId(
             memberId);
@@ -86,14 +88,19 @@ public class PreferenceService {
     }
 
     @Transactional
-    public PreferenceResDto updatePreference(Long storeId, Long memberId, Long preferenceId, PreferenceUpdateReqDto preferenceUpdateReqDto) {
+    public PreferenceResDto updatePreference(Long storeId, Long memberId, Long preferenceId,
+        PreferenceUpdateReqDto preferenceUpdateReqDto) {
         if (!shiftTemplateRepository.existsByStoreId(storeId)) {
-            throw new CustomException(ErrorCode.SHIFT_ASSIGNMENT_NOT_FOUND);}
+            throw new CustomException(ErrorCode.SHIFT_ASSIGNMENT_NOT_FOUND);
+        }
         if (!storeMemberRepository.existsById(memberId)) {
-            throw new CustomException(ErrorCode.STORE_MEMBER_NOT_FOUND);}
-        EmployeePreference employeePreference = employeePreferenceRepository.findById(preferenceId).orElseThrow(
-            () -> new CustomException(ErrorCode.PREFERENCE_NOT_FOUND)
-        );
+            throw new CustomException(ErrorCode.STORE_MEMBER_NOT_FOUND);
+        }
+        EmployeePreference employeePreference = employeePreferenceRepository.findById(preferenceId)
+                                                    .orElseThrow(
+                                                        () -> new CustomException(
+                                                            ErrorCode.PREFERENCE_NOT_FOUND)
+                                                    );
 
         employeePreference.update(preferenceUpdateReqDto.getPreferenceType());
 
@@ -103,9 +110,11 @@ public class PreferenceService {
     @Transactional
     public void deletePreference(Long storeId, Long memberId) {
         if (!shiftTemplateRepository.existsByStoreId(storeId)) {
-            throw new CustomException(ErrorCode.SHIFT_ASSIGNMENT_NOT_FOUND);}
+            throw new CustomException(ErrorCode.SHIFT_ASSIGNMENT_NOT_FOUND);
+        }
         if (!storeMemberRepository.existsById(memberId)) {
-            throw new CustomException(ErrorCode.STORE_MEMBER_NOT_FOUND);}
+            throw new CustomException(ErrorCode.STORE_MEMBER_NOT_FOUND);
+        }
 
         employeePreferenceRepository.deleteByMemberId(memberId);
 
