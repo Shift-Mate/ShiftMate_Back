@@ -81,3 +81,14 @@ VALUES (2, 2, 'PENDING', '화요일에 개인 사정이 생겼습니다.', NOW()
 -- 박대타(3번 멤버)가 위의 대타 요청(request_id = 1)에 지원
 INSERT INTO substitute_applications (request_id, applicant_id, status, created_at, updated_at)
 VALUES (1, 3, 'WAITING', NOW(), NOW());
+
+
+-- [추가 요청] 선호도 테스트용 데이터
+-- 유저: PreferenceTestUser (4번 유저)
+INSERT INTO users (email, name, password, created_at)
+VALUES ('preftest@test.com', '선호테스터', '1234', NOW());
+
+-- 스토어 멤버: 2번 매장(홍대점)에 4번 유저를 직원으로 추가 (Member ID: 4)
+INSERT INTO store_members (store_id, user_id, role, member_rank, department, hourly_wage, min_hours_per_week, status, pin_code, created_at, updated_at)
+VALUES (2, 4, 'STAFF', 'STAFF', 'HALL', 10000, 30, 'ACTIVE', 4444, NOW(), NOW());
+

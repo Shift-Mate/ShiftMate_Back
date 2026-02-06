@@ -17,7 +17,7 @@ public class TemplateResDto {
     private LocalTime startTime;
     private LocalTime endTime;
 
-    public static TemplateResDto from (ShiftTemplate shiftTemplate){
+    public static TemplateResDto from(ShiftTemplate shiftTemplate) {
         return TemplateResDto.builder()
                    .templateType(shiftTemplate.getTemplateType())
                    .shiftType(shiftTemplate.getShiftType())
