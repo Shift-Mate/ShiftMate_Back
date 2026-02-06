@@ -16,6 +16,8 @@ public enum ErrorCode {
     // Store Member
     STORE_MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "매장 멤버 정보를 찾을 수 없습니다."),
     STORE_MEMBER_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 해당 매장에 등록된 멤버입니다."),
+    STORE_MEMBER_STORE_ID_MISMATCH(HttpStatus.BAD_REQUEST, "요청한 매장 ID가 해당 멤버의 매장 ID와 일치하지 않습니다."),
+    STORE_MEMBER_USER_ID_MISMATCH(HttpStatus.BAD_REQUEST, "요청한 사용자 ID가 해당 멤버의 사용자 ID와 일치하지 않습니다."),
 
     //Template
     TEMPLATE_NOT_FOUND(HttpStatus.NOT_FOUND,"템플릿이 존재하지 않습니다."),

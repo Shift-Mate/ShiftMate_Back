@@ -77,20 +77,18 @@ public class StoreMember extends BaseTimeEntity {
 
     public void update(StoreRole role, StoreRank memberRank, Department department,
         Integer hourlyWage, Integer minHoursPerWeek, MemberStatus status, String pinCode) {
+
         this.role = role;
-        if (memberRank != null) {
-            this.memberRank = memberRank;
-        }
+        this.memberRank = memberRank;
         this.department = department;
-        if (hourlyWage != null) {
-            this.hourlyWage = hourlyWage;
-        }
+        this.hourlyWage = hourlyWage;
         this.minHoursPerWeek = minHoursPerWeek;
         this.status = status;
-        if (pinCode != null) {
-            this.pinCode = pinCode;
-        } else {
-            this.pinCode = "0000";
-        }
+        this.pinCode = (pinCode != null) ? pinCode : "0000";
+    }
+
+    // soft delete
+    public void delete() {
+        this.softDelete();
     }
 }
