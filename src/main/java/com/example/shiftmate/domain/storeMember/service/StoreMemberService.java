@@ -106,7 +106,7 @@ public class StoreMemberService {
 
     @Transactional
     public void delete(Long id) {
-        // StoreMember 조회->삭제되지 않은 것만
+        // StoreMember 조회 -> 삭제되지 않은 것만
         StoreMember storeMember = storeMemberRepository.findByIdAndDeletedAtIsNull(id)
             .orElseThrow(() -> new CustomException(ErrorCode.STORE_MEMBER_NOT_FOUND));
 
