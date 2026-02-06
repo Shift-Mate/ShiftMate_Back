@@ -11,18 +11,17 @@ import lombok.Getter;
 
 @Getter
 @Builder
-//가게에 소속된 멤버
-public class StoreMemberResDto {
+public class StoreMemberListResDto {
     private Long id;
-    private Long storeId;
     private Long userId;
+    private String userName;
+    private String userEmail;
     private StoreRole role;
     private StoreRank memberRank;
     private Department department;
     private Integer hourlyWage;
     private Integer minHoursPerWeek;
     private MemberStatus status;
-    private String pinCode;
 
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime createdAt;
