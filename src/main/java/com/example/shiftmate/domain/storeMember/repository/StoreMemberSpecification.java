@@ -32,4 +32,10 @@ public class StoreMemberSpecification {
         return (root, query, cb) -> 
             userId == null ? null : cb.equal(root.get("user").get("id"), userId);
     }
+
+    // deletedAt이 null인 것만 조회 (soft delete 필터링)
+    public static Specification<StoreMember> isNotDeleted() {
+        return (root, query, criteriaBuilder) ->
+            criteriaBuilder.isNull(root.get("deletedAt"));
+    }
 }

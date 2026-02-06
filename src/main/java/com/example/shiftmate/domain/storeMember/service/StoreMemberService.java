@@ -17,6 +17,7 @@ import com.example.shiftmate.domain.user.repository.UserRepository;
 import com.example.shiftmate.global.exception.CustomException;
 import com.example.shiftmate.global.exception.ErrorCode;
 import java.util.List;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -88,15 +89,15 @@ public class StoreMemberService {
         StoreMember storeMember = storeMemberRepository.findByIdWithRelations(id)
             .orElseThrow(() -> new CustomException(ErrorCode.STORE_MEMBER_NOT_FOUND));
 
-        // storeId와 userId가 일치하는지 검증
-        if (!storeMember.getStore().getId().equals(request.getStoreId())) {
-            throw new CustomException(ErrorCode.INVALID_REQUEST);
+        // storeId와 userId가 일치하는지 검증 (구체적인 에러 코드 사용)
+        if (!Objects.equals(storeMember.getStore().getId(), request.getStoreId())) {
+            throw new CustomException(ErrorCode.STORE_MEMBER_STORE_ID_MISMATCH);
         }
-        if (!storeMember.getUser().getId().equals(request.getUserId())) {
-            throw new CustomException(ErrorCode.INVALID_REQUEST);
+        if (!Objects.equals(storeMember.getUser().getId(), request.getUserId())) {
+            throw new CustomException(ErrorCode.STORE_MEMBER_USER_ID_MISMATCH);
         }
 
-        // update
+        // 업데이트 실행
         storeMember.update(
             request.getRole(),
             request.getMemberRank(),
@@ -107,11 +108,18 @@ public class StoreMemberService {
             request.getPinCode()
         );
 
-        // 저장
-        StoreMember updatedStoreMember = storeMemberRepository.save(storeMember);
-
         // DTO 변환
-        return toResponseDto(updatedStoreMember);
+        return toResponseDto(storeMember);
+    }
+
+    @Transactional
+    public void delete(Long id) {
+        // StoreMember 조회 (삭제되지 않은 것만)
+        StoreMember storeMember = storeMemberRepository.findByIdAndDeletedAtIsNull(id)
+            .orElseThrow(() -> new CustomException(ErrorCode.STORE_MEMBER_NOT_FOUND));
+
+        // soft delete 실행
+        storeMember.delete();
     }
 
     // 유저 기준 조회 (유저가 소속된 가게 정보들)
