@@ -2,8 +2,8 @@ package com.example.shiftmate.domain.substitute.service;
 
 import com.example.shiftmate.domain.shiftAssignment.entity.ShiftAssignment;
 import com.example.shiftmate.domain.shiftAssignment.repository.ShiftAssignmentRepository;
-import com.example.shiftmate.domain.store.entity.Store;
 import com.example.shiftmate.domain.storeMember.entity.StoreMember;
+import com.example.shiftmate.domain.storeMember.entity.StoreRank;
 import com.example.shiftmate.domain.storeMember.repository.StoreMemberRepository;
 import com.example.shiftmate.domain.substitute.dto.request.SubstituteReqDto;
 import com.example.shiftmate.domain.substitute.dto.response.SubstituteApplicationResDto;
@@ -103,6 +103,17 @@ public class SubstituteService {
                 .collect(Collectors.toList());
     }
 
+    public List<SubstituteResDto> getAllSubstitutes(Long storeId, Long userId) {
+        // 해당 매장의 관리자가 맞는지 검증
+        verifyManager(storeId, userId);
+
+        // 모든 대타 요청 조회
+        List<SubstituteRequest> responses = substituteRequestRepository.findAll();
+        return responses.stream()
+                .map(SubstituteResDto::from)
+                .collect(Collectors.toList());
+    }
+
     @Transactional
     public void cancelSubstitute(Long storeId, Long userId, Long requestId) {
         // 해당 매장의 직원인지 검증
@@ -119,11 +130,11 @@ public class SubstituteService {
         }
 
         // 대타 요청의 상태가 PENDING, APPROVED면 취소 불가
-        if(request.getStatus().equals(RequestStatus.PENDING) ||  request.getStatus().equals(RequestStatus.APPROVED)) {
+        if(request.getStatus() == RequestStatus.PENDING ||  request.getStatus() == RequestStatus.APPROVED) {
             throw new CustomException(ErrorCode.ALREADY_REQUESTED);
         }
 
-        request.cancel();
+        request.changeStatus(RequestStatus.REQUESTER_CANCELED);
     }
 
     @Transactional
@@ -170,7 +181,9 @@ public class SubstituteService {
 
         substituteApplicationRepository.save(application);
 
-        request.changeStatus();
+        if(request.getStatus() == RequestStatus.OPEN) {
+            request.changeStatus(RequestStatus.PENDING);
+        }
     }
 
     public List<SubstituteApplicationResDto> getMyApplications(Long storeId, Long userId) {
@@ -199,7 +212,7 @@ public class SubstituteService {
         }
 
         // 대타 지원 상태가 WAITING이 아닐 때는 취소 불가
-        if(!application.getStatus().equals(ApplicationStatus.WAITING)) {
+        if(application.getStatus() != ApplicationStatus.WAITING) {
             throw new CustomException(ErrorCode.CANNOT_CANCEL);
         }
 
@@ -209,7 +222,117 @@ public class SubstituteService {
         // 해당 대타 요청에 지원자가 아무도 없으면 대타 요청 상태 OPEN으로 변경
         boolean hasApplicants = substituteApplicationRepository.existsByRequestIdAndStatus(application.getRequest().getId(), ApplicationStatus.WAITING);
         if(!hasApplicants) {
-            application.getRequest().setStatus(RequestStatus.OPEN);
+            application.getRequest().changeStatus(RequestStatus.OPEN);
+        }
+    }
+
+    public List<SubstituteApplicationResDto> getApplications(Long storeId, Long requestId, Long userId) {
+        // 관리자인지 검증
+        verifyManager(storeId, userId);
+
+        // 특정 대타 요청에 대한 지원자 목록 조회
+        return substituteApplicationRepository.findAllByRequestId(requestId).stream()
+                .map(SubstituteApplicationResDto::from)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void approveApplication(Long storeId, Long requestId, Long applicationId, Long userId) {
+        // 관리자 검증
+        verifyManager(storeId, userId);
+
+        // 대타 요청 조회
+        SubstituteRequest request = substituteRequestRepository.findById(requestId)
+                .orElseThrow(() -> new CustomException(ErrorCode.SUBSTITUTE_REQ_NOT_FOUND));
+
+        // 대타 지원 조회
+        SubstituteApplication application = substituteApplicationRepository.findById(applicationId)
+                .orElseThrow(() -> new CustomException(ErrorCode.APPLICATION_NOT_FOUND));
+
+        // 해당 대타 요청에 대한 지원이 맞는지 검증
+        if(!application.getRequest().getId().equals(requestId)) {
+            throw new CustomException(ErrorCode.NOT_SUBSTITUTE_APPLICATION);
+        }
+
+        // 대타 지원 상태 변경
+        application.changeStatus(ApplicationStatus.SELECTED);
+
+        // 대타 요청 상태 변경
+        request.changeStatus(RequestStatus.APPROVED);
+
+        // 나머지 지원자들 상태 reject로 변경
+        List<SubstituteApplication> allApp = substituteApplicationRepository.findAllByRequestId(requestId);
+        for(SubstituteApplication app: allApp) {
+            if(!app.getId().equals(applicationId) && app.getStatus() == ApplicationStatus.WAITING) {
+                app.changeStatus(ApplicationStatus.REJECTED);
+            }
+        }
+
+        // 해당 스케줄의 담당자를 지원자로 변경
+        ShiftAssignment assignment = request.getShiftAssignment();
+        assignment.changeMember(application.getApplicant());
+    }
+
+    @Transactional
+    public void rejectApplication(Long storeId, Long requestId, Long applicationId, Long userId) {
+        // 관리자인지 검증
+        verifyManager(storeId, userId);
+
+        // 해당 대타 요청의 지원인지 확인
+        SubstituteApplication application = substituteApplicationRepository.findById(applicationId)
+                .orElseThrow(() -> new CustomException(ErrorCode.APPLICATION_NOT_FOUND));
+
+        if(!application.getRequest().getId().equals(requestId)) {
+            throw new CustomException(ErrorCode.NOT_SUBSTITUTE_APPLICATION);
+        }
+
+        // 해당 지원 상태가 WAITING이 아니면 거절 불가
+        if(application.getStatus() != ApplicationStatus.WAITING) {
+            throw new CustomException(ErrorCode.CANNOT_CANCEL);
+        }
+
+        // 해당 지원 상태 reject로 변경
+        application.changeStatus(ApplicationStatus.REJECTED);
+
+        // 해당 요청의 유효한 지원이 0개가 되면 요청의 상태를 pending -> open으로 변경
+        boolean hasApplicants = substituteApplicationRepository.existsByRequestIdAndStatus(application.getRequest().getId(), ApplicationStatus.WAITING);
+        if(!hasApplicants) {
+            if(application.getRequest().getStatus() == RequestStatus.PENDING) {
+                application.getRequest().changeStatus(RequestStatus.OPEN);
+            }
+        }
+    }
+
+    @Transactional
+    public void managerCancelRequest(Long storeId, Long requestId, Long userId) {
+        // 관리자인지 검증
+        verifyManager(storeId, userId);
+
+        // 해당 요청 조회
+        SubstituteRequest request = substituteRequestRepository.findById(requestId)
+                .orElseThrow(() -> new CustomException(ErrorCode.SUBSTITUTE_REQ_NOT_FOUND));
+
+        // 요청 상태 MANAGER_CANCELED로 변경
+        // 요청 상태가 APPROVED, REQUESTER_CANCELED, MANAGER_CANCELED면 요청 취소 불가
+        if(request.getStatus() == RequestStatus.APPROVED || request.getStatus() == RequestStatus.REQUESTER_CANCELED || request.getStatus() == RequestStatus.MANAGER_CANCELED) {
+            throw new CustomException(ErrorCode.CANNOT_CANCEL);
+        }
+        request.changeStatus(RequestStatus.MANAGER_CANCELED);
+
+        // 해당 요청에 있는 모든 지원 상태 REJECTED로 변경
+        List<SubstituteApplication> allApp = substituteApplicationRepository.findAllByRequestId(requestId);
+        for(SubstituteApplication app: allApp) {
+            app.changeStatus(ApplicationStatus.REJECTED);
+        }
+    }
+
+    // 매장의 관리자인지 검증하는 메서드
+    public void verifyManager(Long storeId, Long userId) {
+        StoreMember member = storeMemberRepository.findByStoreIdAndUserId(storeId, userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+
+        if(member.getMemberRank() != StoreRank.MANAGER) {
+            throw new CustomException(ErrorCode.NOT_AUTHORIZED);
         }
     }
 }
