@@ -5,5 +5,5 @@ public enum RequestStatus {
     PENDING, // 수락자가 생겨 관리자 승인을 기다리는 상태
     APPROVED, // 관리자가 승인하여 근무 스케줄 변경이 확정된 상태
     REQUESTER_CANCELED, // 요청자가 대타 요청을 취소한 상태
-    MANAGER_CANCELLED  // 관리자가 대타 요청을 취소한 상태
+    MANAGER_CANCELED  // 관리자가 대타 요청을 취소한 상태
 }
