@@ -54,7 +54,13 @@ public enum ErrorCode {
     ALREADY_REQUESTED(HttpStatus.CONFLICT, "이미 대타 요청이 진행 중인 스케줄입니다."),
     NOT_AUTHORIZED(HttpStatus.FORBIDDEN, "권한이 없습니다."),
     CANNOT_CANCEL(HttpStatus.BAD_REQUEST, "취소할 수 없는 상태입니다."),
-    PAST_SCHEDULE_CANNOT_REQUEST(HttpStatus.BAD_REQUEST, "이미 지난 스케줄에는 대타 요청을 할 수 없습니다.");
+    PAST_SCHEDULE_CANNOT_REQUEST(HttpStatus.BAD_REQUEST, "이미 지난 스케줄에는 대타 요청을 할 수 없습니다."),
+
+    //Application
+    ALREADY_APPLIED(HttpStatus.CONFLICT, "이미 지원한 요청입니다."),
+    CANNOT_APPLY(HttpStatus.BAD_REQUEST, "대타 요청에 지원할 수 없는 상태입니다."),
+    APPLICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "대타 지원을 찾을 수 없습니다."),
+    NOT_SUBSTITUTE_APPLICATION(HttpStatus.FORBIDDEN, "해당 대타 요청의 지원이 아닙니다.");
 
 
     private final HttpStatus status;
