@@ -1,5 +1,6 @@
 package com.example.shiftmate.domain.substitute.repository;
 
+import com.example.shiftmate.domain.substitute.dto.response.SubstituteApplicationResDto;
 import com.example.shiftmate.domain.substitute.entity.SubstituteApplication;
 import com.example.shiftmate.domain.substitute.status.ApplicationStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -26,4 +27,12 @@ public interface SubstituteApplicationRepository extends JpaRepository<Substitut
     List<SubstituteApplication> findAllByApplicantId(@Param("applicantId") Long applicantId);
 
     boolean existsByRequestIdAndStatus(Long requestId, ApplicationStatus status);
+
+    // 특정 대타 요청에 대한 모든 지원 내역 조회
+    @Query("SELECT sa FROM SubstituteApplication sa " +
+            "JOIN FETCH sa.applicant app " +
+            "JOIN FETCH app.user " +
+            "WHERE sa.request.id = :requestId " +
+            "ORDER BY sa.createdAt ASC")
+    List<SubstituteApplication> findAllByRequestId(@Param("requestId") Long requestId);
 }
