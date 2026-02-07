@@ -29,7 +29,6 @@ public class SubstituteRequest extends BaseTimeEntity {
     @JoinColumn(name = "requester_id", nullable = false)
     private StoreMember requester; // 대타 요청자 (해당 매장의 멤버만 신청 가능)
 
-    @Setter
     @Enumerated(EnumType.STRING)
     private RequestStatus status; // 대타 요청 상태
 
@@ -43,13 +42,7 @@ public class SubstituteRequest extends BaseTimeEntity {
         this.reason = reason;
     }
 
-    public void cancel() {
-        this.status = RequestStatus.REQUESTER_CANCELED;
-    }
-
-    public void changeStatus() {
-        if(this.status == RequestStatus.OPEN) {
-            this.status = RequestStatus.PENDING;
-        }
+    public void changeStatus(RequestStatus newStatus) {
+            this.status = newStatus;
     }
 }
