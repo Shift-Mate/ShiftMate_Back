@@ -40,4 +40,6 @@ public interface SubstituteApplicationRepository extends JpaRepository<Substitut
             "WHERE sa.request.id = :requestId " +
             "ORDER BY sa.createdAt ASC")
     List<SubstituteApplication> findAllByRequestId(@Param("requestId") Long requestId);
+
+    boolean existsByRequestIdAndStatusAndIdNot(Long id, ApplicationStatus applicationStatus, Long applicationId);
 }

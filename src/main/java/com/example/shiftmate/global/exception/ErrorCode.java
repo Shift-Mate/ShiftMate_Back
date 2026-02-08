@@ -61,7 +61,11 @@ public enum ErrorCode {
     CANNOT_APPLY(HttpStatus.BAD_REQUEST, "대타 요청에 지원할 수 없는 상태입니다."),
     APPLICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "대타 지원을 찾을 수 없습니다."),
     NOT_SUBSTITUTE_APPLICATION(HttpStatus.FORBIDDEN, "해당 대타 요청의 지원이 아닙니다."),
-    DEPARTMENT_MISMATCH(HttpStatus.BAD_REQUEST, "다른 부서의 근무에는 대타 지원을 할 수 없습니다.");
+    DEPARTMENT_MISMATCH(HttpStatus.BAD_REQUEST, "다른 부서의 근무에는 대타 지원을 할 수 없습니다."),
+    DUPLICATE_SHIFT(HttpStatus.CONFLICT, "이미 배정된 스케줄과 시간이 겹쳐 대타 지원이 불가능합니다."),
+    PAST_SCHEDULE_CANNOT_APPROVE(HttpStatus.BAD_REQUEST, "이미 지난 스케줄의 대타 지원은 승인할 수 없습니다.");
+
+
 
 
 

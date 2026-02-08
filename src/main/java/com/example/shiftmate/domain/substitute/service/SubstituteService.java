@@ -187,6 +187,20 @@ public class SubstituteService {
             throw new CustomException(ErrorCode.DEPARTMENT_MISMATCH);
         }
 
+        // 대타 요청한 스케줄 시간에 이미 본인의 스케줄이 있으면 지원 불가
+        ShiftAssignment targetAssignment = request.getShiftAssignment();
+
+        boolean isConflict = shiftAssignmentRepository.existsByMemberIdAndWorkDateAndOverlapTime(
+                applicant.getId(),
+                targetAssignment.getWorkDate(),
+                targetAssignment.getUpdatedStartTime(),
+                targetAssignment.getUpdatedEndTime()
+        );
+
+        if (isConflict) {
+            throw new CustomException(ErrorCode.DUPLICATE_SHIFT);
+        }
+
         SubstituteApplication application = SubstituteApplication.builder()
                 .request(request)
                 .applicant(applicant)
@@ -234,8 +248,12 @@ public class SubstituteService {
         application.changeStatus(ApplicationStatus.CANCELED);
 
         // 해당 대타 요청에 지원자가 아무도 없으면 대타 요청 상태 OPEN으로 변경
-        boolean hasApplicants = substituteApplicationRepository.existsByRequestIdAndStatus(application.getRequest().getId(), ApplicationStatus.WAITING);
-        if(!hasApplicants) {
+        // 본인을 제외하고 WAITING 상태인 지원자가 있는지 확인
+        // 기존의 existsByRequestIdAndStatus 메서드를 사용하면 위의 application.changeStatus가 아직 반영되지 않았을 경우 지원자가 남아있다고 판단하여 상태 변경이 일어나지 않을 수 있음
+        boolean hasOtherApplicants = substituteApplicationRepository
+                .existsByRequestIdAndStatusAndIdNot(application.getRequest().getId(), ApplicationStatus.WAITING, applicationId);
+
+        if (!hasOtherApplicants) {
             application.getRequest().changeStatus(RequestStatus.OPEN);
         }
     }
@@ -266,6 +284,11 @@ public class SubstituteService {
         // 해당 대타 요청에 대한 지원이 맞는지 검증
         if(!application.getRequest().getId().equals(requestId)) {
             throw new CustomException(ErrorCode.NOT_SUBSTITUTE_APPLICATION);
+        }
+
+        // 대타 요청 스케줄의 시간이 이미 지났으면 승인 불가
+        if(request.getShiftAssignment().getUpdatedStartTime().isBefore(LocalDateTime.now())) {
+            throw new CustomException(ErrorCode.PAST_SCHEDULE_CANNOT_REQUEST);
         }
 
         // 대타 지원 상태 변경
@@ -309,8 +332,10 @@ public class SubstituteService {
         application.changeStatus(ApplicationStatus.REJECTED);
 
         // 해당 요청의 유효한 지원이 0개가 되면 요청의 상태를 pending -> open으로 변경
-        boolean hasApplicants = substituteApplicationRepository.existsByRequestIdAndStatus(application.getRequest().getId(), ApplicationStatus.WAITING);
-        if(!hasApplicants) {
+        // cancelApplication과 같은 이유로 existsByRequestIdAndStatusAndIdNot 메서드 사용
+        boolean hasOtherApplicants = substituteApplicationRepository
+                .existsByRequestIdAndStatusAndIdNot(application.getRequest().getId(), ApplicationStatus.WAITING, applicationId);
+        if(!hasOtherApplicants) {
             if(application.getRequest().getStatus() == RequestStatus.PENDING) {
                 application.getRequest().changeStatus(RequestStatus.OPEN);
             }
