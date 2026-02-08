@@ -132,7 +132,7 @@ public class SubstituteService {
 
         // 대타 요청의 상태가 APPROVED면 취소 불가
         if(request.getStatus() == RequestStatus.APPROVED) {
-            throw new CustomException(ErrorCode.ALREADY_REQUESTED);
+            throw new CustomException(ErrorCode.CANNOT_CANCEL);
         }
 
         request.changeStatus(RequestStatus.REQUESTER_CANCELED);
