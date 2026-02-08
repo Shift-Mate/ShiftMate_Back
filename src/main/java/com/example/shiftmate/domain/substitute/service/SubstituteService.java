@@ -288,7 +288,7 @@ public class SubstituteService {
 
         // 대타 요청 스케줄의 시간이 이미 지났으면 승인 불가
         if(request.getShiftAssignment().getUpdatedStartTime().isBefore(LocalDateTime.now())) {
-            throw new CustomException(ErrorCode.PAST_SCHEDULE_CANNOT_REQUEST);
+            throw new CustomException(ErrorCode.PAST_SCHEDULE_CANNOT_APPROVE);
         }
 
         // 대타 지원 상태 변경
