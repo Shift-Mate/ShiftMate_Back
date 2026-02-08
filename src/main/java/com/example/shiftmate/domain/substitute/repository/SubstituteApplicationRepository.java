@@ -32,6 +32,11 @@ public interface SubstituteApplicationRepository extends JpaRepository<Substitut
     @Query("SELECT sa FROM SubstituteApplication sa " +
             "JOIN FETCH sa.applicant app " +
             "JOIN FETCH app.user " +
+            "JOIN FETCH sa.request r " +
+            "JOIN FETCH r.requester req " +
+            "JOIN FETCH req.user " +
+            "JOIN FETCH r.shiftAssignment s " +
+            "JOIN FETCH s.shiftTemplate " +
             "WHERE sa.request.id = :requestId " +
             "ORDER BY sa.createdAt ASC")
     List<SubstituteApplication> findAllByRequestId(@Param("requestId") Long requestId);

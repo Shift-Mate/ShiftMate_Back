@@ -129,12 +129,20 @@ public class SubstituteService {
             throw new CustomException(ErrorCode.NOT_AUTHORIZED);
         }
 
-        // 대타 요청의 상태가 PENDING, APPROVED면 취소 불가
-        if(request.getStatus() == RequestStatus.PENDING ||  request.getStatus() == RequestStatus.APPROVED) {
+        // 대타 요청의 상태가 APPROVED면 취소 불가
+        if(request.getStatus() == RequestStatus.APPROVED) {
             throw new CustomException(ErrorCode.ALREADY_REQUESTED);
         }
 
         request.changeStatus(RequestStatus.REQUESTER_CANCELED);
+
+        // 대타 요청 취소 시 WAITING 상태의 지원이 있으면 지원 상태 REJECT로 변경
+        List<SubstituteApplication> applications = substituteApplicationRepository.findAllByRequestId(requestId);
+        for(SubstituteApplication application : applications) {
+            if(application.getStatus() == ApplicationStatus.WAITING) {
+                application.changeStatus(ApplicationStatus.REJECTED);
+            }
+        }
     }
 
     @Transactional
@@ -171,6 +179,11 @@ public class SubstituteService {
         // 대타 요청 상태가 OPEN, PENDING일 때만 지원 가능
         if(request.getStatus() != RequestStatus.OPEN && request.getStatus() != RequestStatus.PENDING) {
             throw new CustomException(ErrorCode.CANNOT_APPLY);
+        }
+
+        // 부서가 다르면 지원 불가
+        if(request.getRequester().getDepartment() != applicant.getDepartment()) {
+            throw new CustomException(ErrorCode.DEPARTMENT_MISMATCH);
         }
 
         SubstituteApplication application = SubstituteApplication.builder()
