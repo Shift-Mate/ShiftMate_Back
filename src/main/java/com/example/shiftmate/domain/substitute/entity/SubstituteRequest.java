@@ -20,7 +20,7 @@ public class SubstituteRequest extends BaseTimeEntity {
     @Column(name = "substitute_id")
     private Long id;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "shiftassignment_id", nullable = false)
     private ShiftAssignment shiftAssignment; // 대타 요청 스케줄
 
@@ -39,5 +39,9 @@ public class SubstituteRequest extends BaseTimeEntity {
         this.requester = requester;
         this.status = status;
         this.reason = reason;
+    }
+
+    public void changeStatus(RequestStatus newStatus) {
+        this.status = newStatus;
     }
 }

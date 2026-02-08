@@ -47,4 +47,9 @@ public class ShiftAssignment extends BaseTimeEntity {
         this.updatedStartTime = updatedStartTime;
         this.updatedEndTime = updatedEndTime;
     }
+
+    // 대타 최종 승인 시 스케줄 담당 직원 변경 메서드
+    public void changeMember(StoreMember newMember) {
+        this.member = newMember;
+    }
 }
