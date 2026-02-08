@@ -59,6 +59,7 @@ public enum ErrorCode {
     //Application
     ALREADY_APPLIED(HttpStatus.CONFLICT, "이미 지원한 요청입니다."),
     CANNOT_APPLY(HttpStatus.BAD_REQUEST, "대타 요청에 지원할 수 없는 상태입니다."),
+    CANNOT_SELECT(HttpStatus.BAD_REQUEST, "승인할 수 없는 지원입니다."),
     APPLICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "대타 지원을 찾을 수 없습니다."),
     NOT_SUBSTITUTE_APPLICATION(HttpStatus.FORBIDDEN, "해당 대타 요청의 지원이 아닙니다."),
     DEPARTMENT_MISMATCH(HttpStatus.BAD_REQUEST, "다른 부서의 근무에는 대타 지원을 할 수 없습니다."),

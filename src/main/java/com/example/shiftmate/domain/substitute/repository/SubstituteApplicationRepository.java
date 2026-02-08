@@ -1,6 +1,5 @@
 package com.example.shiftmate.domain.substitute.repository;
 
-import com.example.shiftmate.domain.substitute.dto.response.SubstituteApplicationResDto;
 import com.example.shiftmate.domain.substitute.entity.SubstituteApplication;
 import com.example.shiftmate.domain.substitute.status.ApplicationStatus;
 import org.springframework.data.jpa.repository.JpaRepository;

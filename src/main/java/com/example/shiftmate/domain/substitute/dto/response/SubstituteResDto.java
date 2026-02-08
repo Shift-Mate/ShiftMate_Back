@@ -1,6 +1,5 @@
 package com.example.shiftmate.domain.substitute.dto.response;
 
-import com.example.shiftmate.domain.substitute.dto.request.SubstituteReqDto;
 import com.example.shiftmate.domain.substitute.entity.SubstituteRequest;
 import com.example.shiftmate.domain.substitute.status.RequestStatus;
 import lombok.AllArgsConstructor;

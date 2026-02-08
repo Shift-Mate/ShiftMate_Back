@@ -281,6 +281,11 @@ public class SubstituteService {
         SubstituteApplication application = substituteApplicationRepository.findById(applicationId)
                 .orElseThrow(() -> new CustomException(ErrorCode.APPLICATION_NOT_FOUND));
 
+        // 해당 매장의 대타 요청이 맞는지 검증
+        if(!request.getRequester().getStore().getId().equals(storeId)) {
+            throw new CustomException(ErrorCode.SUBSTITUTE_REQ_NOT_FOUND);
+        }
+
         // 해당 대타 요청에 대한 지원이 맞는지 검증
         if(!application.getRequest().getId().equals(requestId)) {
             throw new CustomException(ErrorCode.NOT_SUBSTITUTE_APPLICATION);
@@ -289,6 +294,11 @@ public class SubstituteService {
         // 대타 요청 스케줄의 시간이 이미 지났으면 승인 불가
         if(request.getShiftAssignment().getUpdatedStartTime().isBefore(LocalDateTime.now())) {
             throw new CustomException(ErrorCode.PAST_SCHEDULE_CANNOT_APPROVE);
+        }
+
+        // 지원 상태가 WAITING이 아니면 승인 불가
+        if(application.getStatus() != ApplicationStatus.WAITING) {
+            throw new CustomException(ErrorCode.CANNOT_SELECT);
         }
 
         // 대타 지원 상태 변경
@@ -358,15 +368,17 @@ public class SubstituteService {
         }
         request.changeStatus(RequestStatus.MANAGER_CANCELED);
 
-        // 해당 요청에 있는 모든 지원 상태 REJECTED로 변경
+        // 해당 요청에 있는 WAITING 상태인 모든 지원 REJECTED로 변경
         List<SubstituteApplication> allApp = substituteApplicationRepository.findAllByRequestId(requestId);
         for(SubstituteApplication app: allApp) {
-            app.changeStatus(ApplicationStatus.REJECTED);
+            if (app.getStatus() == ApplicationStatus.WAITING) {
+                app.changeStatus(ApplicationStatus.REJECTED);
+            }
         }
     }
 
     // 매장의 관리자인지 검증하는 메서드
-    public void verifyManager(Long storeId, Long userId) {
+    private void verifyManager(Long storeId, Long userId) {
         StoreMember member = storeMemberRepository.findByStoreIdAndUserId(storeId, userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 
