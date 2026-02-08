@@ -108,7 +108,8 @@ public class SubstituteService {
         verifyManager(storeId, userId);
 
         // 모든 대타 요청 조회
-        List<SubstituteRequest> responses = substituteRequestRepository.findAll();
+        List<SubstituteRequest> responses = substituteRequestRepository.findAllByStoreId(storeId);
+
         return responses.stream()
                 .map(SubstituteResDto::from)
                 .collect(Collectors.toList());

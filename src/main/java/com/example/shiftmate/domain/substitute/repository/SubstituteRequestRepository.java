@@ -36,4 +36,14 @@ public interface SubstituteRequestRepository extends JpaRepository<SubstituteReq
     List<SubstituteRequest> findAllByRequester_Store_IdAndRequesterIdNotOrderByCreatedAtDesc(
             @Param("storeId") Long storeId,
             @Param("requesterId") Long requesterId);
+
+    // 특정 매장의 모든 대타 요청 조회
+    @Query("SELECT r FROM SubstituteRequest r " +
+            "JOIN FETCH r.requester m " +
+            "JOIN FETCH m.user " +
+            "JOIN FETCH r.shiftAssignment sa " +
+            "JOIN FETCH sa.shiftTemplate " +
+            "WHERE r.requester.store.id = :storeId " +
+            "ORDER BY r.createdAt DESC")
+    List<SubstituteRequest> findAllByStoreId(@Param("storeId") Long storeId);
 }
