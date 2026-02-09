@@ -36,4 +36,8 @@ public class SubstituteApplication extends BaseTimeEntity {
         this.applicant = applicant;
         this.status = status;
     }
+
+    public void changeStatus(ApplicationStatus newStatus) {
+        this.status = newStatus;
+    }
 }
