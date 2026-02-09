@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -82,7 +83,7 @@ public class AttendanceService {
 
     // 출근 처리 로직
     private AttendanceResDto processClockIn(ShiftAssignment assignment) {
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
         AttendanceStatus status = AttendanceStatus.NORMAL;
         String message = "정상 출근 처리되었습니다.";
 
@@ -110,7 +111,7 @@ public class AttendanceService {
 
     // 퇴근 처리 로직
     private  AttendanceResDto processClockOut(Attendance attendance) {
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
         AttendanceStatus status = AttendanceStatus.OFFWORK;
         String message = "퇴근 처리되었습니다.";
         attendance.clockOut(now);
