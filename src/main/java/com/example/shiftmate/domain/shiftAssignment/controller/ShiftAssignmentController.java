@@ -10,6 +10,7 @@ import java.time.LocalDate;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -52,5 +53,13 @@ public class ShiftAssignmentController {
         return ResponseEntity.ok(ApiResponse.success(shiftAssignmentService.getScheduleByMember(storeId,userId)));
     }
 
+    @DeleteMapping
+    public ResponseEntity<ApiResponse<Void>> deleteSchedule(
+        @PathVariable Long storeId,
+        @RequestParam LocalDate weekStartDate
+    ){
+        shiftAssignmentService.deleteSchedule(storeId, weekStartDate);
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
 
 }
