@@ -22,7 +22,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 public class BiznoApiClient {
 
     private final RestTemplate restTemplate;
-    private final ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Value("${bizno.api.url}")
     private String apiUrl;
@@ -32,17 +32,19 @@ public class BiznoApiClient {
 
     public BiznoVerifyResDto verifyBusinessNumber(String bno) {
         try {
-            // 하이픈 제거 (API에 따라 다를 수 있음)
+            // 하이픈 제거
             String cleanBno = bno.replace("-", "");
 
             // API 호출 URL 구성
             UriComponentsBuilder uriBuilder = UriComponentsBuilder
                 .fromUriString(apiUrl)
-                .queryParam("b_no", cleanBno);
+                .queryParam("key", apiKey)
+                .queryParam("gb", "1")
+                .queryParam("q", cleanBno)
+                .queryParam("type", "json");
 
             // 헤더 설정
             HttpHeaders headers = new HttpHeaders();
-            headers.set("Authorization", "Bearer " + apiKey); // 실제 API 인증 방식에 맞게 수정
             headers.set("Content-Type", "application/json");
 
             HttpEntity<String> entity = new HttpEntity<>(headers);
@@ -67,32 +69,34 @@ public class BiznoApiClient {
     }
 
     private BiznoVerifyResDto parseResponse(JsonNode jsonNode, String bno) {
-        // 실제 비즈노 API 응답 구조에 맞게 파싱
-        JsonNode data = jsonNode.get("data");
+        // 실제 비즈노 API 응답 구조: { "resultCode": 0, "items": [...] }
+        JsonNode items = jsonNode.get("items");
 
-        if (data == null) {
-            log.warn("API 응답에 data 필드가 없습니다. 응답: {}", jsonNode.toString());
+        if (items == null || !items.isArray() || items.size() == 0) {
+            log.warn("API 응답에 items 필드가 없거나 비어있습니다. 응답: {}", jsonNode.toString());
             throw new CustomException(ErrorCode.INVALID_BIZNO);
         }
 
-        JsonNode item;
-
-        // 배열인 경우 첫 번째 요소 사용
-        if (data.isArray()) {
-            if (data.size() == 0) {
-                log.warn("사업자 번호에 대한 데이터가 없습니다: {}", bno);
-                throw new CustomException(ErrorCode.INVALID_BIZNO);
+        // items 배열의 첫 번째 요소 가져오기 (null이 아닌 첫 번째 항목)
+        JsonNode item = null;
+        for (int i = 0; i < items.size(); i++) {
+            JsonNode currentItem = items.get(i);
+            if (currentItem != null && !currentItem.isNull()) {
+                item = currentItem;
+                break;
             }
-            item = data.get(0);
-        } else {
-            item = data;
+        }
+
+        if (item == null) {
+            log.warn("사업자 번호에 대한 유효한 데이터가 없습니다: {}", bno);
+            throw new CustomException(ErrorCode.INVALID_BIZNO);
         }
 
         // 필드 추출 (null 체크 포함)
         String responseBno = getTextValue(item, "bno", bno);
         String company = getTextValue(item, "company", null);
         String bstt = getTextValue(item, "bstt", null);
-        String BSttCd = getTextValue(item, "BSttCd", null);
+        String BSttCd = getTextValue(item, "bsttcd", null);
         String cno = getTextValue(item, "cno", null);
         String TaxTypeCd = getTextValue(item, "TaxTypeCd", null);
         String taxtype = getTextValue(item, "taxtype", null);
@@ -110,9 +114,6 @@ public class BiznoApiClient {
             .build();
     }
 
-    /**
-     * JsonNode에서 텍스트 값을 안전하게 추출하는 헬퍼 메서드
-     */
     private String getTextValue(JsonNode node, String fieldName, String defaultValue) {
         if (node.has(fieldName) && !node.get(fieldName).isNull()) {
             return node.get(fieldName).asText();
