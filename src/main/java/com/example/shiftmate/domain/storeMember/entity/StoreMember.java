@@ -25,6 +25,8 @@ import lombok.NoArgsConstructor;
 @Table(name = "store_members")
 public class StoreMember extends BaseTimeEntity {
 
+    private static final String DEFAULT_PIN_CODE = "0000";
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -42,7 +44,7 @@ public class StoreMember extends BaseTimeEntity {
     private StoreRole role;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "member_rank")
+    @Column(name = "member_rank", nullable = true)
     private StoreRank memberRank;
 
     @Enumerated(EnumType.STRING)
@@ -62,6 +64,11 @@ public class StoreMember extends BaseTimeEntity {
     @Column(nullable = false)
     private String pinCode;
 
+    // PIN 코드 반환, null이면 기본값 반환
+    private static String getPinCodeOrDefault(String pinCode) {
+        return (pinCode != null) ? pinCode : DEFAULT_PIN_CODE;
+    }
+
     @Builder
     public StoreMember(Store store, User user, StoreRole role, StoreRank memberRank, Department department, Integer hourlyWage, Integer minHoursPerWeek, MemberStatus status, String pinCode) {
         this.store = store;
@@ -72,8 +79,23 @@ public class StoreMember extends BaseTimeEntity {
         this.hourlyWage = hourlyWage;
         this.minHoursPerWeek = minHoursPerWeek;
         this.status = status;
-        this.pinCode = (pinCode != null) ? pinCode : "0000";
+        this.pinCode = getPinCodeOrDefault(pinCode);
     }
 
+    public void update(StoreRole role, StoreRank memberRank, Department department,
+        Integer hourlyWage, Integer minHoursPerWeek, MemberStatus status, String pinCode) {
 
+        this.role = role;
+        this.memberRank = memberRank;
+        this.department = department;
+        this.hourlyWage = hourlyWage;
+        this.minHoursPerWeek = minHoursPerWeek;
+        this.status = status;
+        this.pinCode = getPinCodeOrDefault(pinCode);
+    }
+
+    // soft delete
+    public void delete() {
+        this.softDelete();
+    }
 }
