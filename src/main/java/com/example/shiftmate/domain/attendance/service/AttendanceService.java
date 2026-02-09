@@ -8,6 +8,9 @@ import com.example.shiftmate.domain.attendance.entity.AttendanceStatus;
 import com.example.shiftmate.domain.attendance.repository.AttendanceRepository;
 import com.example.shiftmate.domain.shiftAssignment.entity.ShiftAssignment;
 import com.example.shiftmate.domain.shiftAssignment.repository.ShiftAssignmentRepository;
+import com.example.shiftmate.domain.storeMember.entity.StoreMember;
+import com.example.shiftmate.domain.storeMember.entity.StoreRank;
+import com.example.shiftmate.domain.storeMember.repository.StoreMemberRepository;
 import com.example.shiftmate.global.exception.CustomException;
 import com.example.shiftmate.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -26,9 +29,19 @@ public class AttendanceService {
 
     private final ShiftAssignmentRepository shiftAssignmentRepository;
     private final AttendanceRepository attendanceRepository;
+    private final StoreMemberRepository storeMemberRepository;
 
     @Transactional
-    public AttendanceResDto processAttendance(Long storeId, AttendanceReqDto reqDto) {
+    public AttendanceResDto processAttendance(Long storeId, AttendanceReqDto reqDto, Long userId) {
+        // 관리자 화면에서만 출퇴근 체크가 가능
+        // -> 요청자가 해당 매장의 관리자인지 조회
+        StoreMember member = storeMemberRepository.findByStoreIdAndUserId(storeId, userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.STORE_MEMBER_NOT_FOUND));
+
+        if(member.getMemberRank() != StoreRank.MANAGER) {
+            throw new CustomException(ErrorCode.NOT_AUTHORIZED);
+        }
+
         // 스케줄 조회
         ShiftAssignment assignment = shiftAssignmentRepository.findById(reqDto.getAssignmentId())
                 .orElseThrow(() -> new CustomException(ErrorCode.SHIFT_ASSIGNMENT_NOT_FOUND));
@@ -112,7 +125,11 @@ public class AttendanceService {
                 .build();
     }
 
-    public List<TodayAttendanceResDto> getTodayAttendance(Long storeId, LocalDate date) {
+    public List<TodayAttendanceResDto> getTodayAttendance(Long storeId, LocalDate date, Long userId) {
+        // 해당 매장의 멤버인지 검증
+        storeMemberRepository.findByStoreIdAndUserId(storeId, userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.STORE_MEMBER_NOT_FOUND));
+
         // 해당 매장에 해당 날짜에 존재하는 모든 스케줄 조회
         List<ShiftAssignment> assignments = shiftAssignmentRepository.findAllByStoreIdAndDate(storeId, date);
 
@@ -124,18 +141,15 @@ public class AttendanceService {
         // 조회한 모든 스케줄에 연결된 출퇴근 기록 조회
         List<Attendance> attendances = attendanceRepository.findAllByShiftAssignmentIn(assignments);
 
-        // 일일 근태 조회를 위한 리스트 생성
-        List<TodayAttendanceResDto> results = new ArrayList<>();
-
         // 해당 배정 스케줄에 속한 attendance를 연결하는 로직
         Map<Long, Attendance> attendanceMap = attendances.stream()
-                .collect(Collectors.toMap(attendance -> attendance.getShiftAssignment().getId(), attendance -> attendance));
+                .collect(Collectors.toMap(
+                        attendance -> attendance.getShiftAssignment().getId(),
+                        attendance -> attendance
+                ));
 
         return assignments.stream()
                 .map(assignment -> TodayAttendanceResDto.of(assignment, attendanceMap.get(assignment.getId())))
                 .collect(Collectors.toList());
-
-
-
     }
 }
