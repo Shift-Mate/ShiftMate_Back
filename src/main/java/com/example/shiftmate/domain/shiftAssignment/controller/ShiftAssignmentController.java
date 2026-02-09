@@ -1,6 +1,7 @@
 package com.example.shiftmate.domain.shiftAssignment.controller;
 
 import com.example.shiftmate.domain.shiftAssignment.dto.request.ScheduleCreateReqDto;
+import com.example.shiftmate.domain.shiftAssignment.dto.response.MyScheduleResDto;
 import com.example.shiftmate.domain.shiftAssignment.dto.response.ScheduleResDto;
 import com.example.shiftmate.domain.shiftAssignment.service.ShiftAssignmentService;
 import com.example.shiftmate.global.common.dto.ApiResponse;
@@ -41,8 +42,15 @@ public class ShiftAssignmentController {
     ){
         return ResponseEntity.ok(ApiResponse.success(shiftAssignmentService.getSchedule(storeId, weekStartDate)));
     }
-    // 사용자를 기준으로 조회
 
+    // 사용자를 기준으로 조회
+    @GetMapping("/users/{userId}")
+    public ResponseEntity<ApiResponse<List<MyScheduleResDto>>> getSchedulesByMember(
+        @PathVariable Long storeId,
+        @PathVariable Long userId
+    ){
+        return ResponseEntity.ok(ApiResponse.success(shiftAssignmentService.getScheduleByMember(storeId,userId)));
+    }
 
 
 }
