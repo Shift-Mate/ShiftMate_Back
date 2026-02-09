@@ -8,6 +8,7 @@ import com.example.shiftmate.domain.shiftAssignment.entity.ShiftAssignment;
 import com.example.shiftmate.domain.shiftAssignment.repository.ShiftAssignmentRepository;
 import com.example.shiftmate.domain.shiftTemplate.entity.ShiftTemplate;
 import com.example.shiftmate.domain.shiftTemplate.repository.ShiftTemplateRepository;
+import com.example.shiftmate.domain.store.repository.StoreRepository;
 import com.example.shiftmate.domain.storeMember.entity.StoreMember;
 import com.example.shiftmate.global.exception.CustomException;
 import com.example.shiftmate.global.exception.ErrorCode;
@@ -19,6 +20,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,11 +33,12 @@ public class ShiftAssignmentService {
     private final EmployeePreferenceRepository employeePreferenceRepository;
     private final ShiftAssignmentRepository shiftAssignmentRepository;
     private final ShiftTemplateRepository shiftTemplateRepository;
+    private final StoreRepository storeRepository;
 
     @Transactional
     public void createSchedule(Long storeId, LocalDate weekStartDate) {
 
-        if (shiftAssignmentRepository.existsByWorkDate(weekStartDate)) {
+        if (shiftAssignmentRepository.existsByStoreIdAndWorkDate(storeId, weekStartDate)) {
             throw new CustomException(ErrorCode.WEEK_ALREADY_EXISTS);
         }
 
@@ -140,5 +143,25 @@ public class ShiftAssignmentService {
             return compare;
         });
         return employeePreferences;
+    }
+
+    public List<ScheduleResDto> getSchedule(Long storeId, LocalDate weekStartDate) {
+
+        storeRepository.findById(storeId).orElseThrow(
+            () -> new CustomException(ErrorCode.STORE_NOT_FOUND)
+        );
+
+        LocalDate weekEndDate = weekStartDate.plusDays(6);
+        
+        List<ShiftAssignment> assignments = shiftAssignmentRepository
+            .findAllByStoreIdAndDateBetween(storeId, weekStartDate, weekEndDate).orElseThrow(
+                () -> new CustomException(ErrorCode.SHIFT_ASSIGNMENT_NOT_FOUND)
+            );
+
+
+        return assignments.stream()
+                   .map(ScheduleResDto::from)
+                   .collect(Collectors.toList());
+
     }
 }
