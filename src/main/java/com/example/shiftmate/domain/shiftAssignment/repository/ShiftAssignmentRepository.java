@@ -17,4 +17,6 @@ public interface ShiftAssignmentRepository extends JpaRepository<ShiftAssignment
             "JOIN FETCH m.user " +
             "WHERE m.store.id = :storeId AND sa.workDate = :date")
     List<ShiftAssignment> findAllByStoreIdAndDate(@Param("storeId")Long storeId, @Param("date") LocalDate date);
+
+    boolean existsByWorkDate(LocalDate weekStartDate);
 }
