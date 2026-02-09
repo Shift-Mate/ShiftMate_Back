@@ -3,13 +3,16 @@ package com.example.shiftmate.domain.shiftAssignment.service;
 import com.example.shiftmate.domain.employeePreference.entity.EmployeePreference;
 import com.example.shiftmate.domain.employeePreference.entity.PreferenceType;
 import com.example.shiftmate.domain.employeePreference.repository.EmployeePreferenceRepository;
+import com.example.shiftmate.domain.shiftAssignment.dto.response.MyScheduleResDto;
 import com.example.shiftmate.domain.shiftAssignment.dto.response.ScheduleResDto;
 import com.example.shiftmate.domain.shiftAssignment.entity.ShiftAssignment;
 import com.example.shiftmate.domain.shiftAssignment.repository.ShiftAssignmentRepository;
 import com.example.shiftmate.domain.shiftTemplate.entity.ShiftTemplate;
 import com.example.shiftmate.domain.shiftTemplate.repository.ShiftTemplateRepository;
+import com.example.shiftmate.domain.store.entity.Store;
 import com.example.shiftmate.domain.store.repository.StoreRepository;
 import com.example.shiftmate.domain.storeMember.entity.StoreMember;
+import com.example.shiftmate.domain.storeMember.repository.StoreMemberRepository;
 import com.example.shiftmate.global.exception.CustomException;
 import com.example.shiftmate.global.exception.ErrorCode;
 import java.time.DayOfWeek;
@@ -34,6 +37,7 @@ public class ShiftAssignmentService {
     private final ShiftAssignmentRepository shiftAssignmentRepository;
     private final ShiftTemplateRepository shiftTemplateRepository;
     private final StoreRepository storeRepository;
+    private final StoreMemberRepository storeMemberRepository;
 
     @Transactional
     public void createSchedule(Long storeId, LocalDate weekStartDate) {
@@ -147,14 +151,14 @@ public class ShiftAssignmentService {
 
     public List<ScheduleResDto> getSchedule(Long storeId, LocalDate weekStartDate) {
 
-        storeRepository.findById(storeId).orElseThrow(
+        Store store = storeRepository.findById(storeId).orElseThrow(
             () -> new CustomException(ErrorCode.STORE_NOT_FOUND)
         );
 
         LocalDate weekEndDate = weekStartDate.plusDays(6);
         
         List<ShiftAssignment> assignments = shiftAssignmentRepository
-            .findAllByStoreIdAndDateBetween(storeId, weekStartDate, weekEndDate).orElseThrow(
+            .findAllByStoreIdAndDateBetween(store.getId(), weekStartDate, weekEndDate).orElseThrow(
                 () -> new CustomException(ErrorCode.SHIFT_ASSIGNMENT_NOT_FOUND)
             );
 
@@ -163,5 +167,25 @@ public class ShiftAssignmentService {
                    .map(ScheduleResDto::from)
                    .collect(Collectors.toList());
 
+    }
+
+    public List<MyScheduleResDto> getScheduleByMember(Long storeId, Long userId) {
+
+        // 가게 존재 여부 확인
+        storeRepository.findById(storeId).orElseThrow(
+            () -> new CustomException(ErrorCode.STORE_NOT_FOUND)
+        );
+        
+        // 해당 가게의 직원인지 확인 (storeId와 userId 모두 검증)
+        StoreMember storeMember = storeMemberRepository.findByStore_IdAndUser_Id(storeId, userId)
+            .orElseThrow(() -> new CustomException(ErrorCode.STORE_MEMBER_NOT_FOUND));
+
+        // 해당 직원의 모든 스케줄 조회
+        List<ShiftAssignment> assignments = shiftAssignmentRepository
+            .findAllByStoreIdAndMemberId(storeId, storeMember.getId());
+
+        return assignments.stream()
+                   .map(MyScheduleResDto::from)
+                   .collect(Collectors.toList());
     }
 }
