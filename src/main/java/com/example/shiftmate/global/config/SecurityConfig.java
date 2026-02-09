@@ -30,7 +30,7 @@ public class SecurityConfig {
 
     // CORS 허용 출처 목록 (application.properties에서 주입)
     @Value("${cors.allowed-origins}")
-    private String allowedOrigins;
+    private List<String> allowedOrigins;
 
     // 비밀번호 단방향 해시(BCrypt) Bean
     @Bean
@@ -70,7 +70,7 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
 
         // 어떤 프론트 주소에서 요청을 허용할지 지정
-        configuration.setAllowedOrigins(List.of(allowedOrigins.split(",")));
+        configuration.setAllowedOrigins(allowedOrigins);
 
         // 허용할 HTTP 메서드
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
