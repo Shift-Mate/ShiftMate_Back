@@ -5,9 +5,11 @@ import com.example.shiftmate.domain.attendance.dto.response.AttendanceResDto;
 import com.example.shiftmate.domain.attendance.dto.response.TodayAttendanceResDto;
 import com.example.shiftmate.domain.attendance.service.AttendanceService;
 import com.example.shiftmate.global.common.dto.ApiResponse;
+import com.example.shiftmate.global.security.CustomUserDetails;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -23,18 +25,20 @@ public class AttendanceController {
     @PostMapping("/clock")
     public ResponseEntity<ApiResponse<AttendanceResDto>> clock(
             @PathVariable Long storeId,
-            @RequestBody @Valid AttendanceReqDto reqDto
-    ) {
-        AttendanceResDto response = attendanceService.processAttendance(storeId, reqDto);
+            @RequestBody @Valid AttendanceReqDto reqDto,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+            ) {
+        AttendanceResDto response = attendanceService.processAttendance(storeId, reqDto, userDetails.getId());
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
     @GetMapping("/daily")
     public ResponseEntity<ApiResponse<List<TodayAttendanceResDto>>> getAttendance(
             @PathVariable Long storeId,
-            @RequestParam LocalDate date
+            @RequestParam LocalDate date,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        List<TodayAttendanceResDto> response = attendanceService.getTodayAttendance(storeId, date);
+        List<TodayAttendanceResDto> response = attendanceService.getTodayAttendance(storeId, date, userDetails.getId());
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 }
