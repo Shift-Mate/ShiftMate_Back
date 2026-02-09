@@ -32,6 +32,8 @@ public class AttendanceService {
     private final AttendanceRepository attendanceRepository;
     private final StoreMemberRepository storeMemberRepository;
 
+    private static final ZoneId KST_TIME = ZoneId.of("Asia/Seoul");
+
     @Transactional
     public AttendanceResDto processAttendance(Long storeId, AttendanceReqDto reqDto, Long userId) {
         // 관리자 화면에서만 출퇴근 체크가 가능
@@ -47,17 +49,27 @@ public class AttendanceService {
         ShiftAssignment assignment = shiftAssignmentRepository.findById(reqDto.getAssignmentId())
                 .orElseThrow(() -> new CustomException(ErrorCode.SHIFT_ASSIGNMENT_NOT_FOUND));
 
-        // 매장 일치 여부 및 핀번호 검증
-        validateRequest(storeId, reqDto.getPinCode(), assignment);
-
         // 출근 기록이 있는지 확인
         Optional<Attendance> checkAttendance = attendanceRepository.findByShiftAssignment(assignment);
+        boolean isClockIn = checkAttendance.isEmpty();
+        LocalDateTime now = LocalDateTime.now(KST_TIME);
 
-        if(checkAttendance.isEmpty()) { // 출근 기록이 없는 경우 -> 출근 처리
+        // 매장 일치 여부 및 핀번호 검증
+        validateRequest(storeId, reqDto.getPinCode(), assignment, isClockIn);
+
+        if(isClockIn) { // 출근 기록이 없는 경우 -> 출근 처리
             return processClockIn(assignment);
         } else { // 출근 기록이 있는 경우
             Attendance attendance = checkAttendance.get();
             if(attendance.getClockOutAt() == null) { // 출근 기록은 있지만 퇴근 기록이 없음 -> 퇴근 처리
+                // 출근 요청 버튼을 연속 클릭하면 출근 후 바로 퇴근 처리가 될 수 있음
+                // 출근 처리 후 5분이 지난 시점부터 퇴근 처리 가능하도록 조건 설정
+                long minutesElapsed = java.time.Duration.between(attendance.getClockInAt(), now).toMinutes();
+
+                if (minutesElapsed < 5) {
+                    // 5분 미만이면 에러 발생
+                    throw new CustomException(ErrorCode.TOO_FAST_CLOCK_OUT);
+                }
                 return processClockOut(attendance);
             } else { // 퇴근 기록이 있음 -> 에러 처리
                 throw new CustomException(ErrorCode.ATTENDANCE_ALREADY_CLOSED);
@@ -66,7 +78,11 @@ public class AttendanceService {
     }
 
     // 검증 로직
-    private void validateRequest(Long storeId, String pinCode, ShiftAssignment assignment) {
+    private void validateRequest(Long storeId, String pinCode, ShiftAssignment assignment, boolean isClockIn) {
+        LocalDateTime now = LocalDateTime.now(KST_TIME);
+        LocalDateTime start = assignment.getUpdatedStartTime();
+        LocalDateTime end = assignment.getUpdatedEndTime();
+
         // 해당 매장의 스케줄이 맞는지 확인
         // assignment의 근무자가 속한 매장의 id와 storeId가 일치하는지 확인
         // ShiftAssignment 엔티티에 store_id가 없어서 storeId와 일치하는 매장에 assignment가 있는지 확인하는 로직은 불가능
@@ -79,11 +95,25 @@ public class AttendanceService {
         if(!assignment.getMember().getPinCode().equals(pinCode)) {
             throw new CustomException(ErrorCode.INVALID_PIN_CODE);
         }
+
+        if(isClockIn) {
+            // 출근 요청은 출근 시간 30분 전부터 근무 종료 시간까지 가능
+            // 이 조건이 없으면 출근 시간이 한참 남은 시간에도 출근 처리가 가능하므로 조건 설정
+            if(now.isBefore(start.minusMinutes(30)) || now.isAfter(end)) {
+                throw new CustomException(ErrorCode.NOT_CLOCK_IN_TIME);
+            }
+        } else {
+            // 퇴근 요청은 출근 시간부터 근무 종료 시간 4시간 후까지 가능
+            // 조기 퇴근을 할 수 있고, 연장 근무가 있을 수 있으므로 조건 설정
+            if(now.isBefore(start) || now.isAfter(end.plusHours(4))) {
+                throw new CustomException(ErrorCode.NOT_CLOCK_OUT_TIME);
+            }
+        }
     }
 
     // 출근 처리 로직
     private AttendanceResDto processClockIn(ShiftAssignment assignment) {
-        LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
+        LocalDateTime now = LocalDateTime.now(KST_TIME);
         AttendanceStatus status = AttendanceStatus.NORMAL;
         String message = "정상 출근 처리되었습니다.";
 
@@ -111,7 +141,7 @@ public class AttendanceService {
 
     // 퇴근 처리 로직
     private  AttendanceResDto processClockOut(Attendance attendance) {
-        LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
+        LocalDateTime now = LocalDateTime.now(KST_TIME);
         AttendanceStatus status = AttendanceStatus.OFFWORK;
         String message = "퇴근 처리되었습니다.";
         attendance.clockOut(now);
