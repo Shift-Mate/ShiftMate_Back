@@ -188,4 +188,19 @@ public class ShiftAssignmentService {
                    .map(MyScheduleResDto::from)
                    .collect(Collectors.toList());
     }
+
+    @Transactional
+    public void deleteSchedule(Long storeId, LocalDate weekStartDate) {
+        if (!storeRepository.existsById(storeId)) {
+            throw new CustomException(ErrorCode.STORE_NOT_FOUND);
+        }
+
+        LocalDate weekEndDate = weekStartDate.plusDays(6);
+
+        if (!shiftAssignmentRepository.existsByStoreIdAndWorkDateBetween(storeId, weekStartDate, weekEndDate)) {
+            throw new CustomException(ErrorCode.SHIFT_ASSIGNMENT_NOT_FOUND);
+        }
+
+        shiftAssignmentRepository.deleteByStoreIdAndWorkDateBetween(storeId, weekStartDate, weekEndDate);
+    }
 }
