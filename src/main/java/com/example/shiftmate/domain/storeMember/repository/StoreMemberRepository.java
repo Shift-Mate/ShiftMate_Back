@@ -11,7 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface StoreMemberRepository extends JpaRepository<StoreMember, Long>, JpaSpecificationExecutor<StoreMember> {
-    
+
     // 같은 매장에 같은 사람이 등록되어있는지 (중복 체크) -> 삭제 되지 않은 것만
     @EntityGraph(attributePaths = {"store", "user"})
     @Query("SELECT sm FROM StoreMember sm WHERE sm.store.id = :storeId AND sm.user.id = :userId AND sm.deletedAt IS NULL")
@@ -44,4 +44,10 @@ public interface StoreMemberRepository extends JpaRepository<StoreMember, Long>,
     // Specification과 함께 사용할 때 N+1 방지
     @EntityGraph(attributePaths = {"user"})
     List<StoreMember> findAll(Specification<StoreMember> spec);
+
+    // User ID로 StoreMember 조회
+    Optional<StoreMember> findByUser_Id(Long userId);
+
+    // Store ID와 User ID로 StoreMember 조회 (더 안전)
+    Optional<StoreMember> findByStore_IdAndUser_Id(Long storeId, Long userId);
 }

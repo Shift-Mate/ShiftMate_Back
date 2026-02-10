@@ -56,11 +56,11 @@ VALUES (1, '마감', '18:00:00', '22:00:00', 2, 'NORMAL', 'WEEKDAY');
 -- 5. EmployeePreferences (직원 선호도)
 -- 이알바(2번 멤버)가 오픈조(1번 템플릿) 선호
 INSERT INTO employee_preferences (member_id, shift_template_id, day_of_week, type, created_at, updated_at)
-VALUES (2, 1, 1, 'PREFERRED', NOW(), NOW()); -- 월요일
+VALUES (2, 1, 'MONDAY', 'PREFERRED', NOW(), NOW()); -- 월요일
 
 -- 이알바(2번 멤버)가 미들조(2번 템플릿) 불가능
 INSERT INTO employee_preferences (member_id, shift_template_id, day_of_week, type, created_at, updated_at)
-VALUES (2, 2, 1, 'UNAVAILABLE', NOW(), NOW()); -- 월요일
+VALUES (2, 2, 'MONDAY', 'UNAVAILABLE', NOW(), NOW()); -- 월요일
 
 
 -- 6. ShiftAssignments (근무 배정)
@@ -149,4 +149,135 @@ VALUES ('preftest@test.com', '선호테스터', '1234', NOW());
 -- 스토어 멤버: 2번 매장(홍대점)에 4번 유저를 직원으로 추가 (Member ID: 4)
 INSERT INTO store_members (store_id, user_id, role, member_rank, department, hourly_wage, min_hours_per_week, status, pin_code, created_at, updated_at)
 VALUES (2, 4, 'STAFF', 'STAFF', 'HALL', 10000, 30, 'ACTIVE', 4444, NOW(), NOW());
+
+
+-- ============================================================
+-- [ShiftAssignment 자동 스케줄 생성 테스트용 데이터]
+-- ============================================================
+
+-- 10. 테스트용 새로운 매장 생성 (Store ID: 3)
+INSERT INTO stores (name, location, open_time, close_time, n_shifts, brn, user_id, alias, created_at, updated_at, template_type)
+VALUES ('시프트메이트 테스트점', '서울시 강서구', '08:00:00', '21:00:00', 3, '111-22-33444', 1, '테스트점', NOW(), NOW(), 'HIGHSERVICE');
+
+-- 11. 테스트 매장 직원들 추가 (User ID: 5~9, StoreMember ID: 5~9)
+-- 5번 유저: 테스트 매니저
+INSERT INTO users (email, name, password, created_at)
+VALUES ('test.manager@test.com', '테스트매니저', '1234', NOW());
+
+INSERT INTO store_members (store_id, user_id, role, member_rank, department, hourly_wage, min_hours_per_week, status, pin_code, created_at, updated_at)
+VALUES (3, 5, 'MANAGER', 'MANAGER', 'HALL', 0, 40, 'ACTIVE', 5555, NOW(), NOW());
+
+-- 6번 유저: 홀 직원 1
+INSERT INTO users (email, name, password, created_at)
+VALUES ('hall1@test.com', '홀직원1', '1234', NOW());
+
+INSERT INTO store_members (store_id, user_id, role, member_rank, department, hourly_wage, min_hours_per_week, status, pin_code, created_at, updated_at)
+VALUES (3, 6, 'STAFF', 'STAFF', 'HALL', 13000, 25, 'ACTIVE', 6666, NOW(), NOW());
+
+-- 7번 유저: 홀 직원 2
+INSERT INTO users (email, name, password, created_at)
+VALUES ('hall2@test.com', '홀직원2', '1234', NOW());
+
+INSERT INTO store_members (store_id, user_id, role, member_rank, department, hourly_wage, min_hours_per_week, status, pin_code, created_at, updated_at)
+VALUES (3, 7, 'STAFF', 'PART_TIME', 'HALL', 11500, 15, 'ACTIVE', 7777, NOW(), NOW());
+
+-- 8번 유저: 주방 직원 1
+INSERT INTO users (email, name, password, created_at)
+VALUES ('kitchen1@test.com', '주방직원1', '1234', NOW());
+
+INSERT INTO store_members (store_id, user_id, role, member_rank, department, hourly_wage, min_hours_per_week, status, pin_code, created_at, updated_at)
+VALUES (3, 8, 'STAFF', 'STAFF', 'KITCHEN', 14000, 30, 'ACTIVE', 8888, NOW(), NOW());
+
+-- 9번 유저: 주방 직원 2
+INSERT INTO users (email, name, password, created_at)
+VALUES ('kitchen2@test.com', '주방직원2', '1234', NOW());
+
+INSERT INTO store_members (store_id, user_id, role, member_rank, department, hourly_wage, min_hours_per_week, status, pin_code, created_at, updated_at)
+VALUES (3, 9, 'STAFF', 'PART_TIME', 'KITCHEN', 12500, 20, 'ACTIVE', 9999, NOW(), NOW());
+
+
+-- 12. 테스트 매장의 Shift Templates (Template ID: 4~9)
+-- 평일 템플릿
+INSERT INTO shift_templates (store_id, name, start_time, end_time, required_staff, shift_type, day_type)
+VALUES (3, '평일 오픈', '08:00:00', '12:00:00', 2, 'NORMAL', 'WEEKDAY');
+
+INSERT INTO shift_templates (store_id, name, start_time, end_time, required_staff, shift_type, day_type)
+VALUES (3, '평일 점심피크', '12:00:00', '15:00:00', 3, 'PEAK', 'WEEKDAY');
+
+INSERT INTO shift_templates (store_id, name, start_time, end_time, required_staff, shift_type, day_type)
+VALUES (3, '평일 저녁', '15:00:00', '18:00:00', 2, 'NORMAL', 'WEEKDAY');
+
+INSERT INTO shift_templates (store_id, name, start_time, end_time, required_staff, shift_type, day_type)
+VALUES (3, '평일 마감', '18:00:00', '21:00:00', 2, 'NORMAL', 'WEEKDAY');
+
+-- 휴일 템플릿
+INSERT INTO shift_templates (store_id, name, start_time, end_time, required_staff, shift_type, day_type)
+VALUES (3, '주말 오픈', '08:00:00', '13:00:00', 3, 'NORMAL', 'HOLIDAY');
+
+INSERT INTO shift_templates (store_id, name, start_time, end_time, required_staff, shift_type, day_type)
+VALUES (3, '주말 피크', '13:00:00', '19:00:00', 4, 'PEAK', 'HOLIDAY');
+
+INSERT INTO shift_templates (store_id, name, start_time, end_time, required_staff, shift_type, day_type)
+VALUES (3, '주말 마감', '19:00:00', '21:00:00', 2, 'NORMAL', 'HOLIDAY');
+
+
+-- 13. 직원 선호도 데이터 (EmployeePreference ID: 3~20)
+-- 홀직원1 (Member ID: 6)의 선호도
+INSERT INTO employee_preferences (member_id, shift_template_id, day_of_week, type, created_at, updated_at)
+VALUES (6, 4, 'MONDAY', 'PREFERRED', NOW(), NOW());
+
+INSERT INTO employee_preferences (member_id, shift_template_id, day_of_week, type, created_at, updated_at)
+VALUES (6, 5, 'MONDAY', 'NATURAL', NOW(), NOW());
+
+INSERT INTO employee_preferences (member_id, shift_template_id, day_of_week, type, created_at, updated_at)
+VALUES (6, 6, 'WEDNESDAY', 'PREFERRED', NOW(), NOW());
+
+INSERT INTO employee_preferences (member_id, shift_template_id, day_of_week, type, created_at, updated_at)
+VALUES (6, 7, 'FRIDAY', 'UNAVAILABLE', NOW(), NOW());
+
+-- 홀직원2 (Member ID: 7)의 선호도
+INSERT INTO employee_preferences (member_id, shift_template_id, day_of_week, type, created_at, updated_at)
+VALUES (7, 5, 'TUESDAY', 'PREFERRED', NOW(), NOW());
+
+INSERT INTO employee_preferences (member_id, shift_template_id, day_of_week, type, created_at, updated_at)
+VALUES (7, 6, 'THURSDAY', 'NATURAL', NOW(), NOW());
+
+INSERT INTO employee_preferences (member_id, shift_template_id, day_of_week, type, created_at, updated_at)
+VALUES (7, 8, 'SATURDAY', 'UNAVAILABLE', NOW(), NOW());
+
+-- 주방직원1 (Member ID: 8)의 선호도
+INSERT INTO employee_preferences (member_id, shift_template_id, day_of_week, type, created_at, updated_at)
+VALUES (8, 4, 'MONDAY', 'NATURAL', NOW(), NOW());
+
+INSERT INTO employee_preferences (member_id, shift_template_id, day_of_week, type, created_at, updated_at)
+VALUES (8, 5, 'TUESDAY', 'PREFERRED', NOW(), NOW());
+
+INSERT INTO employee_preferences (member_id, shift_template_id, day_of_week, type, created_at, updated_at)
+VALUES (8, 6, 'WEDNESDAY', 'PREFERRED', NOW(), NOW());
+
+INSERT INTO employee_preferences (member_id, shift_template_id, day_of_week, type, created_at, updated_at)
+VALUES (8, 9, 'SUNDAY', 'UNAVAILABLE', NOW(), NOW());
+
+-- 주방직원2 (Member ID: 9)의 선호도
+INSERT INTO employee_preferences (member_id, shift_template_id, day_of_week, type, created_at, updated_at)
+VALUES (9, 4, 'THURSDAY', 'PREFERRED', NOW(), NOW());
+
+INSERT INTO employee_preferences (member_id, shift_template_id, day_of_week, type, created_at, updated_at)
+VALUES (9, 7, 'FRIDAY', 'NATURAL', NOW(), NOW());
+
+INSERT INTO employee_preferences (member_id, shift_template_id, day_of_week, type, created_at, updated_at)
+VALUES (9, 8, 'SATURDAY', 'PREFERRED', NOW(), NOW());
+
+INSERT INTO employee_preferences (member_id, shift_template_id, day_of_week, type, created_at, updated_at)
+VALUES (9, 9, 'SUNDAY', 'PREFERRED', NOW(), NOW());
+
+-- 테스트 매니저 (Member ID: 5)의 선호도
+INSERT INTO employee_preferences (member_id, shift_template_id, day_of_week, type, created_at, updated_at)
+VALUES (5, 4, 'MONDAY', 'PREFERRED', NOW(), NOW());
+
+INSERT INTO employee_preferences (member_id, shift_template_id, day_of_week, type, created_at, updated_at)
+VALUES (5, 5, 'TUESDAY', 'PREFERRED', NOW(), NOW());
+
+INSERT INTO employee_preferences (member_id, shift_template_id, day_of_week, type, created_at, updated_at)
+VALUES (5, 8, 'SATURDAY', 'NATURAL', NOW(), NOW());
 

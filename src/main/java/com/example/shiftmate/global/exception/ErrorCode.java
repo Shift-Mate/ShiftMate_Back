@@ -22,6 +22,8 @@ public enum ErrorCode {
     //Preference
     PREFERENCE_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 선호 시간이 존재합니다."),
     PREFERENCE_NOT_FOUND(HttpStatus.NOT_FOUND, "선호 시간이 존재하지 않습니다."),
+
+
     //Template
     TEMPLATE_NOT_FOUND(HttpStatus.NOT_FOUND,"템플릿이 존재하지 않습니다."),
     TEMPLATE_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 가게 템플릿이 생성되어 있습니다."),
@@ -44,6 +46,9 @@ public enum ErrorCode {
 
 
     // ShiftAssignment
+    WEEK_ALREADY_EXISTS(HttpStatus.CONFLICT, "해당 주에는 이미 시간표가 생성되어 있습니다."),
+    NOT_MONDAY_START_DATE(HttpStatus.BAD_REQUEST, "시작 요일은 월요일이어야 합니다."),
+
     SHIFT_ASSIGNMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "배정된 스케줄을 찾을 수 없습니다."),
 
     // Attendance
