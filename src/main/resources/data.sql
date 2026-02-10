@@ -144,7 +144,7 @@ VALUES (4, 3, '2026-03-02', '2026-03-02 18:00:00', '2026-03-02 22:00:00', NOW(),
 -- [추가 요청] 선호도 테스트용 데이터
 -- 유저: PreferenceTestUser (4번 유저)
 INSERT INTO users (email, name, password, created_at)
-VALUES ('preftest@test.com', '선호테스터', '1234', NOW());
+VALUES ('preftest@test.com', '선호테스터', '$2a$10$bjbizcdFOx7jBwBm00m5rOHawFLs3qtSZV0QJfc663m14LmnLZTWy', NOW());
 
 -- 스토어 멤버: 2번 매장(홍대점)에 4번 유저를 직원으로 추가 (Member ID: 4)
 INSERT INTO store_members (store_id, user_id, role, member_rank, department, hourly_wage, min_hours_per_week, status, pin_code, created_at, updated_at)
