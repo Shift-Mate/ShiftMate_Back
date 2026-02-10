@@ -12,6 +12,11 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.beans.factory.annotation.Value;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -23,6 +28,10 @@ public class SecurityConfig {
     // 인증 실패 시 JSON 응답을 내려주는 EntryPoint
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
+    // CORS 허용 출처 목록 (application.properties에서 주입)
+    @Value("${cors.allowed-origins}")
+    private List<String> allowedOrigins;
+
     // 비밀번호 단방향 해시(BCrypt) Bean
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -33,6 +42,9 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+                // CORS 설정 적용
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+
                 // REST API이므로 CSRF 비활성화
                 .csrf(csrf -> csrf.disable())
                 // JWT 사용으로 서버 세션 사용하지 않음
@@ -52,4 +64,30 @@ public class SecurityConfig {
 
         return http.build();
     }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+
+        // 어떤 프론트 주소에서 요청을 허용할지 지정
+        configuration.setAllowedOrigins(allowedOrigins);
+
+        // 허용할 HTTP 메서드
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+
+        // 허용할 헤더 (Authorization 등)
+        configuration.setAllowedHeaders(List.of("*"));
+
+        // 쿠키/인증정보 포함 허용 여부
+        configuration.setAllowCredentials(true);
+
+        // 모드 경로에 위 CORS 설정 적용
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+
+        return source;
+    }
+
+
+
 }
