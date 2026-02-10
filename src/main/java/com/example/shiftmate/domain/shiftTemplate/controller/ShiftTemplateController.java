@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/store/{storeId}/shift-template")
+@RequestMapping("/stores/{storeId}/shift-template")
 @RequiredArgsConstructor
 public class ShiftTemplateController {
 
