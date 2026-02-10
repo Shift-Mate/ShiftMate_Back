@@ -1,6 +1,7 @@
 package com.example.shiftmate.domain.storeMember.repository;
 
 import com.example.shiftmate.domain.storeMember.entity.StoreMember;
+import com.example.shiftmate.domain.storeMember.entity.StoreRole;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.domain.Specification;
@@ -16,6 +17,8 @@ public interface StoreMemberRepository extends JpaRepository<StoreMember, Long>,
     @EntityGraph(attributePaths = {"store", "user"})
     @Query("SELECT sm FROM StoreMember sm WHERE sm.store.id = :storeId AND sm.user.id = :userId AND sm.deletedAt IS NULL")
     Optional<StoreMember> findByStoreIdAndUserId(@Param("storeId") Long storeId, @Param("userId") Long userId);
+
+    boolean existsByStoreIdAndUserIdAndRoleAndDeletedAtIsNull(Long storeId, Long userId, StoreRole role);
 
     // 전체 조회 (N+1 방지) -> 삭제 되지 않은 것만
     @EntityGraph(attributePaths = {"store", "user"})

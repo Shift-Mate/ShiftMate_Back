@@ -7,11 +7,13 @@ import com.example.shiftmate.domain.shiftTemplate.dto.request.UpdateTemplateType
 import com.example.shiftmate.domain.shiftTemplate.dto.response.TemplateResDto;
 import com.example.shiftmate.domain.shiftTemplate.service.ShiftTemplateService;
 import com.example.shiftmate.global.common.dto.ApiResponse;
+import com.example.shiftmate.global.security.CustomUserDetails;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -31,9 +33,10 @@ public class ShiftTemplateController {
     @PostMapping
     public ResponseEntity<ApiResponse<Void>> createTemplate(
         @PathVariable Long storeId,
-        @RequestBody @Valid TemplateCreateReqDto templateCreateReqDto
+        @RequestBody @Valid TemplateCreateReqDto templateCreateReqDto,
+        @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        shiftTemplateService.createTemplate(storeId, templateCreateReqDto);
+        shiftTemplateService.createTemplate(storeId, templateCreateReqDto,userDetails.getId());
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(null));
     }
 
@@ -51,9 +54,10 @@ public class ShiftTemplateController {
     @PutMapping
     public ResponseEntity<ApiResponse<Void>> updateTemplateType(
         @PathVariable Long storeId,
-        @RequestBody @Valid UpdateTemplateTypeReqDto updateTemplateTypeReqDto
+        @RequestBody @Valid UpdateTemplateTypeReqDto updateTemplateTypeReqDto,
+        @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        shiftTemplateService.updateTemplateType(storeId, updateTemplateTypeReqDto);
+        shiftTemplateService.updateTemplateType(storeId, updateTemplateTypeReqDto,userDetails.getId());
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
@@ -86,9 +90,10 @@ public class ShiftTemplateController {
     // 가게 entity의 templateType 과 일치하지 않는 template 제거 ( 템플릿 생성 완료 버튼을 누르면 동작하는 기능 )
     @DeleteMapping("/type")
     public ResponseEntity<ApiResponse<Void>> removeUnusedShiftTemplates(
-        @PathVariable Long storeId
+        @PathVariable Long storeId,
+        @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        shiftTemplateService.removeUnusedShiftTemplates(storeId);
+        shiftTemplateService.removeUnusedShiftTemplates(storeId, userDetails.getId());
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 }
