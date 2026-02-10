@@ -11,13 +11,17 @@ import com.example.shiftmate.domain.substitute.dto.response.SubstituteResDto;
 import com.example.shiftmate.domain.substitute.entity.SubstituteApplication;
 import com.example.shiftmate.domain.substitute.entity.SubstituteRequest;
 import com.example.shiftmate.domain.substitute.repository.SubstituteApplicationRepository;
+import com.example.shiftmate.domain.substitute.repository.SubstituteApplicationSpecification;
 import com.example.shiftmate.domain.substitute.repository.SubstituteRequestRepository;
+import com.example.shiftmate.domain.substitute.repository.SubstituteRequestSpecification;
 import com.example.shiftmate.domain.substitute.status.ApplicationStatus;
 import com.example.shiftmate.domain.substitute.status.RequestStatus;
 import com.example.shiftmate.global.exception.CustomException;
 import com.example.shiftmate.global.exception.ErrorCode;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -77,40 +81,50 @@ public class SubstituteService {
         substituteRequestRepository.save(request);
     }
 
-    public List<SubstituteResDto> getOthersSubstitutes(Long storeId, Long userId) {
+    public List<SubstituteResDto> getOthersSubstitutes(Long storeId, Long userId, String sort, RequestStatus status) {
         // 해당 매장의 직원이 맞는지 검증
         StoreMember member = storeMemberRepository.findByStoreIdAndUserId(storeId, userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 
-        // 본인을 제외한 다른 직원들의 대타 요청 조회
-        List<SubstituteRequest> responses = substituteRequestRepository.findAllByRequester_Store_IdAndRequesterIdNotOrderByCreatedAtDesc(storeId, member.getId());
+        Specification<SubstituteRequest> spec = Specification.where(SubstituteRequestSpecification.hasStoreId(storeId))
+                .and(SubstituteRequestSpecification.notRequesterId(member.getId()))
+                .and(SubstituteRequestSpecification.hasStatus(status))
+                .and(SubstituteRequestSpecification.withFetch());
 
-        return responses.stream()
+        Sort sortCondition = createSort(sort);
+
+        return substituteRequestRepository.findAll(spec, sortCondition).stream()
                 .map(SubstituteResDto::from)
                 .collect(Collectors.toList());
     }
 
-    public List<SubstituteResDto> getMySubstitutes(Long storeId, Long userId) {
+    public List<SubstituteResDto> getMySubstitutes(Long storeId, Long userId, String sort, RequestStatus status) {
         // 해당 매장의 직원이 맞는지 검증
         StoreMember member = storeMemberRepository.findByStoreIdAndUserId(storeId, userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 
-        // 본인의 대타 요청만 조회
-        List<SubstituteRequest> responses = substituteRequestRepository.findAllByRequesterIdOrderByCreatedAtDesc(member.getId());
+        Specification<SubstituteRequest> spec = Specification.where(SubstituteRequestSpecification.hasRequesterId(member.getId()))
+                .and(SubstituteRequestSpecification.hasStatus(status))
+                .and(SubstituteRequestSpecification.withFetch());
 
-        return responses.stream()
+        Sort sortCondition = createSort(sort);
+
+        return substituteRequestRepository.findAll(spec, sortCondition).stream()
                 .map(SubstituteResDto::from)
                 .collect(Collectors.toList());
     }
 
-    public List<SubstituteResDto> getAllSubstitutes(Long storeId, Long userId) {
+    public List<SubstituteResDto> getAllSubstitutes(Long storeId, Long userId, String sort, RequestStatus status) {
         // 해당 매장의 관리자가 맞는지 검증
         verifyManager(storeId, userId);
 
-        // 모든 대타 요청 조회
-        List<SubstituteRequest> responses = substituteRequestRepository.findAllByStoreId(storeId);
+        Specification<SubstituteRequest> spec = Specification.where(SubstituteRequestSpecification.hasStoreId(storeId))
+                .and(SubstituteRequestSpecification.hasStatus(status))
+                .and(SubstituteRequestSpecification.withFetch());
 
-        return responses.stream()
+        Sort sortCondition = createSort(sort);
+
+        return substituteRequestRepository.findAll(spec, sortCondition).stream()
                 .map(SubstituteResDto::from)
                 .collect(Collectors.toList());
     }
@@ -138,12 +152,9 @@ public class SubstituteService {
         request.changeStatus(RequestStatus.REQUESTER_CANCELED);
 
         // 대타 요청 취소 시 WAITING 상태의 지원이 있으면 지원 상태 REJECT로 변경
-        List<SubstituteApplication> applications = substituteApplicationRepository.findAllByRequestId(requestId);
-        for(SubstituteApplication application : applications) {
-            if(application.getStatus() == ApplicationStatus.WAITING) {
-                application.changeStatus(ApplicationStatus.REJECTED);
-            }
-        }
+        substituteApplicationRepository.updateStatusByRequestIdAndStatus(
+                requestId, ApplicationStatus.WAITING, ApplicationStatus.REJECTED
+        );
     }
 
     @Transactional
@@ -214,12 +225,18 @@ public class SubstituteService {
         }
     }
 
-    public List<SubstituteApplicationResDto> getMyApplications(Long storeId, Long userId) {
+    public List<SubstituteApplicationResDto> getMyApplications(Long storeId, Long userId, String sort, ApplicationStatus status) {
         // 직원 조회
         StoreMember member = storeMemberRepository.findByStoreIdAndUserId(storeId, userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 
-        return substituteApplicationRepository.findAllByApplicantId(member.getId()).stream()
+        Specification<SubstituteApplication> spec = Specification.where(SubstituteApplicationSpecification.hasApplicantId(member.getId()))
+                .and(SubstituteApplicationSpecification.hasStatus(status))
+                .and(SubstituteApplicationSpecification.withFetch());
+
+        Sort sortCondition = createSort(sort);
+
+        return substituteApplicationRepository.findAll(spec, sortCondition).stream()
                 .map(SubstituteApplicationResDto::from)
                 .collect(Collectors.toList());
     }
@@ -258,12 +275,17 @@ public class SubstituteService {
         }
     }
 
-    public List<SubstituteApplicationResDto> getApplications(Long storeId, Long requestId, Long userId) {
+    public List<SubstituteApplicationResDto> getApplications(Long storeId, Long requestId, Long userId, String sort, ApplicationStatus status) {
         // 관리자인지 검증
         verifyManager(storeId, userId);
 
-        // 특정 대타 요청에 대한 지원자 목록 조회
-        return substituteApplicationRepository.findAllByRequestId(requestId).stream()
+        Specification<SubstituteApplication> spec = Specification.where(SubstituteApplicationSpecification.hasRequestId(requestId))
+                .and(SubstituteApplicationSpecification.hasStatus(status))
+                .and(SubstituteApplicationSpecification.withFetch());
+
+        Sort sortCondition = createSort(sort);
+
+        return substituteApplicationRepository.findAll(spec, sortCondition).stream()
                 .map(SubstituteApplicationResDto::from)
                 .collect(Collectors.toList());
     }
@@ -308,12 +330,7 @@ public class SubstituteService {
         request.changeStatus(RequestStatus.APPROVED);
 
         // 나머지 지원자들 상태 reject로 변경
-        List<SubstituteApplication> allApp = substituteApplicationRepository.findAllByRequestId(requestId);
-        for(SubstituteApplication app: allApp) {
-            if(!app.getId().equals(applicationId) && app.getStatus() == ApplicationStatus.WAITING) {
-                app.changeStatus(ApplicationStatus.REJECTED);
-            }
-        }
+        substituteApplicationRepository.rejectRemainingApplications(requestId, applicationId);
 
         // 해당 스케줄의 담당자를 지원자로 변경
         ShiftAssignment assignment = request.getShiftAssignment();
@@ -369,12 +386,9 @@ public class SubstituteService {
         request.changeStatus(RequestStatus.MANAGER_CANCELED);
 
         // 해당 요청에 있는 WAITING 상태인 모든 지원 REJECTED로 변경
-        List<SubstituteApplication> allApp = substituteApplicationRepository.findAllByRequestId(requestId);
-        for(SubstituteApplication app: allApp) {
-            if (app.getStatus() == ApplicationStatus.WAITING) {
-                app.changeStatus(ApplicationStatus.REJECTED);
-            }
-        }
+        substituteApplicationRepository.updateStatusByRequestIdAndStatus(
+                requestId, ApplicationStatus.WAITING, ApplicationStatus.REJECTED
+        );
     }
 
     // 매장의 관리자인지 검증하는 메서드
@@ -385,5 +399,14 @@ public class SubstituteService {
         if(member.getMemberRank() != StoreRank.MANAGER) {
             throw new CustomException(ErrorCode.NOT_AUTHORIZED);
         }
+    }
+
+    // 정렬 객체 생성 메서드
+    private Sort createSort(String sort) {
+        if ("oldest".equalsIgnoreCase(sort)) {
+            return Sort.by(Sort.Direction.ASC, "createdAt");
+        }
+        // 기본값이 최신순 (latest 또는 null)
+        return Sort.by(Sort.Direction.DESC, "createdAt");
     }
 }
