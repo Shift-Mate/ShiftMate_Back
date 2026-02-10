@@ -2,7 +2,7 @@ package com.example.shiftmate.domain.shiftTemplate.controller;
 
 
 import com.example.shiftmate.domain.shiftTemplate.dto.request.TemplateCreateReqDto;
-import com.example.shiftmate.domain.shiftTemplate.dto.request.TemplateShiftStaff;
+import com.example.shiftmate.domain.shiftTemplate.dto.request.TemplateShiftStaffReqDto;
 import com.example.shiftmate.domain.shiftTemplate.dto.request.UpdateTemplateTypeReqDto;
 import com.example.shiftmate.domain.shiftTemplate.dto.response.TemplateResDto;
 import com.example.shiftmate.domain.shiftTemplate.service.ShiftTemplateService;
@@ -43,11 +43,12 @@ public class ShiftTemplateController {
     @PutMapping("{templateId}")
     public ResponseEntity<ApiResponse<TemplateResDto>> shiftStaff(
         @PathVariable Long templateId,
-        @RequestBody @Valid TemplateShiftStaff templateShiftStaff
+        @RequestBody @Valid TemplateShiftStaffReqDto templateShiftStaffReqDto
     ) {
 
         return ResponseEntity.ok(
-            ApiResponse.success(shiftTemplateService.shiftStaff(templateId, templateShiftStaff)));
+            ApiResponse.success(shiftTemplateService.shiftStaff(templateId,
+                templateShiftStaffReqDto)));
     }
 
     // TODO : 추후에 Store 엔티티로 옮겨야 함

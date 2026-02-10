@@ -1,7 +1,7 @@
 package com.example.shiftmate.domain.shiftTemplate.service;
 
 import com.example.shiftmate.domain.shiftTemplate.dto.request.TemplateCreateReqDto;
-import com.example.shiftmate.domain.shiftTemplate.dto.request.TemplateShiftStaff;
+import com.example.shiftmate.domain.shiftTemplate.dto.request.TemplateShiftStaffReqDto;
 import com.example.shiftmate.domain.shiftTemplate.dto.request.UpdateTemplateTypeReqDto;
 import com.example.shiftmate.domain.shiftTemplate.dto.response.TemplateResDto;
 import com.example.shiftmate.domain.shiftTemplate.entity.DayType;
@@ -199,14 +199,14 @@ public class ShiftTemplateService {
     }
 
     @Transactional
-    public TemplateResDto shiftStaff(Long templateId, TemplateShiftStaff templateShiftStaff) {
+    public TemplateResDto shiftStaff(Long templateId, TemplateShiftStaffReqDto templateShiftStaffReqDto) {
 
 
         ShiftTemplate template = shiftTemplateRepository.findById(templateId).orElseThrow(
             () -> new CustomException(ErrorCode.TEMPLATE_NOT_FOUND)
         );
 
-        template.shiftStaff(templateShiftStaff.getRequiredStaff());
+        template.shiftStaff(templateShiftStaffReqDto.getRequiredStaff());
 
         return TemplateResDto.from(template);
     }
