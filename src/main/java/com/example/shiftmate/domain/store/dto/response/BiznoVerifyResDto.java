@@ -16,6 +16,6 @@ public class BiznoVerifyResDto {
     private String cno;          // 법인등록번호
     private String TaxTypeCd;    // 과세유형(코드)
     private String taxtype;      // 과세유형(명칭)
-    private String EndDt;        // 폐업일 (YYYYMMDD 형식)
+    private String endDt;        // 폐업일 (YYYYMMDD 형식)
 
 }
