@@ -2,6 +2,7 @@ package com.example.shiftmate.domain.employeePreference.dto.response;
 
 import com.example.shiftmate.domain.employeePreference.entity.EmployeePreference;
 import com.example.shiftmate.domain.employeePreference.entity.PreferenceType;
+import java.time.DayOfWeek;
 import java.time.LocalTime;
 import lombok.Builder;
 import lombok.Getter;
@@ -10,7 +11,7 @@ import lombok.Getter;
 @Builder
 public class PreferenceResDto {
 
-    private Integer dayOfWeek;
+    private DayOfWeek dayOfWeek;
     private String name;
     private PreferenceType preferenceType;
     private LocalTime startTime;

@@ -32,10 +32,10 @@ public class ShiftAssignment extends BaseTimeEntity {
     @Column(nullable = false)
     private LocalDate workDate;
 
-    @Column(nullable = false)
+    @Column
     private LocalDateTime updatedStartTime;
 
-    @Column(nullable = false)
+    @Column
     private LocalDateTime updatedEndTime;
 
 

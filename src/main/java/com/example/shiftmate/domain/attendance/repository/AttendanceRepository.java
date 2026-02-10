@@ -2,9 +2,8 @@ package com.example.shiftmate.domain.attendance.repository;
 
 import com.example.shiftmate.domain.attendance.entity.Attendance;
 import com.example.shiftmate.domain.shiftAssignment.entity.ShiftAssignment;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 
 
 import java.time.LocalDate;
@@ -16,6 +15,7 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
     Optional<Attendance> findByShiftAssignment(ShiftAssignment shiftAssignment);
 
     // 여러 배정 스케줄에 속한 출근 기록을 한 번에 조회
+    @EntityGraph(attributePaths = {"shiftAssignment"})
     List<Attendance> findAllByShiftAssignmentIn(List<ShiftAssignment> assignments);
 
     // 특정 멤버의 주간 실제 근무 기록 조회 (clockIn/clockOut 있는 것만)

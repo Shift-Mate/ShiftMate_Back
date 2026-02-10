@@ -22,6 +22,8 @@ public enum ErrorCode {
     //Preference
     PREFERENCE_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 선호 시간이 존재합니다."),
     PREFERENCE_NOT_FOUND(HttpStatus.NOT_FOUND, "선호 시간이 존재하지 않습니다."),
+
+
     //Template
     TEMPLATE_NOT_FOUND(HttpStatus.NOT_FOUND,"템플릿이 존재하지 않습니다."),
     TEMPLATE_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 가게 템플릿이 생성되어 있습니다."),
@@ -44,6 +46,9 @@ public enum ErrorCode {
 
 
     // ShiftAssignment
+    WEEK_ALREADY_EXISTS(HttpStatus.CONFLICT, "해당 주에는 이미 시간표가 생성되어 있습니다."),
+    NOT_MONDAY_START_DATE(HttpStatus.BAD_REQUEST, "시작 요일은 월요일이어야 합니다."),
+
     SHIFT_ASSIGNMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "배정된 스케줄을 찾을 수 없습니다."),
 
     // Attendance
@@ -51,6 +56,9 @@ public enum ErrorCode {
     ATTENDANCE_ALREADY_CLOSED(HttpStatus.BAD_REQUEST, "이미 퇴근처리된 스케줄입니다."),
     INVALID_PIN_CODE(HttpStatus.UNAUTHORIZED, "핀번호가 일치하지 않습니다."),
     STORE_MISMATCH(HttpStatus.BAD_REQUEST, "해당 매장의 스케줄이 아닙니다."),
+    NOT_CLOCK_IN_TIME(HttpStatus.BAD_REQUEST, "해당 스케줄의 출근 처리 가능 시간이 아닙니다."),
+    NOT_CLOCK_OUT_TIME(HttpStatus.BAD_REQUEST, "해당 스케줄의 퇴근 처리 가능 시간이 아닙니다."),
+    TOO_FAST_CLOCK_OUT(HttpStatus.BAD_REQUEST, "출근 처리 5분 후 퇴근 처리가 가능합니다."),
 
     // Substitute
     SUBSTITUTE_REQ_NOT_FOUND(HttpStatus.NOT_FOUND, "대타 요청을 찾을 수 없습니다."),
@@ -68,10 +76,6 @@ public enum ErrorCode {
     DEPARTMENT_MISMATCH(HttpStatus.BAD_REQUEST, "다른 부서의 근무에는 대타 지원을 할 수 없습니다."),
     DUPLICATE_SHIFT(HttpStatus.CONFLICT, "이미 배정된 스케줄과 시간이 겹쳐 대타 지원이 불가능합니다."),
     PAST_SCHEDULE_CANNOT_APPROVE(HttpStatus.BAD_REQUEST, "이미 지난 스케줄의 대타 지원은 승인할 수 없습니다.");
-
-
-
-
 
     private final HttpStatus status;
     private final String message;

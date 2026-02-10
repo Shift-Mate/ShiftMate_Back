@@ -21,7 +21,7 @@ public class Attendance extends BaseTimeEntity {
     private Long id;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "assignment_id", nullable = false)
+    @JoinColumn(name = "assignment_id", nullable = false, unique = true)
     private ShiftAssignment shiftAssignment;
 
     private LocalDateTime clockInAt;
