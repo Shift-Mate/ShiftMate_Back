@@ -31,4 +31,17 @@ public interface ShiftAssignmentRepository extends JpaRepository<ShiftAssignment
             @Param("workDate") LocalDate workDate,
             @Param("startTime") LocalDateTime startTime,
             @Param("endTime") LocalDateTime endTime);
+
+    // 특정 멤버의 주간 배정 스케줄을 조회하는 JPQL 쿼리
+    @Query("SELECT sa FROM ShiftAssignment sa " +          // ShiftAssignment 엔티티를 조회
+            "WHERE sa.member.id = :memberId " +           // 특정 멤버(memberId)에 해당하는 스케줄만 필터
+            "AND sa.workDate BETWEEN :weekStart AND :weekEnd") // 주간 범위(weekStart~weekEnd)만 조회
+    List<ShiftAssignment> findAllByMemberIdAndWorkDateBetween(
+            @Param("memberId") Long memberId,                // 조회할 멤버의 id 파라미터
+            @Param("weekStart") LocalDate weekStart,         // 조회 시작 날짜
+            @Param("weekEnd") LocalDate weekEnd              // 조회 종료 날짜
+    );
+
+
+
 }
