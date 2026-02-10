@@ -12,9 +12,9 @@ public class BiznoVerifyResDto {
 
     // 추가 정보 -> 필요시 사용
     private String bstt;         // 사업자상태(명칭) - 계속사업자(01), 휴업자(02), 폐업자(03)
-    private String BSttCd;       // 사업자상태(코드) - 01, 02, 03
+    private String bsttCd;       // 사업자상태(코드) - 01, 02, 03
     private String cno;          // 법인등록번호
-    private String TaxTypeCd;    // 과세유형(코드)
+    private String taxTypeCd;    // 과세유형(코드)
     private String taxtype;      // 과세유형(명칭)
     private String endDt;        // 폐업일 (YYYYMMDD 형식)
 

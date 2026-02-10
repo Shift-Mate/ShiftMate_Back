@@ -24,7 +24,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 public class BiznoApiClient {
 
     private final RestTemplate restTemplate;
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper;
 
     @Value("${bizno.api.url}")
     private String apiUrl;
@@ -116,9 +116,9 @@ public class BiznoApiClient {
             .bno(responseBno)
             .company(company)
             .bstt(bstt)
-            .BSttCd(BSttCd)
+            .bsttCd(BSttCd)
             .cno(cno)
-            .TaxTypeCd(TaxTypeCd)
+            .taxTypeCd(TaxTypeCd)
             .taxtype(taxtype)
             .endDt(EndDt)
             .build();

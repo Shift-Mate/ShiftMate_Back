@@ -1,5 +1,7 @@
 package com.example.shiftmate.global.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
@@ -13,5 +15,11 @@ public class RestTemplateConfig {
         factory.setConnectTimeout(5000);  // 연결 타임아웃 5초
         factory.setReadTimeout(5000);     // 읽기 타임아웃 5초
         return new RestTemplate(factory);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public ObjectMapper objectMapper() {
+        return new ObjectMapper();
     }
 }
