@@ -1,49 +1,38 @@
 package com.example.shiftmate.domain.user.controller;
 
-import com.example.shiftmate.domain.user.dto.response.WeeklyRemainingShiftsResDto;
-import com.example.shiftmate.domain.user.dto.response.WeeklyWorkSummaryResDto;
+
+import com.example.shiftmate.domain.user.dto.response.MyStoreResDto;
 import com.example.shiftmate.domain.user.service.UserService;
 import com.example.shiftmate.global.common.dto.ApiResponse;
-import java.time.LocalDate;
+import com.example.shiftmate.global.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
-import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import java.util.List;
 
 // 사용자 관련 API 컨트롤러
 @RestController
+// final 필드 생성자 자동 생성
 @RequiredArgsConstructor
+// users 도메인 기본 경로
 @RequestMapping("/users")
 public class UserController {
 
+    // 사용자 서비스 주입
     private final UserService userService;
 
-    // 주간 근무 요약 조회 API
-    @GetMapping("/{memberId}/weekly-work-summary")
-    public ApiResponse<WeeklyWorkSummaryResDto> getWeeklyWorkSummary(
-            @PathVariable Long memberId,
-            // weekStart를 yyyy-MM-dd 형식으로 받음
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate weekStart,
-            // weekEnd를 yyyy-MM-dd 형식으로 받음
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate weekEnd
+    // 로그인한 사용자의 소속 스토어 목록 조회 API
+    @GetMapping("/me/stores")
+    public ApiResponse<List<MyStoreResDto>> getMyStores(
+            // 현재 로그인 사용자 정보(JWT) 주입
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        WeeklyWorkSummaryResDto result = userService.getWeeklyWorkSummary(memberId, weekStart, weekEnd);
-        return ApiResponse.success(result);
-    }
+        // 로그인한 유저 id로 소속 스토어 목록 조회
+        List<MyStoreResDto> result = userService.getMyStores(userDetails.getId());
 
-    // 주간 남은 근무 shift 개수 조회 API
-    @GetMapping("/{memberId}/weekly-remaining-shifts")
-    public ApiResponse<WeeklyRemainingShiftsResDto> getWeeklyRemainingShifts(
-            @PathVariable Long memberId,
-            // weekStart를 yyyy-MM-dd 형식으로 받음
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate weekStart,
-            // weekEnd를 yyyy-MM-dd 형식으로 받음
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate weekEnd
-    ) {
-        WeeklyRemainingShiftsResDto result = userService.getWeeklyRemainingShifts(memberId, weekStart, weekEnd);
+        // 공통 성공 응답으로 반환
         return ApiResponse.success(result);
     }
 }
