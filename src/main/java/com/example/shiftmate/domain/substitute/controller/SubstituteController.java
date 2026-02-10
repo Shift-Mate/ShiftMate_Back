@@ -40,7 +40,7 @@ public class SubstituteController {
             @PathVariable Long storeId,
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestParam(required = false, defaultValue = "latest") String sort,
-            @RequestParam(required = false)RequestStatus status
+            @RequestParam(required = false) RequestStatus status
             ) {
         List<SubstituteResDto> responses = substituteService.getOthersSubstitutes(storeId, userDetails.getId(), sort, status);
         return ResponseEntity.ok(ApiResponse.success(responses));
