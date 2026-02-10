@@ -56,11 +56,11 @@ VALUES (1, '마감', '18:00:00', '22:00:00', 2, 'NORMAL', 'WEEKDAY');
 -- 5. EmployeePreferences (직원 선호도)
 -- 이알바(2번 멤버)가 오픈조(1번 템플릿) 선호
 INSERT INTO employee_preferences (member_id, shift_template_id, day_of_week, type, created_at, updated_at)
-VALUES (2, 1, "MONDAY", 'PREFERRED', NOW(), NOW()); -- 월요일
+VALUES (2, 1, 'MONDAY', 'PREFERRED', NOW(), NOW()); -- 월요일
 
 -- 이알바(2번 멤버)가 미들조(2번 템플릿) 불가능
 INSERT INTO employee_preferences (member_id, shift_template_id, day_of_week, type, created_at, updated_at)
-VALUES (2, 2, "MONDAY", 'UNAVAILABLE', NOW(), NOW()); -- 월요일
+VALUES (2, 2, 'MONDAY', 'UNAVAILABLE', NOW(), NOW()); -- 월요일
 
 
 -- 6. ShiftAssignments (근무 배정)
