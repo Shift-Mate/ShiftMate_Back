@@ -15,6 +15,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
+import org.springframework.web.client.RestClientException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 @Slf4j
 @Component
@@ -62,8 +64,16 @@ public class BiznoApiClient {
 
             return parseResponse(jsonNode, bno);
 
-        } catch (Exception e) {
+        } catch (CustomException e) {
+            // CustomException throw
+            throw e;
+        } catch (RestClientException | JsonProcessingException e) {
+            // 네트워크, 파싱 예외 BIZNO_API_ERROR
             log.error("비즈노 API 호출 실패: {}", e.getMessage(), e);
+            throw new CustomException(ErrorCode.BIZNO_API_ERROR);
+        } catch (Exception e) {
+            // 기타 예외
+            log.error("비즈노 API 처리 중 예상치 못한 오류 발생: {}", e.getMessage(), e);
             throw new CustomException(ErrorCode.BIZNO_API_ERROR);
         }
     }
@@ -110,7 +120,7 @@ public class BiznoApiClient {
             .cno(cno)
             .TaxTypeCd(TaxTypeCd)
             .taxtype(taxtype)
-            .EndDt(EndDt)
+            .endDt(EndDt)
             .build();
     }
 
