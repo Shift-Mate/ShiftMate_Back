@@ -9,6 +9,7 @@ import com.example.shiftmate.domain.employeePreference.repository.EmployeePrefer
 import com.example.shiftmate.domain.shiftTemplate.entity.ShiftTemplate;
 import com.example.shiftmate.domain.shiftTemplate.repository.ShiftTemplateRepository;
 import com.example.shiftmate.domain.storeMember.entity.StoreMember;
+import com.example.shiftmate.domain.storeMember.entity.StoreRole;
 import com.example.shiftmate.domain.storeMember.repository.StoreMemberRepository;
 import com.example.shiftmate.global.exception.CustomException;
 import com.example.shiftmate.global.exception.ErrorCode;
@@ -31,15 +32,20 @@ public class PreferenceService {
 
     @Transactional
     public void createPreference(Long storeId, Long memberId,
-        CreateWeeklyPreferenceReqDto preference) {
+        CreateWeeklyPreferenceReqDto preference,
+        Long userId) {
         // 직원을 초대할 때 선호하는 시간까지 입력하는 것으로 가정
         // 때문에 employeePreference가 존재하는지 확인하는 로직은 생략
         // 만약 요구사항이 직원 초대 후 별도의 트랜잭션으로 선호하는 시간을 입력하는거라면
-        // 이미 입력된 선호시간이 잇는지 확인하는 로직 필요
 
-        List<ShiftTemplate> template = shiftTemplateRepository.findByStoreId(storeId).orElseThrow(
-            () -> new CustomException(ErrorCode.TEMPLATE_NOT_FOUND)
-        );
+        if (!storeMemberRepository.existsByStoreIdAndUserIdAndRoleAndDeletedAtIsNull(storeId, userId, StoreRole.MANAGER)) {
+            throw new CustomException(ErrorCode.NOT_AUTHORIZED);
+        }
+
+        if(!shiftTemplateRepository.existsByStoreId(storeId)){
+            throw new CustomException(ErrorCode.TEMPLATE_NOT_FOUND);
+        }
+
         StoreMember member = storeMemberRepository.findById(memberId).orElseThrow(
             () -> new CustomException(ErrorCode.STORE_MEMBER_NOT_FOUND)
         );
@@ -71,6 +77,8 @@ public class PreferenceService {
     }
 
     public List<PreferenceResDto> getPreference(Long storeId, Long memberId) {
+
+
         if (!shiftTemplateRepository.existsByStoreId(storeId)) {
             throw new CustomException(ErrorCode.SHIFT_ASSIGNMENT_NOT_FOUND);
         }
@@ -89,7 +97,13 @@ public class PreferenceService {
 
     @Transactional
     public PreferenceResDto updatePreference(Long storeId, Long memberId, Long preferenceId,
-        PreferenceUpdateReqDto preferenceUpdateReqDto) {
+        PreferenceUpdateReqDto preferenceUpdateReqDto,
+        Long userId) {
+
+        if (!storeMemberRepository.existsByStoreIdAndUserIdAndRoleAndDeletedAtIsNull(storeId, userId, StoreRole.MANAGER)) {
+            throw new CustomException(ErrorCode.NOT_AUTHORIZED);
+        }
+
         if (!shiftTemplateRepository.existsByStoreId(storeId)) {
             throw new CustomException(ErrorCode.SHIFT_ASSIGNMENT_NOT_FOUND);
         }
@@ -108,7 +122,12 @@ public class PreferenceService {
     }
 
     @Transactional
-    public void deletePreference(Long storeId, Long memberId) {
+    public void deletePreference(Long storeId, Long memberId, Long userId) {
+
+        if (!storeMemberRepository.existsByStoreIdAndUserIdAndRoleAndDeletedAtIsNull(storeId, userId, StoreRole.MANAGER)) {
+            throw new CustomException(ErrorCode.NOT_AUTHORIZED);
+        }
+
         if (!shiftTemplateRepository.existsByStoreId(storeId)) {
             throw new CustomException(ErrorCode.SHIFT_ASSIGNMENT_NOT_FOUND);
         }

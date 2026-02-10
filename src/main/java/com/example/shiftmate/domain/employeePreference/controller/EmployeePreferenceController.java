@@ -5,10 +5,12 @@ import com.example.shiftmate.domain.employeePreference.dto.request.PreferenceUpd
 import com.example.shiftmate.domain.employeePreference.dto.response.PreferenceResDto;
 import com.example.shiftmate.domain.employeePreference.service.PreferenceService;
 import com.example.shiftmate.global.common.dto.ApiResponse;
+import com.example.shiftmate.global.security.CustomUserDetails;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -29,9 +31,10 @@ public class EmployeePreferenceController {
     public ResponseEntity<ApiResponse<Void>> createPreference(
         @PathVariable Long storeId,
         @PathVariable Long memberId,
-        @RequestBody CreateWeeklyPreferenceReqDto preference
+        @RequestBody CreateWeeklyPreferenceReqDto preference,
+        @AuthenticationPrincipal CustomUserDetails customUserDetails
     ) {
-        preferenceService.createPreference(storeId, memberId, preference);
+        preferenceService.createPreference(storeId, memberId, preference,customUserDetails.getId());
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
@@ -51,20 +54,22 @@ public class EmployeePreferenceController {
         @PathVariable Long storeId,
         @PathVariable Long memberId,
         @PathVariable Long preferenceId,
-        @Valid @RequestBody PreferenceUpdateReqDto preferenceUpdateReqDto
+        @Valid @RequestBody PreferenceUpdateReqDto preferenceUpdateReqDto,
+        @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
 
         return ResponseEntity.ok(ApiResponse.success(
             preferenceService.updatePreference(storeId, memberId, preferenceId,
-                preferenceUpdateReqDto)));
+                preferenceUpdateReqDto, userDetails.getId())));
     }
 
     @DeleteMapping
     public ResponseEntity<ApiResponse<Void>> deletePreference(
         @PathVariable Long storeId,
-        @PathVariable Long memberId
+        @PathVariable Long memberId,
+        @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        preferenceService.deletePreference(storeId, memberId);
+        preferenceService.deletePreference(storeId, memberId, userDetails.getId());
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 

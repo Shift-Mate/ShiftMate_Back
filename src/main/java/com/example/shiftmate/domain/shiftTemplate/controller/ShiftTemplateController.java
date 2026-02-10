@@ -81,9 +81,10 @@ public class ShiftTemplateController {
     // 템플릿 자체를 제거
     @DeleteMapping
     public ResponseEntity<ApiResponse<Void>> deleteTemplate(
-        @PathVariable Long storeId
+        @PathVariable Long storeId,
+        @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        shiftTemplateService.deleteTemplate(storeId);
+        shiftTemplateService.deleteTemplate(storeId,userDetails.getId());
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
