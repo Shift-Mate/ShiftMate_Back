@@ -84,4 +84,7 @@ public interface ShiftAssignmentRepository extends JpaRepository<ShiftAssignment
             @Param("workDate") LocalDate workDate,
             @Param("startTime") LocalDateTime startTime,
             @Param("endTime") LocalDateTime endTime);
+
+
+
 }
