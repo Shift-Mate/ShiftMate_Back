@@ -144,7 +144,7 @@ VALUES (4, 3, '2026-03-02', '2026-03-02 18:00:00', '2026-03-02 22:00:00', NOW(),
 -- [추가 요청] 선호도 테스트용 데이터
 -- 유저: PreferenceTestUser (4번 유저)
 INSERT INTO users (email, name, password, created_at)
-VALUES ('preftest@test.com', '선호테스터', '1234', NOW());
+VALUES ('preftest@test.com', '선호테스터', '$2a$10$bjbizcdFOx7jBwBm00m5rOHawFLs3qtSZV0QJfc663m14LmnLZTWy', NOW());
 
 -- 스토어 멤버: 2번 매장(홍대점)에 4번 유저를 직원으로 추가 (Member ID: 4)
 INSERT INTO store_members (store_id, user_id, role, member_rank, department, hourly_wage, min_hours_per_week, status, pin_code, created_at, updated_at)
@@ -162,7 +162,7 @@ VALUES ('시프트메이트 테스트점', '서울시 강서구', '08:00:00', '2
 -- 11. 테스트 매장 직원들 추가 (User ID: 5~9, StoreMember ID: 5~9)
 -- 5번 유저: 테스트 매니저
 INSERT INTO users (email, name, password, created_at)
-VALUES ('test.manager@test.com', '테스트매니저', '1234', NOW());
+VALUES ('test.manager@test.com', '테스트매니저', '$2a$10$bjbizcdFOx7jBwBm00m5rOHawFLs3qtSZV0QJfc663m14LmnLZTWy', NOW());
 
 INSERT INTO store_members (store_id, user_id, role, member_rank, department, hourly_wage, min_hours_per_week, status, pin_code, created_at, updated_at)
 VALUES (3, 5, 'MANAGER', 'MANAGER', 'HALL', 0, 40, 'ACTIVE', 5555, NOW(), NOW());

@@ -1,7 +1,7 @@
 package com.example.shiftmate.domain.shiftTemplate.service;
 
 import com.example.shiftmate.domain.shiftTemplate.dto.request.TemplateCreateReqDto;
-import com.example.shiftmate.domain.shiftTemplate.dto.request.TemplateShiftStaff;
+import com.example.shiftmate.domain.shiftTemplate.dto.request.TemplateShiftStaffReqDto;
 import com.example.shiftmate.domain.shiftTemplate.dto.request.UpdateTemplateTypeReqDto;
 import com.example.shiftmate.domain.shiftTemplate.dto.response.TemplateResDto;
 import com.example.shiftmate.domain.shiftTemplate.entity.DayType;
@@ -11,6 +11,8 @@ import com.example.shiftmate.domain.shiftTemplate.entity.TemplateType;
 import com.example.shiftmate.domain.shiftTemplate.repository.ShiftTemplateRepository;
 import com.example.shiftmate.domain.store.entity.Store;
 import com.example.shiftmate.domain.store.repository.StoreRepository;
+import com.example.shiftmate.domain.storeMember.entity.StoreRole;
+import com.example.shiftmate.domain.storeMember.repository.StoreMemberRepository;
 import com.example.shiftmate.global.exception.CustomException;
 import com.example.shiftmate.global.exception.ErrorCode;
 import java.time.Duration;
@@ -28,9 +30,14 @@ public class ShiftTemplateService {
 
     private final ShiftTemplateRepository shiftTemplateRepository;
     private final StoreRepository storeRepository;
+    private final StoreMemberRepository storeMemberRepository;
 
     @Transactional
-    public void createTemplate(Long storeId, TemplateCreateReqDto templateCreateReqDto) {
+    public void createTemplate(Long storeId, TemplateCreateReqDto templateCreateReqDto,Long userId) {
+
+        if (!storeMemberRepository.existsByStoreIdAndUserIdAndRoleAndDeletedAtIsNull(storeId, userId, StoreRole.MANAGER)) {
+            throw new CustomException(ErrorCode.NOT_AUTHORIZED);
+        }
 
         if (shiftTemplateRepository.existsByStoreId(storeId)) {
             throw new CustomException(ErrorCode.TEMPLATE_ALREADY_EXISTS);
@@ -192,22 +199,31 @@ public class ShiftTemplateService {
     }
 
     @Transactional
-    public TemplateResDto shiftStaff(Long templateId, TemplateShiftStaff templateShiftStaff) {
+    public TemplateResDto shiftStaff(Long templateId, TemplateShiftStaffReqDto templateShiftStaffReqDto) {
+
+
         ShiftTemplate template = shiftTemplateRepository.findById(templateId).orElseThrow(
             () -> new CustomException(ErrorCode.TEMPLATE_NOT_FOUND)
         );
 
-        template.shiftStaff(templateShiftStaff.getRequiredStaff());
+        template.shiftStaff(templateShiftStaffReqDto.getRequiredStaff());
 
         return TemplateResDto.from(template);
     }
 
     @Transactional
     public void updateTemplateType(Long storeId,
-        UpdateTemplateTypeReqDto updateTemplateTypeReqDto) {
+        UpdateTemplateTypeReqDto updateTemplateTypeReqDto,
+        Long userId) {
+
         Store store = storeRepository.findById(storeId).orElseThrow(
             () -> new CustomException(ErrorCode.STORE_NOT_FOUND)
         );
+
+        if (!storeMemberRepository.existsByStoreIdAndUserIdAndRoleAndDeletedAtIsNull(storeId, userId, StoreRole.MANAGER)) {
+            throw new CustomException(ErrorCode.STORE_ACCESS_DENIED);
+        }
+
 
         store.updateTemplateType(updateTemplateTypeReqDto.getTemplateType());
     }
@@ -236,10 +252,14 @@ public class ShiftTemplateService {
     }
 
     @Transactional
-    public void removeUnusedShiftTemplates(Long storeId) {
+    public void removeUnusedShiftTemplates(Long storeId,Long userId) {
         Store store = storeRepository.findById(storeId).orElseThrow(
             () -> new CustomException(ErrorCode.STORE_NOT_FOUND)
         );
+        if (!storeMemberRepository.existsByStoreIdAndUserIdAndRoleAndDeletedAtIsNull(storeId, userId, StoreRole.MANAGER)) {
+            throw new CustomException(ErrorCode.STORE_ACCESS_DENIED);
+        }
+
 
         List<ShiftTemplate> shiftTemplate = shiftTemplateRepository.findByStoreId(storeId)
                                                 .orElseThrow(
@@ -258,7 +278,12 @@ public class ShiftTemplateService {
         shiftTemplateRepository.deleteAll(unusedTemplates);
     }
 
-    public void deleteTemplate(Long storeId) {
+    public void deleteTemplate(Long storeId,Long userId) {
+
+        if (!storeMemberRepository.existsByStoreIdAndUserIdAndRoleAndDeletedAtIsNull(storeId, userId, StoreRole.MANAGER)) {
+            throw new CustomException(ErrorCode.NOT_AUTHORIZED);
+        }
+
         List<ShiftTemplate> shiftTemplate = shiftTemplateRepository.findByStoreId(storeId)
                                                 .orElseThrow(
                                                     () -> new CustomException(

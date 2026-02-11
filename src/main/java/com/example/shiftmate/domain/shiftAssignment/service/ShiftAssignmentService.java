@@ -12,6 +12,7 @@ import com.example.shiftmate.domain.shiftTemplate.repository.ShiftTemplateReposi
 import com.example.shiftmate.domain.store.entity.Store;
 import com.example.shiftmate.domain.store.repository.StoreRepository;
 import com.example.shiftmate.domain.storeMember.entity.StoreMember;
+import com.example.shiftmate.domain.storeMember.entity.StoreRole;
 import com.example.shiftmate.domain.storeMember.repository.StoreMemberRepository;
 import com.example.shiftmate.global.exception.CustomException;
 import com.example.shiftmate.global.exception.ErrorCode;
@@ -40,7 +41,11 @@ public class ShiftAssignmentService {
     private final StoreMemberRepository storeMemberRepository;
 
     @Transactional
-    public void createSchedule(Long storeId, LocalDate weekStartDate) {
+    public void createSchedule(Long storeId, LocalDate weekStartDate, Long userId) {
+
+        if (!storeMemberRepository.existsByStoreIdAndUserIdAndRoleAndDeletedAtIsNull(storeId, userId, StoreRole.MANAGER)) {
+            throw new CustomException(ErrorCode.NOT_AUTHORIZED);
+        }
 
         if (shiftAssignmentRepository.existsByStoreIdAndWorkDate(storeId, weekStartDate)) {
             throw new CustomException(ErrorCode.WEEK_ALREADY_EXISTS);
@@ -190,7 +195,10 @@ public class ShiftAssignmentService {
     }
 
     @Transactional
-    public void deleteSchedule(Long storeId, LocalDate weekStartDate) {
+    public void deleteSchedule(Long storeId, LocalDate weekStartDate,Long userId) {
+        if (!storeMemberRepository.existsByStoreIdAndUserIdAndRoleAndDeletedAtIsNull(storeId, userId, StoreRole.MANAGER)) {
+            throw new CustomException(ErrorCode.NOT_AUTHORIZED);
+        }
         if (!storeRepository.existsById(storeId)) {
             throw new CustomException(ErrorCode.STORE_NOT_FOUND);
         }

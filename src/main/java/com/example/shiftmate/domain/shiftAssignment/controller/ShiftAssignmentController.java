@@ -4,12 +4,15 @@ import com.example.shiftmate.domain.shiftAssignment.dto.request.ScheduleCreateRe
 import com.example.shiftmate.domain.shiftAssignment.dto.response.MyScheduleResDto;
 import com.example.shiftmate.domain.shiftAssignment.dto.response.ScheduleResDto;
 import com.example.shiftmate.domain.shiftAssignment.service.ShiftAssignmentService;
+import com.example.shiftmate.domain.user.entity.User;
 import com.example.shiftmate.global.common.dto.ApiResponse;
+import com.example.shiftmate.global.security.CustomUserDetails;
 import jakarta.validation.Valid;
 import java.time.LocalDate;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -30,9 +33,10 @@ public class ShiftAssignmentController {
     @PostMapping("/auto-generate")
     public ResponseEntity<ApiResponse<Void>> createSchedule(
         @PathVariable Long storeId,
-        @Valid @RequestBody ScheduleCreateReqDto scheduleCreateReqDto
+        @Valid @RequestBody ScheduleCreateReqDto scheduleCreateReqDto,
+        @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        shiftAssignmentService.createSchedule(storeId, scheduleCreateReqDto.getWeekStartDate());
+        shiftAssignmentService.createSchedule(storeId, scheduleCreateReqDto.getWeekStartDate(),userDetails.getId());
         return ResponseEntity.ok(ApiResponse.success(null));
     }
     // 날짜를 기준으로 조회
@@ -56,9 +60,10 @@ public class ShiftAssignmentController {
     @DeleteMapping
     public ResponseEntity<ApiResponse<Void>> deleteSchedule(
         @PathVariable Long storeId,
-        @RequestParam LocalDate weekStartDate
+        @RequestParam LocalDate weekStartDate,
+        @AuthenticationPrincipal CustomUserDetails userDetails
     ){
-        shiftAssignmentService.deleteSchedule(storeId, weekStartDate);
+        shiftAssignmentService.deleteSchedule(storeId, weekStartDate,userDetails.getId());
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
