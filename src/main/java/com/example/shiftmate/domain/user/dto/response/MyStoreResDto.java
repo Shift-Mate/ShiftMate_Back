@@ -8,8 +8,6 @@ import lombok.Getter;
 // 응답 DTO builder 패턴 사용
 @Builder
 public class MyStoreResDto {
-    // store_members PK (선택된 내 소속 레코드 식별)
-    private Long memberId;
 
     // 스토어 PK
     private Long storeId;

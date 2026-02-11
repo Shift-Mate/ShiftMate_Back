@@ -24,8 +24,6 @@ public class UserService {
         // 2) 화면 응답 DTO로 변환 후 반환
         return members.stream()
                 .map(member -> MyStoreResDto.builder()
-                        // store_members PK
-                        .memberId(member.getId())
                         // 스토어 PK
                         .storeId(member.getStore().getId())
                         // 스토어 이름
