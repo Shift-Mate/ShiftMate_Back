@@ -4,6 +4,8 @@ import com.example.shiftmate.domain.substitute.dto.request.SubstituteReqDto;
 import com.example.shiftmate.domain.substitute.dto.response.SubstituteApplicationResDto;
 import com.example.shiftmate.domain.substitute.dto.response.SubstituteResDto;
 import com.example.shiftmate.domain.substitute.service.SubstituteService;
+import com.example.shiftmate.domain.substitute.status.ApplicationStatus;
+import com.example.shiftmate.domain.substitute.status.RequestStatus;
 import com.example.shiftmate.global.common.dto.ApiResponse;
 import com.example.shiftmate.global.security.CustomUserDetails;
 import jakarta.validation.Valid;
@@ -36,9 +38,11 @@ public class SubstituteController {
     @GetMapping("/others")
     public ResponseEntity<ApiResponse<List<SubstituteResDto>>> getOthersSubstitutes(
             @PathVariable Long storeId,
-            @AuthenticationPrincipal CustomUserDetails userDetails
-    ) {
-        List<SubstituteResDto> responses = substituteService.getOthersSubstitutes(storeId, userDetails.getId());
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestParam(required = false, defaultValue = "latest") String sort,
+            @RequestParam(required = false) RequestStatus status
+            ) {
+        List<SubstituteResDto> responses = substituteService.getOthersSubstitutes(storeId, userDetails.getId(), sort, status);
         return ResponseEntity.ok(ApiResponse.success(responses));
     }
 
@@ -46,9 +50,11 @@ public class SubstituteController {
     @GetMapping("/my")
     public ResponseEntity<ApiResponse<List<SubstituteResDto>>> getMySubstitutes(
             @PathVariable Long storeId,
-            @AuthenticationPrincipal CustomUserDetails userDetails
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestParam(required = false, defaultValue = "latest") String sort,
+            @RequestParam(required = false) RequestStatus status
     ) {
-        List<SubstituteResDto> responses = substituteService.getMySubstitutes(storeId, userDetails.getId());
+        List<SubstituteResDto> responses = substituteService.getMySubstitutes(storeId, userDetails.getId(), sort, status);
         return ResponseEntity.ok(ApiResponse.success(responses));
     }
 
@@ -56,9 +62,11 @@ public class SubstituteController {
     @GetMapping("/all")
     public ResponseEntity<ApiResponse<List<SubstituteResDto>>> getAllSubstitutes(
             @PathVariable Long storeId,
-            @AuthenticationPrincipal CustomUserDetails userDetails
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestParam(required = false, defaultValue = "latest") String sort,
+            @RequestParam(required = false) RequestStatus status
     ) {
-        List<SubstituteResDto> responses = substituteService.getAllSubstitutes(storeId, userDetails.getId());
+        List<SubstituteResDto> responses = substituteService.getAllSubstitutes(storeId, userDetails.getId(), sort, status);
         return ResponseEntity.ok(ApiResponse.success(responses));
     }
 
@@ -88,9 +96,11 @@ public class SubstituteController {
     @GetMapping("/applications/my")
     public ResponseEntity<ApiResponse<List<SubstituteApplicationResDto>>> getMyApplications(
             @PathVariable Long storeId,
-            @AuthenticationPrincipal CustomUserDetails userDetails
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestParam(required = false, defaultValue = "latest") String sort,
+            @RequestParam(required = false) ApplicationStatus status
     ) {
-        List<SubstituteApplicationResDto> responses = substituteService.getMyApplications(storeId, userDetails.getId());
+        List<SubstituteApplicationResDto> responses = substituteService.getMyApplications(storeId, userDetails.getId(), sort, status);
         return ResponseEntity.ok(ApiResponse.success(responses));
     }
 
@@ -110,9 +120,11 @@ public class SubstituteController {
     public ResponseEntity<ApiResponse<List<SubstituteApplicationResDto>>> getAllApplications(
             @PathVariable Long storeId,
             @PathVariable Long requestId,
-            @AuthenticationPrincipal CustomUserDetails userDetails
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestParam(required = false, defaultValue = "latest") String sort,
+            @RequestParam(required = false) ApplicationStatus status
     ) {
-        List<SubstituteApplicationResDto> responses = substituteService.getApplications(storeId, requestId, userDetails.getId());
+        List<SubstituteApplicationResDto> responses = substituteService.getApplications(storeId, requestId, userDetails.getId(), sort, status);
         return ResponseEntity.ok(ApiResponse.success(responses));
     }
 
