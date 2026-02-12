@@ -1,6 +1,7 @@
 package com.example.shiftmate.domain.store.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -39,4 +40,11 @@ public class StoreReqDto {
     private String alias;
 
     private Long monthlySales;
+
+    // openTime은 closeTime 보다 이른 시간이야됨
+    @AssertTrue(message = "영업 시작 시간은 종료 시간보다 빨라야 합니다.")
+    public boolean isValidOpenCloseTime() {
+        if (openTime == null || closeTime == null) return true;
+        return openTime.isBefore(closeTime);
+    }
 }

@@ -31,6 +31,11 @@ public class StoreService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 
+        // 영업 시작 시간은 종료 시간보다 빨라야 함
+        if (!request.getOpenTime().isBefore(request.getCloseTime())) {
+            throw new CustomException(ErrorCode.INVALID_TIME_RANGE);
+        }
+
         // Store 엔티티 생성
         Store store = Store.builder()
             .name(request.getName())
@@ -84,6 +89,12 @@ public class StoreService {
         Store store = storeRepository.findByIdAndUserIdAndDeletedAtIsNull(storeId, userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.STORE_NOT_FOUND)); // 매장 or 권한 없음
 
+        // 영업 시작 시간은 종료 시간보다 빨라야 함 
+        if (request.getOpenTime() != null && request.getCloseTime() != null
+                && !request.getOpenTime().isBefore(request.getCloseTime())) {
+            throw new CustomException(ErrorCode.INVALID_TIME_RANGE);
+        }
+        
         // store update
         store.update(
             request.getName(),
