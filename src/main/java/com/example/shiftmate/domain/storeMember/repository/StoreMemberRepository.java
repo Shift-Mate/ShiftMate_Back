@@ -33,7 +33,7 @@ public interface StoreMemberRepository extends JpaRepository<StoreMember, Long>,
     // 유저 속한 매장 조회 -> 삭제 되지 않은 것만
     @EntityGraph(attributePaths = {"store"})
     @Query("SELECT sm FROM StoreMember sm WHERE sm.user.id = :userId AND sm.deletedAt IS NULL")
-    List<StoreMember> findByUserId(@Param("userId") Long userId);
+    Optional<List<StoreMember>> findByUserId(@Param("userId") Long userId);
 
     // 가게 기준 조회 (N+1 방지, @EntityGraph + JOIN FETCH 사용)
     // 매장에 속한 멤버 조회 -> 삭제 되지 않은 것만

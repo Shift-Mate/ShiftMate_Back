@@ -67,6 +67,42 @@ public class StoreMemberService {
         return toResponseDto(savedStoreMember);
     }
 
+    // 매장 생성자만 멤버 추가 가능.
+    @Transactional
+    public StoreMemberResDto createWithStoreId(Long storeId, Long requestUserId, StoreMemberReqDto request) {
+        Store store = storeRepository.findByIdAndDeletedAtIsNull(storeId)
+            .orElseThrow(() -> new CustomException(ErrorCode.STORE_NOT_FOUND));
+
+        // 매장 생성자만 멤버 추가 가능
+        if (!store.getUser().getId().equals(requestUserId)) {
+            throw new CustomException(ErrorCode.STORE_ACCESS_DENIED);
+        }
+
+        User user = userRepository.findById(request.getUserId())
+            .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+
+        storeMemberRepository.findByStoreIdAndUserId(storeId, request.getUserId())
+            .ifPresent(sm -> {
+                throw new CustomException(ErrorCode.STORE_MEMBER_ALREADY_EXISTS);
+            });
+
+        StoreMember storeMember = StoreMember.builder()
+            .store(store)
+            .user(user)
+            .role(request.getRole())
+            .memberRank(request.getMemberRank())
+            .department(request.getDepartment())
+            .hourlyWage(request.getHourlyWage())
+            .minHoursPerWeek(request.getMinHoursPerWeek())
+            .status(request.getStatus())
+            .pinCode(request.getPinCode())
+            .build();
+
+        StoreMember saved = storeMemberRepository.save(storeMember);
+        return toResponseDto(saved);
+    }
+
+
     // 전체 조회
     public List<StoreMemberResDto> findAll() {
         List<StoreMember> storeMembers = storeMemberRepository.findAllWithRelations();
@@ -116,7 +152,8 @@ public class StoreMemberService {
 
     // 유저 기준 조회 (유저가 소속된 가게 정보들)
     public List<UserStoreListResDto> getStoresByUserId(Long userId) {
-        List<StoreMember> storeMembers = storeMemberRepository.findByUserId(userId);
+        List<StoreMember> storeMembers = storeMemberRepository.findByUserId(userId)
+        .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 
         // 결과가 비어있으면 유저가 없거나 가게가 없는 경우
         if (storeMembers.isEmpty()) {
@@ -133,10 +170,16 @@ public class StoreMemberService {
     // 가게 기준 조회 (가게에 소속된 유저들) - 필터링 옵션(status, role, department)
     public List<StoreMemberListResDto> getMembersByStoreId(
         Long storeId,
+        Long userId,
         MemberStatus status,
         StoreRole role,
         Department department
     ) {
+
+        // 매장 소속 검증
+        StoreMember member = storeMemberRepository.findByStoreIdAndUserId(storeId, userId)
+            .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+
         // Specification을 사용한 동적 쿼리
         Specification<StoreMember> spec = Specification
             .where(StoreMemberSpecification.hasStoreId(storeId))
