@@ -116,7 +116,7 @@ public class BiznoApiClient {
             .bno(responseBno)
             .company(company)
             .bstt(bstt)
-            .bsttCd(BSttCd)
+            .bSttCd(BSttCd)
             .cno(cno)
             .taxTypeCd(TaxTypeCd)
             .taxtype(taxtype)
