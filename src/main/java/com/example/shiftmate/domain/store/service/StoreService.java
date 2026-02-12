@@ -4,11 +4,14 @@ import com.example.shiftmate.domain.store.dto.request.StoreReqDto;
 import com.example.shiftmate.domain.store.dto.response.StoreResDto;
 import com.example.shiftmate.domain.store.entity.Store;
 import com.example.shiftmate.domain.store.repository.StoreRepository;
+import com.example.shiftmate.domain.storeMember.entity.StoreMember;
+import com.example.shiftmate.domain.storeMember.repository.StoreMemberRepository;
 import com.example.shiftmate.domain.user.entity.User;
 import com.example.shiftmate.domain.user.repository.UserRepository;
 import com.example.shiftmate.global.exception.CustomException;
 import com.example.shiftmate.global.exception.ErrorCode;
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +23,7 @@ public class StoreService {
 
     private final StoreRepository storeRepository;
     private final UserRepository userRepository;
+    private final StoreMemberRepository storeMemberRepository;
 
     @Transactional
     public StoreResDto create(StoreReqDto request, Long userId) {
@@ -54,16 +58,24 @@ public class StoreService {
         return toResponseDto(store);
     }
 
-    // 전체 매장 목록 조회(테스트용), GET /stores
-    public List<StoreResDto> findAll() {
-        List<Store> stores = storeRepository.findAllByDeletedAtIsNull();
-        return stores.stream()
-            .map(this::toResponseDto)
-            .toList();
+    // 로그인한 유저가 속한 매장 목록 조회, GET /stores
+    public List<StoreResDto> findStoresByUserId(Long userId) {
+        List<StoreMember> storeMembers = storeMemberRepository.findByUserId(userId)
+                .orElse(List.of());
+
+        if (storeMembers.isEmpty()) {
+            return List.of();
+        }
+
+        return storeMembers.stream()
+                .map(StoreMember::getStore)
+                .filter(store -> !store.isDeleted())
+                .collect(Collectors.toMap(Store::getId, store -> store, (a, b) -> a))
+                .values()
+                .stream()
+                .map(this::toResponseDto)
+                .toList();
     }
-
-    // todo 유저가 속해있는 매장 조회(StoreMember)
-
     // Store Update, PUT /stores/{storeId}
     @Transactional
     public StoreResDto update(Long storeId, StoreReqDto request, Long userId) {
