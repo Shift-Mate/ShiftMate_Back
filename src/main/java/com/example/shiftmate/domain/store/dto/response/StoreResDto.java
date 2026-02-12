@@ -25,5 +25,6 @@ public class StoreResDto {
 
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime updatedAt;
-
+    
+    private Long monthlySales;
 }

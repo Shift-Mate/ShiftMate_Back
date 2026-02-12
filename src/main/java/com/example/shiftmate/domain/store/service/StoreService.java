@@ -41,6 +41,7 @@ public class StoreService {
             .brn(request.getBrn())
             .user(user)
             .alias(request.getAlias())
+            .monthlySales(request.getMonthlySales())
             .build();
 
         // 저장
@@ -92,7 +93,8 @@ public class StoreService {
             request.getNShifts(),
             request.getBrn(),
             null, // user는 업데이트x
-            request.getAlias()
+            request.getAlias(),
+            request.getMonthlySales()
         );
 
         // dto 변환
@@ -122,6 +124,7 @@ public class StoreService {
             .closeTime(store.getCloseTime())
             .createdAt(store.getCreatedAt())
             .updatedAt(store.getUpdatedAt())
+            .monthlySales(store.getMonthlySales())
             .build();
     }
 }

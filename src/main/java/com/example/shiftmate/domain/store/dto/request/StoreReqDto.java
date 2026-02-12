@@ -37,4 +37,6 @@ public class StoreReqDto {
     private String brn;
 
     private String alias;
+
+    private Long monthlySales;
 }
