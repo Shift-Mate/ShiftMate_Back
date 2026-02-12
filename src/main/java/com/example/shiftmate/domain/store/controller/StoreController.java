@@ -31,15 +31,13 @@ public class StoreController {
     private final StoreService storeService;
     private final BiznoService biznoService;
 
-    // store create
+    // store create (사용자가 매장 생성자로 등록됨)
     @PostMapping
     public ResponseEntity<ApiResponse<StoreResDto>> createStore(
-            @Valid @RequestBody StoreReqDto request
-            // todo 임시: 인증(secu, jwt) 구현 후 수정 필요
-            // @CurrentUserId Long userId) 으로 수정
-            // @RequestHeader("X-User-Id") Long userId
+            @Valid @RequestBody StoreReqDto request,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        StoreResDto response = storeService.create(request, 1L); // 임시: userId 하드코딩
+        StoreResDto response = storeService.create(request, userDetails.getId());
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success(response));
     }
