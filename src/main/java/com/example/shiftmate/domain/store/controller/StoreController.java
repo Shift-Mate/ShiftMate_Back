@@ -1,8 +1,11 @@
 package com.example.shiftmate.domain.store.controller;
 
+import com.example.shiftmate.domain.store.dto.request.BiznoVerifyReqDto;
 import com.example.shiftmate.domain.store.dto.request.StoreReqDto;
+import com.example.shiftmate.domain.store.dto.response.BiznoVerifyResDto;
 import com.example.shiftmate.domain.store.dto.response.StoreResDto;
 import com.example.shiftmate.domain.store.service.StoreService;
+import com.example.shiftmate.domain.store.service.BiznoService;
 import com.example.shiftmate.global.common.dto.ApiResponse;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -24,6 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class StoreController {
 
     private final StoreService storeService;
+    private final BiznoService biznoService;
 
     // store create
     @PostMapping
@@ -75,5 +79,14 @@ public class StoreController {
         storeService.delete(storeId, 1L); // 임시: userId 하드코딩
         return ResponseEntity.status(HttpStatus.NO_CONTENT)
                 .body(ApiResponse.success(null));
+    }
+
+    // 사업자 번호 검증, POST /stores/verify-bizno
+    @PostMapping("/verify-bizno")
+    public ResponseEntity<ApiResponse<BiznoVerifyResDto>> verifyBusinessNumber(
+        @Valid @RequestBody BiznoVerifyReqDto request
+    ) {
+        BiznoVerifyResDto response = biznoService.verifyBusinessNumber(request);
+        return ResponseEntity.ok(ApiResponse.success(response));
     }
 }
