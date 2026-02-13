@@ -58,7 +58,7 @@ public class StoreMember extends BaseTimeEntity {
     private Integer minHoursPerWeek;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = true)
     private MemberStatus status;
 
     @Column(nullable = false)
