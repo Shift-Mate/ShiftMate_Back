@@ -152,12 +152,10 @@ public class StoreMemberService {
 
     // 유저 기준 조회 (유저가 소속된 가게 정보들)
     public List<UserStoreListResDto> getStoresByUserId(Long userId) {
-        List<StoreMember> storeMembers = storeMemberRepository.findByUserId(userId)
-        .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+        List<StoreMember> storeMembers = storeMemberRepository.findByUserId(userId);
 
-        // 결과가 비어있으면 유저가 없거나 가게가 없는 경우
+        // 결과가 비어있으면 유저 존재 여부 확인 후 예외 또는 빈 리스트
         if (storeMembers.isEmpty()) {
-            // 유저 존재 여부 확인
             userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
         }
