@@ -75,7 +75,13 @@ public enum ErrorCode {
     NOT_SUBSTITUTE_APPLICATION(HttpStatus.FORBIDDEN, "해당 대타 요청의 지원이 아닙니다."),
     DEPARTMENT_MISMATCH(HttpStatus.BAD_REQUEST, "다른 부서의 근무에는 대타 지원을 할 수 없습니다."),
     DUPLICATE_SHIFT(HttpStatus.CONFLICT, "이미 배정된 스케줄과 시간이 겹쳐 대타 지원이 불가능합니다."),
-    PAST_SCHEDULE_CANNOT_APPROVE(HttpStatus.BAD_REQUEST, "이미 지난 스케줄의 대타 지원은 승인할 수 없습니다.");
+    PAST_SCHEDULE_CANNOT_APPROVE(HttpStatus.BAD_REQUEST, "이미 지난 스케줄의 대타 지원은 승인할 수 없습니다."),
+
+    // Bizno API
+    BIZNO_API_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "사업자 번호 조회 API 호출에 실패했습니다."),
+    INVALID_BIZNO(HttpStatus.BAD_REQUEST, "유효하지 않은 사업자 번호입니다.");
+
+
 
     private final HttpStatus status;
     private final String message;

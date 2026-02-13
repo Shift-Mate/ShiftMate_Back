@@ -10,11 +10,15 @@ import com.example.shiftmate.domain.storeMember.entity.MemberStatus;
 import com.example.shiftmate.domain.storeMember.entity.StoreRole;
 import com.example.shiftmate.domain.storeMember.service.StoreMemberService;
 import com.example.shiftmate.global.common.dto.ApiResponse;
+import com.example.shiftmate.global.exception.CustomException;
+import com.example.shiftmate.global.exception.ErrorCode;
+import com.example.shiftmate.global.security.CustomUserDetails;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,7 +30,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/store-members")
+@RequestMapping("/stores/{storeId}/store-members")
 @RequiredArgsConstructor
 public class StoreMemberController {
 
@@ -35,21 +39,14 @@ public class StoreMemberController {
     // StoreMember create
     @PostMapping
     public ResponseEntity<ApiResponse<StoreMemberResDto>> createStoreMember(
-        @Valid @RequestBody StoreMemberReqDto request
-        // todo 임시: 인증(secu, jwt) 구현 후 수정 필요
-        // @CurrentUserId Long userId) 으로 수정
+        @PathVariable Long storeId,
+        @Valid @RequestBody StoreMemberReqDto request,
+        @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        StoreMemberResDto response = storeMemberService.create(request);
+        StoreMemberResDto response = storeMemberService.createWithStoreId(
+            storeId, userDetails.getId(), request);
         return ResponseEntity.status(HttpStatus.CREATED)
             .body(ApiResponse.success(response));
-    }
-
-    // read
-    // 전체 조회
-    @GetMapping
-    public ResponseEntity<ApiResponse<List<StoreMemberResDto>>> getAllStoreMembers() {
-        List<StoreMemberResDto> response = storeMemberService.findAll();
-        return ResponseEntity.ok(ApiResponse.success(response));
     }
 
     // 단일 조회
@@ -59,25 +56,18 @@ public class StoreMemberController {
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
-    // 유저 기준 조회 (유저가 소속된 가게 정보들)
-    @GetMapping("/users/{userId}/stores")
-    public ResponseEntity<ApiResponse<List<UserStoreListResDto>>> getStoresByUserId(
-        @PathVariable Long userId
-    ) {
-        List<UserStoreListResDto> response = storeMemberService.getStoresByUserId(userId);
-        return ResponseEntity.ok(ApiResponse.success(response));
-    }
 
     // 가게 기준 조회 (가게에 소속된 유저들) - 필터링 옵션: status, role, department
-    @GetMapping("/stores/{storeId}/members")
+    @GetMapping
     public ResponseEntity<ApiResponse<List<StoreMemberListResDto>>> getMembersByStoreId(
         @PathVariable Long storeId,
+        @AuthenticationPrincipal CustomUserDetails userDetails,
         @RequestParam(required = false) MemberStatus status,
         @RequestParam(required = false) StoreRole role,
         @RequestParam(required = false) Department department
     ) {
         List<StoreMemberListResDto> response = storeMemberService.getMembersByStoreId(
-            storeId, status, role, department);
+            storeId, userDetails.getId(), status, role, department);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 

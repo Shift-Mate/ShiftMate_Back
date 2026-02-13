@@ -49,9 +49,12 @@ public class Store extends BaseTimeEntity {
     @Column
     private TemplateType templateType;
 
+    @Column(nullable = true)
+    private Long monthlySales;
+
     @Builder
     public Store(String name, String location, LocalTime openTime, LocalTime closeTime,
-        Integer nShifts, String brn, User user, String alias) {
+        Integer nShifts, String brn, User user, String alias, Long monthlySales) {
         this.name = name;
         this.location = location;
         this.openTime = openTime;
@@ -61,6 +64,7 @@ public class Store extends BaseTimeEntity {
         this.user = user;
         this.alias = alias;
         this.templateType = null;
+        this.monthlySales = monthlySales;
     }
 
     public void updateTemplateType(TemplateType templateType){
@@ -68,7 +72,7 @@ public class Store extends BaseTimeEntity {
     }
 
     public void update(String name, String location, LocalTime openTime, LocalTime closeTime,
-        Integer nShifts, String brn, User user, String alias) {
+        Integer nShifts, String brn, User user, String alias, Long monthlySales) {
         if (name != null) this.name = name;
         if (location != null) this.location = location;
         if (openTime != null) this.openTime = openTime;
@@ -77,5 +81,6 @@ public class Store extends BaseTimeEntity {
         if (brn != null) this.brn = brn;
         if (user != null) this.user = user;
         if (alias != null) this.alias = alias;
+        if (monthlySales != null) this.monthlySales = monthlySales;
     }
 }

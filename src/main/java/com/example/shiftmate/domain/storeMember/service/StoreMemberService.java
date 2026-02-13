@@ -31,23 +31,33 @@ public class StoreMemberService {
     private final StoreRepository storeRepository;
     private final UserRepository userRepository;
 
+    // 매장 생성자만 멤버 추가 가능.
     @Transactional
-    public StoreMemberResDto create(StoreMemberReqDto request) {
-        // 매장 조회
-        Store store = storeRepository.findByIdAndDeletedAtIsNull(request.getStoreId())
+    public StoreMemberResDto createWithStoreId(Long storeId, Long requestUserId, StoreMemberReqDto request) {
+        Store store = storeRepository.findByIdAndDeletedAtIsNull(storeId)
             .orElseThrow(() -> new CustomException(ErrorCode.STORE_NOT_FOUND));
 
-        // 사용자 조회
-        User user = userRepository.findById(request.getUserId())
-            .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+        // 매장 생성자만 멤버 추가 가능
+        if (!store.getUser().getId().equals(requestUserId)) {
+            throw new CustomException(ErrorCode.STORE_ACCESS_DENIED);
+        }
 
-        // 중복 체크 (이미 해당 매장에 등록된 멤버인지 확인)
-        storeMemberRepository.findByStoreIdAndUserId(request.getStoreId(), request.getUserId())
-            .ifPresent(storeMember -> {
+        // 이메일로 사용자 조회 (해당하는 사람 확인)
+        String email = request.getEmail().trim().toLowerCase();
+        User user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+        
+        // body의 userId와 이메일로 조회한 user가 일치하는지 검증
+        if (request.getUserId() != null && !request.getUserId().equals(user.getId())) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST); 
+        } 
+
+        // 이미 해당 매장 멤버인지 중복 체크
+        storeMemberRepository.findByStoreIdAndUserId(storeId, user.getId())
+            .ifPresent(sm -> {
                 throw new CustomException(ErrorCode.STORE_MEMBER_ALREADY_EXISTS);
             });
 
-        // StoreMember 엔티티 생성
         StoreMember storeMember = StoreMember.builder()
             .store(store)
             .user(user)
@@ -60,12 +70,10 @@ public class StoreMemberService {
             .pinCode(request.getPinCode())
             .build();
 
-        // 저장
-        StoreMember savedStoreMember = storeMemberRepository.save(storeMember);
-
-        // DTO 변환
-        return toResponseDto(savedStoreMember);
+        StoreMember saved = storeMemberRepository.save(storeMember);
+        return toResponseDto(saved);
     }
+
 
     // 전체 조회
     public List<StoreMemberResDto> findAll() {
@@ -118,9 +126,8 @@ public class StoreMemberService {
     public List<UserStoreListResDto> getStoresByUserId(Long userId) {
         List<StoreMember> storeMembers = storeMemberRepository.findByUserId(userId);
 
-        // 결과가 비어있으면 유저가 없거나 가게가 없는 경우
+        // 결과가 비어있으면 유저 존재 여부 확인 후 예외 또는 빈 리스트
         if (storeMembers.isEmpty()) {
-            // 유저 존재 여부 확인
             userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
         }
@@ -133,10 +140,16 @@ public class StoreMemberService {
     // 가게 기준 조회 (가게에 소속된 유저들) - 필터링 옵션(status, role, department)
     public List<StoreMemberListResDto> getMembersByStoreId(
         Long storeId,
+        Long userId,
         MemberStatus status,
         StoreRole role,
         Department department
     ) {
+
+        // 매장 소속 검증
+        StoreMember member = storeMemberRepository.findByStoreIdAndUserId(storeId, userId)
+            .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+
         // Specification을 사용한 동적 쿼리
         Specification<StoreMember> spec = Specification
             .where(StoreMemberSpecification.hasStoreId(storeId))

@@ -41,6 +41,11 @@ VALUES (1, 3, 'STAFF', 'PART_TIME', 'HALL', 11000, 15, 'ACTIVE', 3333, NOW(), NO
 INSERT INTO store_members (store_id, user_id, role, member_rank, department, hourly_wage, min_hours_per_week, status, pin_code, created_at, updated_at)
 VALUES (1, 4, 'STAFF', 'PART_TIME', 'HALL', 11000, 15, 'ACTIVE', 4444, NOW(), NOW());
 
+-- 2번 매장 1번 유저 -> 매장 직원(알바)
+INSERT INTO store_members (store_id, user_id, role, member_rank, department, hourly_wage, min_hours_per_week, status, pin_code, created_at, updated_at)
+VALUES (2, 1, 'STAFF', 'PART_TIME', 'HALL', 11000, 15, 'ACTIVE', 5555, NOW(), NOW());
+
+
 
 -- 4. ShiftTemplates (근무표 템플릿: 오픈, 미들, 마감)
 INSERT INTO shift_templates (store_id, name, start_time, end_time, required_staff, shift_type, day_type)
