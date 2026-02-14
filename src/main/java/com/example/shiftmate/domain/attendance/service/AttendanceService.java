@@ -2,9 +2,12 @@ package com.example.shiftmate.domain.attendance.service;
 
 import com.example.shiftmate.domain.attendance.dto.request.AttendanceReqDto;
 import com.example.shiftmate.domain.attendance.dto.response.AttendanceResDto;
+import com.example.shiftmate.domain.attendance.dto.response.MyWeeklyAttendanceResDto;
 import com.example.shiftmate.domain.attendance.dto.response.TodayAttendanceResDto;
+import com.example.shiftmate.domain.attendance.dto.response.WeeklyAttendanceResDto;
 import com.example.shiftmate.domain.attendance.entity.Attendance;
 import com.example.shiftmate.domain.attendance.entity.AttendanceStatus;
+import com.example.shiftmate.domain.attendance.entity.WorkStatus;
 import com.example.shiftmate.domain.attendance.repository.AttendanceRepository;
 import com.example.shiftmate.domain.shiftAssignment.entity.ShiftAssignment;
 import com.example.shiftmate.domain.shiftAssignment.repository.ShiftAssignmentRepository;
@@ -17,9 +20,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -126,6 +131,7 @@ public class AttendanceService {
                 .shiftAssignment(assignment)
                 .clockInAt(now)
                 .status(status)
+                .workStatus(WorkStatus.WORKING)
                 .build();
 
         attendanceRepository.save(newAttendance);
@@ -142,24 +148,28 @@ public class AttendanceService {
     // 퇴근 처리 로직
     private  AttendanceResDto processClockOut(Attendance attendance) {
         LocalDateTime now = LocalDateTime.now(KST_TIME);
-        AttendanceStatus status = AttendanceStatus.OFFWORK;
         String message = "퇴근 처리되었습니다.";
         attendance.clockOut(now);
-        attendance.changeStatus(status);
+        attendance.changeWorkStatus(WorkStatus.OFFWORK);
 
         return AttendanceResDto.builder()
                 .attendanceId(attendance.getId())
-                .status(status.name())
+                .status(attendance.getStatus().name())
                 .type("CLOCK_OUT")
                 .time(now)
                 .message(message)
                 .build();
     }
 
+    // 해당 매장의 전체 직원의 일별 근태 기록 조회
     public List<TodayAttendanceResDto> getTodayAttendance(Long storeId, LocalDate date, Long userId) {
         // 해당 매장의 멤버인지 검증
-        storeMemberRepository.findByStoreIdAndUserId(storeId, userId)
+        StoreMember member = storeMemberRepository.findByStoreIdAndUserId(storeId, userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.STORE_MEMBER_NOT_FOUND));
+
+        if(!member.getMemberRank().equals(StoreRank.MANAGER)) {
+            throw new CustomException(ErrorCode.NOT_AUTHORIZED);
+        }
 
         // 해당 매장에 해당 날짜에 존재하는 모든 스케줄 조회
         List<ShiftAssignment> assignments = shiftAssignmentRepository.findAllByStoreIdAndDate(storeId, date);
@@ -182,5 +192,77 @@ public class AttendanceService {
         return assignments.stream()
                 .map(assignment -> TodayAttendanceResDto.of(assignment, attendanceMap.get(assignment.getId())))
                 .collect(Collectors.toList());
+    }
+
+    // 해당 매장의 전체 직원의 주간 근태 기록 조회
+    public List<WeeklyAttendanceResDto> getWeeklyAttendance(Long storeId, LocalDate date, Long userId) {
+        // 해당 매장의 멤버인지 검증
+        StoreMember member = storeMemberRepository.findByStoreIdAndUserId(storeId, userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.STORE_MEMBER_NOT_FOUND));
+
+        if(!member.getMemberRank().equals(StoreRank.MANAGER)) {
+            throw new CustomException(ErrorCode.NOT_AUTHORIZED);
+        }
+
+        // 주간 범위 설정
+        // 입력받은 날짜에 가장 가까운 과거 월요일을 startDate로 설정
+        // startDate로부터 6일 후를 endDate로 설정
+        LocalDate startDate = date.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        LocalDate endDate = startDate.plusDays(6);
+
+        // 해당 기간의 모든 스케줄 조회
+        List<ShiftAssignment> assignments = shiftAssignmentRepository.findAllByStoreIdAndDateBetween(storeId, startDate, endDate)
+                .orElse(List.of());
+
+        if (assignments.isEmpty()) {
+            return List.of();
+        }
+
+        // 해당 스케줄들의 근태 기록 조회
+        List<Attendance> attendances = attendanceRepository.findAllByShiftAssignmentIn(assignments);
+
+        Map<Long, Attendance> attendanceMap = attendances.stream()
+                .collect(Collectors.toMap(
+                        a -> a.getShiftAssignment().getId(),
+                        a -> a
+                ));
+
+        return assignments.stream()
+                .map(assignment -> WeeklyAttendanceResDto.of(assignment, attendanceMap.get(assignment.getId())))
+                .collect(Collectors.toList());
+    }
+
+    // 해당 매장의 직원별 주간 근태 기록 조회
+    public MyWeeklyAttendanceResDto getMyWeeklyAttendance(Long storeId, LocalDate date, Long userId) {
+        // 해당 매장의 멤버인지 검증
+        StoreMember member = storeMemberRepository.findByStoreIdAndUserId(storeId, userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.STORE_MEMBER_NOT_FOUND));
+
+        // 주간 범위 설정
+        LocalDate startDate = date.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        LocalDate endDate = startDate.plusDays(6);
+
+        // 해당 직원의 주간 스케줄 모두 조회
+        List<ShiftAssignment> assignments = shiftAssignmentRepository.findAllByStoreIdAndMemberIdAndDateBetween(storeId, member.getId(), startDate, endDate)
+                .orElse(List.of());
+
+        if(assignments.isEmpty()) {
+            return MyWeeklyAttendanceResDto.of(List.of());
+        }
+
+        // 해당 스케줄의 근태 기록 모두 조회
+        List<Attendance> attendances = attendanceRepository.findAllByShiftAssignmentIn(assignments);
+
+        Map<Long, Attendance> attendanceMap = attendances.stream()
+                .collect(Collectors.toMap(
+                        a -> a.getShiftAssignment().getId(),
+                        a -> a
+                ));
+
+        List<WeeklyAttendanceResDto> dtoList = assignments.stream()
+                .map(assignment -> WeeklyAttendanceResDto.of(assignment, attendanceMap.get(assignment.getId())))
+                .collect(Collectors.toList());
+
+        return MyWeeklyAttendanceResDto.of(dtoList);
     }
 }

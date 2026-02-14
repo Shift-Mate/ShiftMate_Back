@@ -1,7 +1,7 @@
 package com.example.shiftmate.domain.attendance.dto.response;
 
 import com.example.shiftmate.domain.attendance.entity.Attendance;
-import com.example.shiftmate.domain.attendance.entity.WorkStatus;
+import com.example.shiftmate.domain.attendance.entity.AttendanceStatus;
 import com.example.shiftmate.domain.shiftAssignment.entity.ShiftAssignment;
 import com.example.shiftmate.domain.storeMember.entity.Department;
 import com.example.shiftmate.domain.storeMember.entity.StoreRole;
@@ -10,44 +10,47 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 
 @Getter
-@NoArgsConstructor
 @Builder
+@NoArgsConstructor
 @AllArgsConstructor
-public class TodayAttendanceResDto {
-
-    // 스케줄 정보
-    private Long assignmentId;
-    private LocalDateTime updatedStartTime; // 출근 시간
-    private LocalDateTime updatedEndTime; // 퇴근 시간
+public class WeeklyAttendanceResDto {
 
     // 근무자 정보
     private String workerName; // 근무자 이름
     private StoreRole role; // 근무자 역할
     private Department department; // 근무자 부서
 
+    // 스케줄 정보
+    private LocalDateTime updatedStartTime; // 출근 시간
+    private LocalDateTime updatedEndTime; // 퇴근 시간
+
     // 출퇴근 상태
     private LocalDateTime clockInAt; // 실제 출근 시간
     private LocalDateTime clockOutAt; // 실제 퇴근 시간
-    private WorkStatus currentWorkStatus; // 출퇴근 상태(출근 OR 퇴근)
+    private AttendanceStatus status; // 출퇴근 상태
 
-    public static TodayAttendanceResDto of(ShiftAssignment assignment, Attendance attendance) {
-        // attendance가 null이면 출근 전(BEFORE_WORK), 있으면 저장된 상태(WORKING, OFFWORK) 사용
-        WorkStatus workStatus = (attendance != null) ? attendance.getWorkStatus() : WorkStatus.BEFORE_WORK;
+    // 근무시간(분)
+    private Long workedMinutes;
 
-        return TodayAttendanceResDto.builder()
-                .assignmentId(assignment.getId())
-                .updatedStartTime(assignment.getUpdatedStartTime())
-                .updatedEndTime(assignment.getUpdatedEndTime())
+    public static WeeklyAttendanceResDto of(ShiftAssignment assignment, Attendance attendance) {
+        long minutes = 0;
+        if(attendance != null && attendance.getClockInAt() != null && attendance.getClockOutAt() != null) {
+            minutes = Duration.between(attendance.getClockInAt(), attendance.getClockOutAt()).toMinutes();
+        }
+        return WeeklyAttendanceResDto.builder()
                 .workerName(assignment.getMember().getUser().getName())
                 .role(assignment.getMember().getRole())
                 .department(assignment.getMember().getDepartment())
-                // 출퇴근 기록을 남기지 않은 스케줄도 있을 수 있으므로 attendance가 null이라면 null처리
+                .updatedStartTime(assignment.getUpdatedStartTime())
+                .updatedEndTime(assignment.getUpdatedEndTime())
                 .clockInAt(attendance != null ? attendance.getClockInAt() : null)
                 .clockOutAt(attendance != null ? attendance.getClockOutAt() : null)
-                .currentWorkStatus(workStatus)
+                .status(attendance != null ? attendance.getStatus() : null)
+                .workedMinutes(minutes)
                 .build();
     }
 }

@@ -30,12 +30,16 @@ public class Attendance extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private AttendanceStatus status;
 
+    @Enumerated(EnumType.STRING)
+    private WorkStatus workStatus;
+
     @Builder
-    public Attendance(ShiftAssignment shiftAssignment, LocalDateTime clockInAt, LocalDateTime clockOutAt,  AttendanceStatus status) {
+    public Attendance(ShiftAssignment shiftAssignment, LocalDateTime clockInAt, LocalDateTime clockOutAt,  AttendanceStatus status, WorkStatus workStatus) {
         this.shiftAssignment = shiftAssignment;
         this.clockInAt = clockInAt;
         this.clockOutAt = clockOutAt;
         this.status = status;
+        this.workStatus = workStatus;
     }
 
     public void clockOut(LocalDateTime time) {
@@ -44,5 +48,9 @@ public class Attendance extends BaseTimeEntity {
 
     public void changeStatus(AttendanceStatus status) {
         this.status = status;
+    }
+
+    public void changeWorkStatus(WorkStatus workStatus) {
+        this.workStatus = workStatus;
     }
 }
