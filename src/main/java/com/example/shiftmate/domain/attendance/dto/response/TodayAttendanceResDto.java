@@ -1,7 +1,7 @@
 package com.example.shiftmate.domain.attendance.dto.response;
 
 import com.example.shiftmate.domain.attendance.entity.Attendance;
-import com.example.shiftmate.domain.attendance.entity.AttendanceStatus;
+import com.example.shiftmate.domain.attendance.entity.WorkStatus;
 import com.example.shiftmate.domain.shiftAssignment.entity.ShiftAssignment;
 import com.example.shiftmate.domain.storeMember.entity.Department;
 import com.example.shiftmate.domain.storeMember.entity.StoreRole;
@@ -31,9 +31,12 @@ public class TodayAttendanceResDto {
     // 출퇴근 상태
     private LocalDateTime clockInAt; // 실제 출근 시간
     private LocalDateTime clockOutAt; // 실제 퇴근 시간
-    private AttendanceStatus status; // 출퇴근 상태
+    private WorkStatus currentWorkStatus; // 출퇴근 상태(출근 OR 퇴근)
 
     public static TodayAttendanceResDto of(ShiftAssignment assignment, Attendance attendance) {
+        // attendance가 null이면 출근 전(BEFORE_WORK), 있으면 저장된 상태(WORKING, OFFWORK) 사용
+        WorkStatus workStatus = (attendance != null) ? attendance.getWorkStatus() : WorkStatus.BEFORE_WORK;
+
         return TodayAttendanceResDto.builder()
                 .assignmentId(assignment.getId())
                 .updatedStartTime(assignment.getUpdatedStartTime())
@@ -44,7 +47,7 @@ public class TodayAttendanceResDto {
                 // 출퇴근 기록을 남기지 않은 스케줄도 있을 수 있으므로 attendance가 null이라면 null처리
                 .clockInAt(attendance != null ? attendance.getClockInAt() : null)
                 .clockOutAt(attendance != null ? attendance.getClockOutAt() : null)
-                .status(attendance != null ? attendance.getStatus() : null)
+                .currentWorkStatus(workStatus)
                 .build();
     }
 }
