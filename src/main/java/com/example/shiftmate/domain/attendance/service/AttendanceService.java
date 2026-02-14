@@ -164,8 +164,12 @@ public class AttendanceService {
     // 해당 매장의 전체 직원의 일별 근태 기록 조회
     public List<TodayAttendanceResDto> getTodayAttendance(Long storeId, LocalDate date, Long userId) {
         // 해당 매장의 멤버인지 검증
-        storeMemberRepository.findByStoreIdAndUserId(storeId, userId)
+        StoreMember member = storeMemberRepository.findByStoreIdAndUserId(storeId, userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.STORE_MEMBER_NOT_FOUND));
+
+        if(!member.getMemberRank().equals(StoreRank.MANAGER)) {
+            throw new CustomException(ErrorCode.NOT_AUTHORIZED);
+        }
 
         // 해당 매장에 해당 날짜에 존재하는 모든 스케줄 조회
         List<ShiftAssignment> assignments = shiftAssignmentRepository.findAllByStoreIdAndDate(storeId, date);
@@ -193,8 +197,12 @@ public class AttendanceService {
     // 해당 매장의 전체 직원의 주간 근태 기록 조회
     public List<WeeklyAttendanceResDto> getWeeklyAttendance(Long storeId, LocalDate date, Long userId) {
         // 해당 매장의 멤버인지 검증
-        storeMemberRepository.findByStoreIdAndUserId(storeId, userId)
+        StoreMember member = storeMemberRepository.findByStoreIdAndUserId(storeId, userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.STORE_MEMBER_NOT_FOUND));
+
+        if(!member.getMemberRank().equals(StoreRank.MANAGER)) {
+            throw new CustomException(ErrorCode.NOT_AUTHORIZED);
+        }
 
         // 주간 범위 설정
         // 입력받은 날짜에 가장 가까운 과거 월요일을 startDate로 설정
