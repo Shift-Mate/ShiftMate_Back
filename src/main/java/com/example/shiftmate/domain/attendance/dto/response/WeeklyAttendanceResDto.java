@@ -18,6 +18,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class WeeklyAttendanceResDto {
+    private Long assignmentId;
 
     // 근무자 정보
     private String workerName; // 근무자 이름
@@ -42,6 +43,7 @@ public class WeeklyAttendanceResDto {
             minutes = Duration.between(attendance.getClockInAt(), attendance.getClockOutAt()).toMinutes();
         }
         return WeeklyAttendanceResDto.builder()
+                .assignmentId(assignment.getId())
                 .workerName(assignment.getMember().getUser().getName())
                 .role(assignment.getMember().getRole())
                 .department(assignment.getMember().getDepartment())
