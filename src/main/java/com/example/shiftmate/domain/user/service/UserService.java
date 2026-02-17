@@ -3,9 +3,13 @@ package com.example.shiftmate.domain.user.service;
 import com.example.shiftmate.domain.attendance.entity.Attendance;
 import com.example.shiftmate.domain.attendance.repository.AttendanceRepository;
 import com.example.shiftmate.domain.storeMember.entity.StoreMember;
+import com.example.shiftmate.domain.storeMember.entity.StoreRole;
 import com.example.shiftmate.domain.storeMember.repository.StoreMemberRepository;
 import com.example.shiftmate.domain.user.dto.response.MyStoreProfileResDto;
 import com.example.shiftmate.domain.user.dto.response.MyStoreResDto;
+import com.example.shiftmate.domain.user.dto.response.UserInfoResDto;
+import com.example.shiftmate.domain.user.entity.User;
+import com.example.shiftmate.domain.user.repository.UserRepository;
 import com.example.shiftmate.global.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,6 +29,7 @@ public class UserService {
     // store_members 조회용 레포지토리 주입
     private final StoreMemberRepository storeMemberRepository;
     private final AttendanceRepository attendanceRepository; // 출근기록 조회 레포지토리
+    private final UserRepository userRepository;
 
     // 로그인한 사용자의 소속 스토어 목록 조회
     public List<MyStoreResDto> getMyStores(Long userId) {
@@ -83,4 +88,26 @@ public class UserService {
                 .build(); // DTO 빌더 종료
     }
 
+    public UserInfoResDto getUserInfoByEmailForManager(String email, Long userId) {
+        // 접근 사용자가 소속 매장 중 하나에서 MANAGER 권한을 갖는지 검증
+        boolean isManager = storeMemberRepository.findByUserId(userId).stream()
+            .anyMatch(member -> member.getRole() == StoreRole.MANAGER);
+        if (!isManager) {
+            throw new CustomException(ErrorCode.STORE_MEMBER_ACCESS_DENIED);
+        }
+
+        User user = userRepository.findByEmail(email).orElseThrow(
+            ()-> new CustomException(ErrorCode.MEMBER_NOT_FOUND)
+        );
+
+        return UserInfoResDto.from(user);
+    }
+
+    public UserInfoResDto getMyInfo(Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(
+            () -> new CustomException(ErrorCode.MEMBER_NOT_FOUND)
+        );
+
+        return UserInfoResDto.from(user);
+    }
 }

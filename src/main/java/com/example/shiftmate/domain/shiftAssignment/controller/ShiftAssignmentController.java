@@ -49,12 +49,12 @@ public class ShiftAssignmentController {
     }
 
     // 사용자를 기준으로 조회
-    @GetMapping("/users/{userId}")
+    @GetMapping("/me")
     public ResponseEntity<ApiResponse<List<MyScheduleResDto>>> getSchedulesByMember(
         @PathVariable Long storeId,
-        @PathVariable Long userId
+        @AuthenticationPrincipal CustomUserDetails userDetails
     ){
-        return ResponseEntity.ok(ApiResponse.success(shiftAssignmentService.getScheduleByMember(storeId,userId)));
+        return ResponseEntity.ok(ApiResponse.success(shiftAssignmentService.getScheduleByMember(storeId,userDetails.getId())));
     }
 
     @DeleteMapping
