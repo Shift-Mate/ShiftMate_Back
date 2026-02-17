@@ -3,6 +3,7 @@ package com.example.shiftmate.domain.user.controller;
 
 import com.example.shiftmate.domain.user.dto.response.MyStoreProfileResDto;
 import com.example.shiftmate.domain.user.dto.response.MyStoreResDto;
+import com.example.shiftmate.domain.user.dto.response.UserInfoResDto;
 import com.example.shiftmate.domain.user.service.UserService;
 import com.example.shiftmate.global.common.dto.ApiResponse;
 import com.example.shiftmate.global.security.CustomUserDetails;
@@ -37,6 +38,22 @@ public class UserController {
         // 공통 성공 응답으로 반환
         return ApiResponse.success(result);
     }
+
+    @GetMapping("/admin/user-info")
+    public ApiResponse<UserInfoResDto> getUserInfoForManager(
+        @RequestParam String email,
+        @AuthenticationPrincipal CustomUserDetails userDetails
+    ){
+        return ApiResponse.success(userService.getUserInfoByEmailForManager(email, userDetails.getId()));
+    }
+
+    @GetMapping("/me")
+    public ApiResponse<UserInfoResDto> getMyInfo(
+        @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        return ApiResponse.success(userService.getMyInfo(userDetails.getId()));
+    }
+
 
     // 로그인한 사용자가 선택한 스토어에서의 내 상세 정보 조회 API
     @GetMapping("/me/stores/{storeId}/profile")

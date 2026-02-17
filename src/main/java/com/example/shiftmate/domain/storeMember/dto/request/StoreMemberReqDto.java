@@ -16,8 +16,6 @@ public class StoreMemberReqDto {
     @Email(message = "올바른 이메일 형식이 아닙니다.")
     private String email;
 
-    @NotNull(message = "사용자 ID는 필수입니다.")
-    private Long userId;
 
     @NotNull(message = "역할은 필수입니다.")
     private StoreRole role;

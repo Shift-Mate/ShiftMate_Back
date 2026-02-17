@@ -37,16 +37,17 @@ public class StoreMemberController {
     private final StoreMemberService storeMemberService;
 
     // StoreMember create
-    @PostMapping
-    public ResponseEntity<ApiResponse<StoreMemberResDto>> createStoreMember(
+    @PostMapping("/{userId}")
+    public ResponseEntity<ApiResponse<Void>> createStoreMember(
         @PathVariable Long storeId,
+        @PathVariable Long userId,
         @Valid @RequestBody StoreMemberReqDto request,
         @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        StoreMemberResDto response = storeMemberService.createWithStoreId(
-            storeId, userDetails.getId(), request);
+        storeMemberService.createWithStoreId(
+            storeId, userDetails.getId(), request, userId);
         return ResponseEntity.status(HttpStatus.CREATED)
-            .body(ApiResponse.success(response));
+            .body(ApiResponse.success(null));
     }
 
     // 단일 조회

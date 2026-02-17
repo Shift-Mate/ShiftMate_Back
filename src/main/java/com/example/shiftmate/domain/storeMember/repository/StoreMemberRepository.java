@@ -48,9 +48,8 @@ public interface StoreMemberRepository extends JpaRepository<StoreMember, Long>,
     @EntityGraph(attributePaths = {"user"})
     List<StoreMember> findAll(Specification<StoreMember> spec);
 
-    // User ID로 StoreMember 조회
-    Optional<StoreMember> findByUser_Id(Long userId);
 
     // Store ID와 User ID로 StoreMember 조회 (더 안전)
     Optional<StoreMember> findByStore_IdAndUser_Id(Long storeId, Long userId);
+
 }

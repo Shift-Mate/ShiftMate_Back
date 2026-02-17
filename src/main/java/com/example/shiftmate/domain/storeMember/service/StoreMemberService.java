@@ -33,7 +33,7 @@ public class StoreMemberService {
 
     // 매장 생성자만 멤버 추가 가능.
     @Transactional
-    public StoreMemberResDto createWithStoreId(Long storeId, Long requestUserId, StoreMemberReqDto request) {
+    public void createWithStoreId(Long storeId, Long requestUserId, StoreMemberReqDto request,Long userId) {
         Store store = storeRepository.findByIdAndDeletedAtIsNull(storeId)
             .orElseThrow(() -> new CustomException(ErrorCode.STORE_NOT_FOUND));
 
@@ -48,7 +48,7 @@ public class StoreMemberService {
             .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
         
         // body의 userId와 이메일로 조회한 user가 일치하는지 검증
-        if (request.getUserId() != null && !request.getUserId().equals(user.getId())) {
+        if (userId != null && !userId.equals(user.getId())) {
             throw new CustomException(ErrorCode.INVALID_REQUEST); 
         } 
 
@@ -71,7 +71,7 @@ public class StoreMemberService {
             .build();
 
         StoreMember saved = storeMemberRepository.save(storeMember);
-        return toResponseDto(saved);
+        toResponseDto(saved);
     }
 
 
