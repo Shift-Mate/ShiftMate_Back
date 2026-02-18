@@ -27,13 +27,15 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class StoreMemberService {
+
     private final StoreMemberRepository storeMemberRepository;
     private final StoreRepository storeRepository;
     private final UserRepository userRepository;
 
     // 매장에서 role이 MANAGER인 멤버만 멤버 추가 가능.
     @Transactional
-    public void createWithStoreId(Long storeId, Long requestUserId, StoreMemberReqDto request,Long userId) {
+    public void createWithStoreId(Long storeId, Long requestUserId, StoreMemberReqDto request,
+        Long userId) {
         Store store = storeRepository.findByIdAndDeletedAtIsNull(storeId)
             .orElseThrow(() -> new CustomException(ErrorCode.STORE_NOT_FOUND));
 
@@ -48,11 +50,11 @@ public class StoreMemberService {
         String email = request.getEmail().trim().toLowerCase();
         User user = userRepository.findByEmail(email)
             .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
-        
+
         // body의 userId와 이메일로 조회한 user가 일치하는지 검증
         if (userId != null && !userId.equals(user.getId())) {
-            throw new CustomException(ErrorCode.INVALID_REQUEST); 
-        } 
+            throw new CustomException(ErrorCode.INVALID_REQUEST);
+        }
 
         // 이미 해당 매장 멤버인지 중복 체크
         storeMemberRepository.findByStoreIdAndUserId(storeId, user.getId())
@@ -94,10 +96,18 @@ public class StoreMemberService {
     }
 
     @Transactional
-    public StoreMemberResDto update(Long id, StoreMemberUpdateReqDto request) {
+    public StoreMemberResDto update(Long id, Long requestUserId, StoreMemberUpdateReqDto request) {
         // StoreMember 조회
         StoreMember storeMember = storeMemberRepository.findByIdWithRelations(id)
             .orElseThrow(() -> new CustomException(ErrorCode.STORE_MEMBER_NOT_FOUND));
+
+        // 해당 매장의 MANAGER만 수정 가능
+        StoreMember requester = storeMemberRepository.findByStoreIdAndUserId(
+                storeMember.getStore().getId(), requestUserId)
+            .orElseThrow(() -> new CustomException(ErrorCode.STORE_ACCESS_DENIED));
+        if (requester.getRole() != StoreRole.MANAGER) {
+            throw new CustomException(ErrorCode.STORE_ACCESS_DENIED);
+        }
 
         // 업데이트 실행
         storeMember.update(
@@ -115,10 +125,17 @@ public class StoreMemberService {
     }
 
     @Transactional
-    public void delete(Long id) {
-        // StoreMember 조회 -> 삭제되지 않은 것만
+    public void delete(Long id, Long requestUserId) {
         StoreMember storeMember = storeMemberRepository.findByIdAndDeletedAtIsNull(id)
             .orElseThrow(() -> new CustomException(ErrorCode.STORE_MEMBER_NOT_FOUND));
+
+        // 해당 매장의 MANAGER만 삭제 가능
+        StoreMember requester = storeMemberRepository.findByStoreIdAndUserId(
+                storeMember.getStore().getId(), requestUserId)
+            .orElseThrow(() -> new CustomException(ErrorCode.STORE_ACCESS_DENIED));
+        if (requester.getRole() != StoreRole.MANAGER) {
+            throw new CustomException(ErrorCode.STORE_ACCESS_DENIED);
+        }
 
         // soft delete 실행
         storeMember.delete();
