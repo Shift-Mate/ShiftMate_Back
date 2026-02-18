@@ -31,14 +31,16 @@ public class StoreMemberService {
     private final StoreRepository storeRepository;
     private final UserRepository userRepository;
 
-    // 매장 생성자만 멤버 추가 가능.
+    // 매장에서 role이 MANAGER인 멤버만 멤버 추가 가능.
     @Transactional
     public void createWithStoreId(Long storeId, Long requestUserId, StoreMemberReqDto request,Long userId) {
         Store store = storeRepository.findByIdAndDeletedAtIsNull(storeId)
             .orElseThrow(() -> new CustomException(ErrorCode.STORE_NOT_FOUND));
 
-        // 매장 생성자만 멤버 추가 가능
-        if (!store.getUser().getId().equals(requestUserId)) {
+        // 해당 매장의 MANAGER만 멤버 추가 가능
+        StoreMember requester = storeMemberRepository.findByStoreIdAndUserId(storeId, requestUserId)
+            .orElseThrow(() -> new CustomException(ErrorCode.STORE_ACCESS_DENIED));
+        if (requester.getRole() != StoreRole.MANAGER) {
             throw new CustomException(ErrorCode.STORE_ACCESS_DENIED);
         }
 
