@@ -61,7 +61,7 @@ public class SubstituteService {
 
         // 24시간전 스케줄은 대타 요청 불가
         if(assignment.getUpdatedStartTime().isBefore(LocalDateTime.now().plusDays(1))) {
-            throw new CustomException(ErrorCode.PAST_SCHEDULE_CANNOT_REQUEST);
+            throw new CustomException(ErrorCode.TOO_LATE_FOR_SUBSTITUTE);
         }
 
         // 본인의 스케줄만 대타 요청 가능
