@@ -40,10 +40,8 @@ public class StoreMemberService {
             .orElseThrow(() -> new CustomException(ErrorCode.STORE_NOT_FOUND));
 
         // 해당 매장의 MANAGER만 멤버 추가 가능
-        StoreMember requester = storeMemberRepository.findByStoreIdAndUserId(storeId, requestUserId)
-            .orElseThrow(() -> new CustomException(ErrorCode.STORE_ACCESS_DENIED));
-        if (requester.getRole() != StoreRole.MANAGER) {
-            throw new CustomException(ErrorCode.STORE_MEMBER_ACCESS_DENIED);
+        if (!storeMemberRepository.existsByStoreIdAndUserIdAndRoleAndDeletedAtIsNull(storeId, requestUserId, StoreRole.MANAGER)) {
+            throw new CustomException(ErrorCode.STORE_ACCESS_DENIED);
         }
 
         // 이메일로 사용자 조회 (해당하는 사람 확인)
@@ -102,10 +100,8 @@ public class StoreMemberService {
             .orElseThrow(() -> new CustomException(ErrorCode.STORE_MEMBER_NOT_FOUND));
 
         // 해당 매장의 MANAGER만 수정 가능
-        StoreMember requester = storeMemberRepository.findByStoreIdAndUserId(
-                storeMember.getStore().getId(), requestUserId)
-            .orElseThrow(() -> new CustomException(ErrorCode.STORE_ACCESS_DENIED));
-        if (requester.getRole() != StoreRole.MANAGER) {
+        Long storeId = storeMember.getStore().getId();
+        if (!storeMemberRepository.existsByStoreIdAndUserIdAndRoleAndDeletedAtIsNull(storeId, requestUserId, StoreRole.MANAGER)) {
             throw new CustomException(ErrorCode.STORE_ACCESS_DENIED);
         }
 
@@ -130,10 +126,8 @@ public class StoreMemberService {
             .orElseThrow(() -> new CustomException(ErrorCode.STORE_MEMBER_NOT_FOUND));
 
         // 해당 매장의 MANAGER만 삭제 가능
-        StoreMember requester = storeMemberRepository.findByStoreIdAndUserId(
-                storeMember.getStore().getId(), requestUserId)
-            .orElseThrow(() -> new CustomException(ErrorCode.STORE_ACCESS_DENIED));
-        if (requester.getRole() != StoreRole.MANAGER) {
+        Long storeId = storeMember.getStore().getId();
+        if (!storeMemberRepository.existsByStoreIdAndUserIdAndRoleAndDeletedAtIsNull(storeId, requestUserId, StoreRole.MANAGER)) {
             throw new CustomException(ErrorCode.STORE_ACCESS_DENIED);
         }
 

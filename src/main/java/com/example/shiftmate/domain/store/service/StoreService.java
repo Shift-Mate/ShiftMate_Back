@@ -107,9 +107,7 @@ public class StoreService {
                 .orElseThrow(() -> new CustomException(ErrorCode.STORE_NOT_FOUND));
 
         // 해당 매장의 MANAGER만 수정 가능
-        StoreMember requester = storeMemberRepository.findByStoreIdAndUserId(storeId, userId)
-                .orElseThrow(() -> new CustomException(ErrorCode.STORE_ACCESS_DENIED));
-        if (requester.getRole() != StoreRole.MANAGER) {
+        if (!storeMemberRepository.existsByStoreIdAndUserIdAndRoleAndDeletedAtIsNull(storeId, userId, StoreRole.MANAGER)) {
             throw new CustomException(ErrorCode.STORE_ACCESS_DENIED);
         }
 
@@ -146,9 +144,7 @@ public class StoreService {
             .orElseThrow(() -> new CustomException(ErrorCode.STORE_NOT_FOUND));
 
         // 해당 매장의 MANAGER만 삭제 가능
-        StoreMember requester = storeMemberRepository.findByStoreIdAndUserId(storeId, userId)
-            .orElseThrow(() -> new CustomException(ErrorCode.STORE_ACCESS_DENIED));
-        if (requester.getRole() != StoreRole.MANAGER) {
+        if (!storeMemberRepository.existsByStoreIdAndUserIdAndRoleAndDeletedAtIsNull(storeId, userId, StoreRole.MANAGER)) {
             throw new CustomException(ErrorCode.STORE_ACCESS_DENIED);
         }
 
