@@ -35,7 +35,7 @@ VALUES (1, 2, 'STAFF', 'STAFF', 'KITCHEN', 12000, 20, 'ACTIVE', 2222, NOW(), NOW
 
 -- 3번 유저 -> 매장 직원(알바)
 INSERT INTO store_members (store_id, user_id, role, member_rank, department, hourly_wage, min_hours_per_week, status, pin_code, created_at, updated_at)
-VALUES (1, 3, 'STAFF', 'PART_TIME', 'HALL', 11000, 15, 'ACTIVE', 3333, NOW(), NOW());
+VALUES (1, 3, 'STAFF', 'PART_TIME', 'KITCHEN', 11000, 15, 'ACTIVE', 3333, NOW(), NOW());
 
 -- 4번 유저 -> 매장 직원(알바)
 INSERT INTO store_members (store_id, user_id, role, member_rank, department, hourly_wage, min_hours_per_week, status, pin_code, created_at, updated_at)
@@ -109,24 +109,71 @@ INSERT INTO shift_assignments (member_id, shift_template_id, work_date, updated_
 VALUES (2, 3, '2026-02-13', '2026-02-13 18:00:00', '2026-02-13 22:00:00', NOW(), NOW());
 
 -- [2월 3주차]
--- 2월 16일(월): 이알바(오픈), 박대타(오픈) - 둘 다 오픈인 경우
+-- 2월 16일(월): 이알바(오픈), 박대타(오픈)
 INSERT INTO shift_assignments (member_id, shift_template_id, work_date, updated_start_time, updated_end_time, created_at, updated_at)
 VALUES (2, 1, '2026-02-16', '2026-02-16 09:00:00', '2026-02-16 13:00:00', NOW(), NOW());
 INSERT INTO shift_assignments (member_id, shift_template_id, work_date, updated_start_time, updated_end_time, created_at, updated_at)
 VALUES (3, 1, '2026-02-16', '2026-02-16 09:00:00', '2026-02-16 13:00:00', NOW(), NOW());
 
--- 2월 18일(수): 이알바(미들) - 대타 요청 테스트용으로 적합
+-- 2월 17일(화)
 INSERT INTO shift_assignments (member_id, shift_template_id, work_date, updated_start_time, updated_end_time, created_at, updated_at)
-VALUES (2, 2, '2026-02-18', '2026-02-18 13:00:00', '2026-02-18 18:00:00', NOW(), NOW());
+VALUES (2, 2, '2026-02-17', '2026-02-17 13:00:00', '2026-02-17 18:00:00', NOW(), NOW()); -- 이알바(미들)
+INSERT INTO shift_assignments (member_id, shift_template_id, work_date, updated_start_time, updated_end_time, created_at, updated_at)
+VALUES (3, 3, '2026-02-17', '2026-02-17 18:00:00', '2026-02-17 22:00:00', NOW(), NOW()); -- 박대타(마감)
 
--- [3월 - 먼 미래 일정]
--- 3월 1일(일): 이알바(오픈)
+-- 2월 18일(수)
 INSERT INTO shift_assignments (member_id, shift_template_id, work_date, updated_start_time, updated_end_time, created_at, updated_at)
-VALUES (2, 1, '2026-03-01', '2026-03-01 09:00:00', '2026-03-01 13:00:00', NOW(), NOW());
+VALUES (3, 1, '2026-02-18', '2026-02-18 09:00:00', '2026-02-18 13:00:00', NOW(), NOW()); -- 박대타(오픈)
 
--- 3월 2일(월): 박알바(마감)
+-- 2월 19일(목)
 INSERT INTO shift_assignments (member_id, shift_template_id, work_date, updated_start_time, updated_end_time, created_at, updated_at)
-VALUES (4, 3, '2026-03-02', '2026-03-02 18:00:00', '2026-03-02 22:00:00', NOW(), NOW());
+VALUES (2, 1, '2026-02-19', '2026-02-19 09:00:00', '2026-02-19 13:00:00', NOW(), NOW()); -- 이알바(오픈)
+INSERT INTO shift_assignments (member_id, shift_template_id, work_date, updated_start_time, updated_end_time, created_at, updated_at)
+VALUES (3, 2, '2026-02-19', '2026-02-19 13:00:00', '2026-02-19 18:00:00', NOW(), NOW()); -- 박대타(미들)
+
+-- 2월 20일(금)
+INSERT INTO shift_assignments (member_id, shift_template_id, work_date, updated_start_time, updated_end_time, created_at, updated_at)
+VALUES (3, 2, '2026-02-20', '2026-02-20 13:00:00', '2026-02-20 18:00:00', NOW(), NOW()); -- 박대타(미들)
+
+-- 2월 21일(토)
+INSERT INTO shift_assignments (member_id, shift_template_id, work_date, updated_start_time, updated_end_time, created_at, updated_at)
+VALUES (2, 2, '2026-02-21', '2026-02-21 13:00:00', '2026-02-21 18:00:00', NOW(), NOW()); -- 이알바(미들)
+
+-- 2월 23일(월)
+INSERT INTO shift_assignments (member_id, shift_template_id, work_date, updated_start_time, updated_end_time, created_at, updated_at)
+VALUES (2, 1, '2026-02-23', '2026-02-23 09:00:00', '2026-02-23 13:00:00', NOW(), NOW()); -- 이알바(오픈)
+INSERT INTO shift_assignments (member_id, shift_template_id, work_date, updated_start_time, updated_end_time, created_at, updated_at)
+VALUES (3, 3, '2026-02-23', '2026-02-23 18:00:00', '2026-02-23 22:00:00', NOW(), NOW()); -- 박대타(마감)
+
+-- 2월 24일(화)
+INSERT INTO shift_assignments (member_id, shift_template_id, work_date, updated_start_time, updated_end_time, created_at, updated_at)
+VALUES (2, 3, '2026-02-24', '2026-02-24 18:00:00', '2026-02-24 22:00:00', NOW(), NOW()); -- 이알바(마감)
+INSERT INTO shift_assignments (member_id, shift_template_id, work_date, updated_start_time, updated_end_time, created_at, updated_at)
+VALUES (3, 1, '2026-02-24', '2026-02-24 09:00:00', '2026-02-24 13:00:00', NOW(), NOW()); -- 박대타(오픈)
+
+-- 2월 25일(수)
+INSERT INTO shift_assignments (member_id, shift_template_id, work_date, updated_start_time, updated_end_time, created_at, updated_at)
+VALUES (2, 2, '2026-02-25', '2026-02-25 13:00:00', '2026-02-25 18:00:00', NOW(), NOW()); -- 이알바(미들)
+INSERT INTO shift_assignments (member_id, shift_template_id, work_date, updated_start_time, updated_end_time, created_at, updated_at)
+VALUES (3, 2, '2026-02-25', '2026-02-25 13:00:00', '2026-02-25 18:00:00', NOW(), NOW()); -- 박대타(미들)
+
+-- 2월 26일(목)
+INSERT INTO shift_assignments (member_id, shift_template_id, work_date, updated_start_time, updated_end_time, created_at, updated_at)
+VALUES (2, 1, '2026-02-26', '2026-02-26 09:00:00', '2026-02-26 13:00:00', NOW(), NOW()); -- 이알바(오픈)
+INSERT INTO shift_assignments (member_id, shift_template_id, work_date, updated_start_time, updated_end_time, created_at, updated_at)
+VALUES (3, 3, '2026-02-26', '2026-02-26 18:00:00', '2026-02-26 22:00:00', NOW(), NOW()); -- 박대타(마감)
+
+-- 2월 27일(금)
+INSERT INTO shift_assignments (member_id, shift_template_id, work_date, updated_start_time, updated_end_time, created_at, updated_at)
+VALUES (2, 3, '2026-02-27', '2026-02-27 18:00:00', '2026-02-27 22:00:00', NOW(), NOW()); -- 이알바(마감)
+INSERT INTO shift_assignments (member_id, shift_template_id, work_date, updated_start_time, updated_end_time, created_at, updated_at)
+VALUES (3, 1, '2026-02-27', '2026-02-27 09:00:00', '2026-02-27 13:00:00', NOW(), NOW()); -- 박대타(오픈)
+
+-- 2월 28일(토)
+INSERT INTO shift_assignments (member_id, shift_template_id, work_date, updated_start_time, updated_end_time, created_at, updated_at)
+VALUES (2, 2, '2026-02-28', '2026-02-28 13:00:00', '2026-02-28 18:00:00', NOW(), NOW()); -- 이알바(미들)
+INSERT INTO shift_assignments (member_id, shift_template_id, work_date, updated_start_time, updated_end_time, created_at, updated_at)
+VALUES (3, 2, '2026-02-28', '2026-02-28 13:00:00', '2026-02-28 18:00:00', NOW(), NOW()); -- 박대타(미들)
 
 -- 7. Attendance (출퇴근 기록)
 -- 1번 배정(2/2)에 대해서는 정상 출근 기록 생성
