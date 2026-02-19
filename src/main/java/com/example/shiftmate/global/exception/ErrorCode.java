@@ -71,6 +71,7 @@ public enum ErrorCode {
     NOT_AUTHORIZED(HttpStatus.FORBIDDEN, "권한이 없습니다."),
     CANNOT_CANCEL(HttpStatus.BAD_REQUEST, "취소할 수 없는 상태입니다."),
     PAST_SCHEDULE_CANNOT_REQUEST(HttpStatus.BAD_REQUEST, "이미 지난 스케줄에는 대타 요청을 할 수 없습니다."),
+    TOO_LATE_FOR_SUBSTITUTE(HttpStatus.BAD_REQUEST, "대타 요청은 근무 시작 최소 24시간 전까지만 가능합니다."),
 
     //Application
     ALREADY_APPLIED(HttpStatus.CONFLICT, "이미 지원한 요청입니다."),

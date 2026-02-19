@@ -37,7 +37,14 @@ public class WeeklyAttendanceResDto {
     // 근무시간(분)
     private Long workedMinutes;
 
+    // 대타 요청 신청 여부 확인
+    private boolean hasSubstituteRequest;
+
     public static WeeklyAttendanceResDto of(ShiftAssignment assignment, Attendance attendance) {
+        return of(assignment, attendance, false);
+    }
+
+    public static WeeklyAttendanceResDto of(ShiftAssignment assignment, Attendance attendance, boolean hasSubstituteRequest) {
         long minutes = 0;
         if(attendance != null && attendance.getClockInAt() != null && attendance.getClockOutAt() != null) {
             minutes = Duration.between(attendance.getClockInAt(), attendance.getClockOutAt()).toMinutes();
@@ -53,6 +60,7 @@ public class WeeklyAttendanceResDto {
                 .clockOutAt(attendance != null ? attendance.getClockOutAt() : null)
                 .status(attendance != null ? attendance.getStatus() : null)
                 .workedMinutes(minutes)
+                .hasSubstituteRequest(hasSubstituteRequest)
                 .build();
     }
 }

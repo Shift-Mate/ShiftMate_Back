@@ -14,6 +14,9 @@ import com.example.shiftmate.domain.shiftAssignment.repository.ShiftAssignmentRe
 import com.example.shiftmate.domain.storeMember.entity.StoreMember;
 import com.example.shiftmate.domain.storeMember.entity.StoreRank;
 import com.example.shiftmate.domain.storeMember.repository.StoreMemberRepository;
+import com.example.shiftmate.domain.substitute.entity.SubstituteRequest;
+import com.example.shiftmate.domain.substitute.repository.SubstituteRequestRepository;
+import com.example.shiftmate.domain.substitute.status.RequestStatus;
 import com.example.shiftmate.global.exception.CustomException;
 import com.example.shiftmate.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +39,7 @@ public class AttendanceService {
     private final ShiftAssignmentRepository shiftAssignmentRepository;
     private final AttendanceRepository attendanceRepository;
     private final StoreMemberRepository storeMemberRepository;
+    private final SubstituteRequestRepository substituteRequestRepository;
 
     private static final ZoneId KST_TIME = ZoneId.of("Asia/Seoul");
 
@@ -259,8 +263,22 @@ public class AttendanceService {
                         a -> a
                 ));
 
+        // 대타 요청 상태가 OPEN, PENDING인 것만 조회
+        List<SubstituteRequest> activeRequests = substituteRequestRepository.findByShiftAssignmentInAndStatusIn(
+                assignments,
+                List.of(RequestStatus.OPEN, RequestStatus.PENDING)
+        );
+
+        Set<Long> requestedAssignmentIds = activeRequests.stream()
+                .map(req -> req.getShiftAssignment().getId())
+                .collect(Collectors.toSet());
+
         List<WeeklyAttendanceResDto> dtoList = assignments.stream()
-                .map(assignment -> WeeklyAttendanceResDto.of(assignment, attendanceMap.get(assignment.getId())))
+                .map(assignment -> WeeklyAttendanceResDto.of(
+                        assignment,
+                        attendanceMap.get(assignment.getId()),
+                        requestedAssignmentIds.contains(assignment.getId()) // 대타 요청 여부 전달
+                ))
                 .collect(Collectors.toList());
 
         return MyWeeklyAttendanceResDto.of(dtoList);
