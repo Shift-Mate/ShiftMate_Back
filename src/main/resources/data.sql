@@ -286,3 +286,179 @@ VALUES (5, 5, 'TUESDAY', 'PREFERRED', NOW(), NOW());
 INSERT INTO employee_preferences (member_id, shift_template_id, day_of_week, type, created_at, updated_at)
 VALUES (5, 8, 'SATURDAY', 'NATURAL', NOW(), NOW());
 
+-- ============================================================
+-- [프로필 월급 테스트용] 알바 1명 + 2개 스토어 + 3개월 근무/출퇴근 데이터
+-- ============================================================
+
+-- 14. 테스트용 알바 유저 1명 추가 (예상 user_id: 11)
+INSERT INTO users (email, name, password, phone_number, created_at)
+VALUES ('salary.parttime@test.com', '급여알바', '$2a$12$6FOiv9dZY05vhTR2a9x4zO6IMFsFhWLG085AxYZSExuYHGMsAEHJe', '01000000011', NOW());
+
+-- 15. 같은 유저를 1번/2번 스토어에 모두 STAFF(PART_TIME)로 등록
+INSERT INTO store_members (store_id, user_id, role, member_rank, department, hourly_wage, min_hours_per_week, status, pin_code, created_at, updated_at)
+VALUES (1, 11, 'STAFF', 'PART_TIME', 'HALL', 11000, 12, 'ACTIVE', 1112, NOW(), NOW());
+
+INSERT INTO store_members (store_id, user_id, role, member_rank, department, hourly_wage, min_hours_per_week, status, pin_code, created_at, updated_at)
+VALUES (2, 11, 'STAFF', 'PART_TIME', 'HALL', 13000, 10, 'ACTIVE', 2112, NOW(), NOW());
+
+-- 16. 월별 1건씩 근무 배정 (2025-11, 2025-12, 2026-01, 2026-02)
+-- 공통 배정시간: 11:00 ~ 17:00
+INSERT INTO shift_assignments (member_id, shift_template_id, work_date, updated_start_time, updated_end_time, created_at, updated_at)
+VALUES (
+    (SELECT id FROM store_members WHERE store_id = 1 AND user_id = 11 LIMIT 1),
+    1,
+    '2025-11-12',
+    '2025-11-12 11:00:00',
+    '2025-11-12 17:00:00',
+    NOW(),
+    NOW()
+);
+
+INSERT INTO shift_assignments (member_id, shift_template_id, work_date, updated_start_time, updated_end_time, created_at, updated_at)
+VALUES (
+    (SELECT id FROM store_members WHERE store_id = 2 AND user_id = 11 LIMIT 1),
+    1,
+    '2025-12-09',
+    '2025-12-09 11:00:00',
+    '2025-12-09 17:00:00',
+    NOW(),
+    NOW()
+);
+
+INSERT INTO shift_assignments (member_id, shift_template_id, work_date, updated_start_time, updated_end_time, created_at, updated_at)
+VALUES (
+    (SELECT id FROM store_members WHERE store_id = 1 AND user_id = 11 LIMIT 1),
+    1,
+    '2026-01-14',
+    '2026-01-14 11:00:00',
+    '2026-01-14 17:00:00',
+    NOW(),
+    NOW()
+);
+
+INSERT INTO shift_assignments (member_id, shift_template_id, work_date, updated_start_time, updated_end_time, created_at, updated_at)
+VALUES (
+    (SELECT id FROM store_members WHERE store_id = 2 AND user_id = 11 LIMIT 1),
+    1,
+    '2026-02-18',
+    '2026-02-18 11:00:00',
+    '2026-02-18 17:00:00',
+    NOW(),
+    NOW()
+);
+
+-- 16-1. 각 월에 반대 스토어 근무 1건씩 추가 (시간은 소폭 변동)
+-- 2025-11: 기존 강남점 -> 홍대점 추가
+INSERT INTO shift_assignments (member_id, shift_template_id, work_date, updated_start_time, updated_end_time, created_at, updated_at)
+VALUES (
+    (SELECT id FROM store_members WHERE store_id = 2 AND user_id = 11 LIMIT 1),
+    1,
+    '2025-11-25',
+    '2025-11-25 11:00:00',
+    '2025-11-25 17:00:00',
+    NOW(),
+    NOW()
+);
+
+-- 2025-12: 기존 홍대점 -> 강남점 추가
+INSERT INTO shift_assignments (member_id, shift_template_id, work_date, updated_start_time, updated_end_time, created_at, updated_at)
+VALUES (
+    (SELECT id FROM store_members WHERE store_id = 1 AND user_id = 11 LIMIT 1),
+    1,
+    '2025-12-22',
+    '2025-12-22 11:00:00',
+    '2025-12-22 17:00:00',
+    NOW(),
+    NOW()
+);
+
+-- 2026-01: 기존 강남점 -> 홍대점 추가
+INSERT INTO shift_assignments (member_id, shift_template_id, work_date, updated_start_time, updated_end_time, created_at, updated_at)
+VALUES (
+    (SELECT id FROM store_members WHERE store_id = 2 AND user_id = 11 LIMIT 1),
+    1,
+    '2026-01-23',
+    '2026-01-23 11:00:00',
+    '2026-01-23 17:00:00',
+    NOW(),
+    NOW()
+);
+
+-- 2026-02: 기존 홍대점 -> 강남점 추가
+INSERT INTO shift_assignments (member_id, shift_template_id, work_date, updated_start_time, updated_end_time, created_at, updated_at)
+VALUES (
+    (SELECT id FROM store_members WHERE store_id = 1 AND user_id = 11 LIMIT 1),
+    1,
+    '2026-02-24',
+    '2026-02-24 11:00:00',
+    '2026-02-24 17:00:00',
+    NOW(),
+    NOW()
+);
+
+-- 17. 위 배정에 대한 출퇴근(완료) 기록 생성
+-- 2025-11: 11:00 출근, 17:40 퇴근 (NORMAL)
+INSERT INTO attendance (assignment_id, clock_in_at, clock_out_at, status, work_status, created_at, updated_at)
+SELECT sa.id, '2025-11-12 11:00:00', '2025-11-12 17:40:00', 'NORMAL', 'OFFWORK', NOW(), NOW()
+FROM shift_assignments sa
+JOIN store_members sm ON sa.member_id = sm.id
+WHERE sm.user_id = 11 AND sa.work_date = '2025-11-12'
+LIMIT 1;
+
+-- 2025-12: 10:55 출근, 17:13 퇴근 (NORMAL)
+INSERT INTO attendance (assignment_id, clock_in_at, clock_out_at, status, work_status, created_at, updated_at)
+SELECT sa.id, '2025-12-09 10:55:00', '2025-12-09 17:13:00', 'NORMAL', 'OFFWORK', NOW(), NOW()
+FROM shift_assignments sa
+JOIN store_members sm ON sa.member_id = sm.id
+WHERE sm.user_id = 11 AND sa.work_date = '2025-12-09'
+LIMIT 1;
+
+-- 2026-01: 11:20 출근, 17:00 퇴근 (LATE)
+INSERT INTO attendance (assignment_id, clock_in_at, clock_out_at, status, work_status, created_at, updated_at)
+SELECT sa.id, '2026-01-14 11:20:00', '2026-01-14 17:00:00', 'LATE', 'OFFWORK', NOW(), NOW()
+FROM shift_assignments sa
+JOIN store_members sm ON sa.member_id = sm.id
+WHERE sm.user_id = 11 AND sa.work_date = '2026-01-14'
+LIMIT 1;
+
+-- 2026-02: 11:03 출근, 17:50 퇴근 (NORMAL)
+INSERT INTO attendance (assignment_id, clock_in_at, clock_out_at, status, work_status, created_at, updated_at)
+SELECT sa.id, '2026-02-18 11:03:00', '2026-02-18 17:50:00', 'NORMAL', 'OFFWORK', NOW(), NOW()
+FROM shift_assignments sa
+JOIN store_members sm ON sa.member_id = sm.id
+WHERE sm.user_id = 11 AND sa.work_date = '2026-02-18'
+LIMIT 1;
+
+-- 17-1. 반대 스토어로 추가한 근무에 대한 출퇴근(완료) 기록
+-- 2025-11 홍대점 추가분
+INSERT INTO attendance (assignment_id, clock_in_at, clock_out_at, status, work_status, created_at, updated_at)
+SELECT sa.id, '2025-11-25 11:04:00', '2025-11-25 17:36:00', 'NORMAL', 'OFFWORK', NOW(), NOW()
+FROM shift_assignments sa
+JOIN store_members sm ON sa.member_id = sm.id
+WHERE sm.user_id = 11 AND sm.store_id = 2 AND sa.work_date = '2025-11-25'
+LIMIT 1;
+
+-- 2025-12 강남점 추가분
+INSERT INTO attendance (assignment_id, clock_in_at, clock_out_at, status, work_status, created_at, updated_at)
+SELECT sa.id, '2025-12-22 10:58:00', '2025-12-22 17:18:00', 'NORMAL', 'OFFWORK', NOW(), NOW()
+FROM shift_assignments sa
+JOIN store_members sm ON sa.member_id = sm.id
+WHERE sm.user_id = 11 AND sm.store_id = 1 AND sa.work_date = '2025-12-22'
+LIMIT 1;
+
+-- 2026-01 홍대점 추가분
+INSERT INTO attendance (assignment_id, clock_in_at, clock_out_at, status, work_status, created_at, updated_at)
+SELECT sa.id, '2026-01-23 11:16:00', '2026-01-23 17:07:00', 'LATE', 'OFFWORK', NOW(), NOW()
+FROM shift_assignments sa
+JOIN store_members sm ON sa.member_id = sm.id
+WHERE sm.user_id = 11 AND sm.store_id = 2 AND sa.work_date = '2026-01-23'
+LIMIT 1;
+
+-- 2026-02 강남점 추가분
+INSERT INTO attendance (assignment_id, clock_in_at, clock_out_at, status, work_status, created_at, updated_at)
+SELECT sa.id, '2026-02-24 11:02:00', '2026-02-24 17:44:00', 'NORMAL', 'OFFWORK', NOW(), NOW()
+FROM shift_assignments sa
+JOIN store_members sm ON sa.member_id = sm.id
+WHERE sm.user_id = 11 AND sm.store_id = 1 AND sa.work_date = '2026-02-24'
+LIMIT 1;
+
