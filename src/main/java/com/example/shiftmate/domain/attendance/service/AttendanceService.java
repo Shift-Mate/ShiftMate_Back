@@ -277,7 +277,7 @@ public class AttendanceService {
                 .map(assignment -> WeeklyAttendanceResDto.of(
                         assignment,
                         attendanceMap.get(assignment.getId()),
-                        requestedAssignmentIds.contains(assignment.getId()) // [수정] 대타 요청 여부 전달
+                        requestedAssignmentIds.contains(assignment.getId()) // 대타 요청 여부 전달
                 ))
                 .collect(Collectors.toList());
 
