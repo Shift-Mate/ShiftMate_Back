@@ -1,19 +1,19 @@
 -- 1. Users
 -- 1번: 관리자(Manager)
 INSERT INTO users (email, name, password, phone_number, created_at)
-VALUES ('manager@test.com', '김점장', '$2a$12$6FOiv9dZY05vhTR2a9x4zO6IMFsFhWLG085AxYZSExuYHGMsAEHJe', '010-0000-0001', NOW());
+VALUES ('manager@test.com', '김점장', '$2a$12$6FOiv9dZY05vhTR2a9x4zO6IMFsFhWLG085AxYZSExuYHGMsAEHJe', '01000000001', NOW());
 
 -- 2번: 직원(Staff)
 INSERT INTO users (email, name, password, phone_number, created_at)
-VALUES ('staff@test.com', '이알바', '$2a$12$6FOiv9dZY05vhTR2a9x4zO6IMFsFhWLG085AxYZSExuYHGMsAEHJe', '010-0000-0002', NOW());
+VALUES ('staff@test.com', '이알바', '$2a$12$6FOiv9dZY05vhTR2a9x4zO6IMFsFhWLG085AxYZSExuYHGMsAEHJe', '01000000002', NOW());
 
 -- 3번: 알바(Part_Time)
 INSERT INTO users (email, name, password, phone_number, created_at)
-VALUES ('sub@test.com', '박대타', '$2a$12$6FOiv9dZY05vhTR2a9x4zO6IMFsFhWLG085AxYZSExuYHGMsAEHJe', '010-0000-0003', NOW());
+VALUES ('sub@test.com', '박대타', '$2a$12$6FOiv9dZY05vhTR2a9x4zO6IMFsFhWLG085AxYZSExuYHGMsAEHJe', '01000000003', NOW());
 
 -- 4번: 알바(Part_Time)
 INSERT INTO users (email, name, password, phone_number, created_at)
-VALUES ('sub2@test.com', '박알바', '$2a$12$6FOiv9dZY05vhTR2a9x4zO6IMFsFhWLG085AxYZSExuYHGMsAEHJe', '010-0000-0004', NOW());
+VALUES ('sub2@test.com', '박알바', '$2a$12$6FOiv9dZY05vhTR2a9x4zO6IMFsFhWLG085AxYZSExuYHGMsAEHJe', '01000000004', NOW());
 
 -- 2. Stores
 -- 관리자(1번 유저)가 운영하는 매장
@@ -149,7 +149,7 @@ VALUES (4, 3, '2026-03-02', '2026-03-02 18:00:00', '2026-03-02 22:00:00', NOW(),
 -- [추가 요청] 선호도 테스트용 데이터
 -- 유저: PreferenceTestUser (4번 유저)
 INSERT INTO users (email, name, password, phone_number, created_at)
-VALUES ('preftest@test.com', '선호테스터', '$2a$10$bjbizcdFOx7jBwBm00m5rOHawFLs3qtSZV0QJfc663m14LmnLZTWy', '010-0000-0005', NOW());
+VALUES ('preftest@test.com', '선호테스터', '$2a$10$bjbizcdFOx7jBwBm00m5rOHawFLs3qtSZV0QJfc663m14LmnLZTWy', '01000000005', NOW());
 
 -- 스토어 멤버: 2번 매장(홍대점)에 4번 유저를 직원으로 추가 (Member ID: 4)
 INSERT INTO store_members (store_id, user_id, role, member_rank, department, hourly_wage, min_hours_per_week, status, pin_code, created_at, updated_at)
@@ -167,35 +167,35 @@ VALUES ('시프트메이트 테스트점', '서울시 강서구', '08:00:00', '2
 -- 11. 테스트 매장 직원들 추가 (User ID: 5~9, StoreMember ID: 5~9)
 -- 5번 유저: 테스트 매니저
 INSERT INTO users (email, name, password, phone_number, created_at)
-VALUES ('test.manager@test.com', '테스트매니저', '$2a$10$bjbizcdFOx7jBwBm00m5rOHawFLs3qtSZV0QJfc663m14LmnLZTWy', '010-0000-0006', NOW());
+VALUES ('test.manager@test.com', '테스트매니저', '$2a$10$bjbizcdFOx7jBwBm00m5rOHawFLs3qtSZV0QJfc663m14LmnLZTWy', '01000000006', NOW());
 
 INSERT INTO store_members (store_id, user_id, role, member_rank, department, hourly_wage, min_hours_per_week, status, pin_code, created_at, updated_at)
 VALUES (3, 5, 'MANAGER', 'MANAGER', 'HALL', 0, 40, 'ACTIVE', 5555, NOW(), NOW());
 
 -- 6번 유저: 홀 직원 1
 INSERT INTO users (email, name, password, phone_number, created_at)
-VALUES ('hall1@test.com', '홀직원1', '1234', '010-0000-0007', NOW());
+VALUES ('hall1@test.com', '홀직원1', '1234', '01000000007', NOW());
 
 INSERT INTO store_members (store_id, user_id, role, member_rank, department, hourly_wage, min_hours_per_week, status, pin_code, created_at, updated_at)
 VALUES (3, 6, 'STAFF', 'STAFF', 'HALL', 13000, 25, 'ACTIVE', 6666, NOW(), NOW());
 
 -- 7번 유저: 홀 직원 2
 INSERT INTO users (email, name, password, phone_number, created_at)
-VALUES ('hall2@test.com', '홀직원2', '1234', '010-0000-0008', NOW());
+VALUES ('hall2@test.com', '홀직원2', '1234', '01000000008', NOW());
 
 INSERT INTO store_members (store_id, user_id, role, member_rank, department, hourly_wage, min_hours_per_week, status, pin_code, created_at, updated_at)
 VALUES (3, 7, 'STAFF', 'PART_TIME', 'HALL', 11500, 15, 'ACTIVE', 7777, NOW(), NOW());
 
 -- 8번 유저: 주방 직원 1
 INSERT INTO users (email, name, password, phone_number, created_at)
-VALUES ('kitchen1@test.com', '주방직원1', '1234', '010-0000-0009', NOW());
+VALUES ('kitchen1@test.com', '주방직원1', '1234', '01000000009', NOW());
 
 INSERT INTO store_members (store_id, user_id, role, member_rank, department, hourly_wage, min_hours_per_week, status, pin_code, created_at, updated_at)
 VALUES (3, 8, 'STAFF', 'STAFF', 'KITCHEN', 14000, 30, 'ACTIVE', 8888, NOW(), NOW());
 
 -- 9번 유저: 주방 직원 2
 INSERT INTO users (email, name, password, phone_number, created_at)
-VALUES ('kitchen2@test.com', '주방직원2', '1234', '010-0000-0010', NOW());
+VALUES ('kitchen2@test.com', '주방직원2', '1234', '01000000010', NOW());
 
 INSERT INTO store_members (store_id, user_id, role, member_rank, department, hourly_wage, min_hours_per_week, status, pin_code, created_at, updated_at)
 VALUES (3, 9, 'STAFF', 'PART_TIME', 'KITCHEN', 12500, 20, 'ACTIVE', 9999, NOW(), NOW());
