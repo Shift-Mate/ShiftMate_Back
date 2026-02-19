@@ -43,7 +43,7 @@ public class StoreMemberService {
         StoreMember requester = storeMemberRepository.findByStoreIdAndUserId(storeId, requestUserId)
             .orElseThrow(() -> new CustomException(ErrorCode.STORE_ACCESS_DENIED));
         if (requester.getRole() != StoreRole.MANAGER) {
-            throw new CustomException(ErrorCode.STORE_ACCESS_DENIED);
+            throw new CustomException(ErrorCode.STORE_MEMBER_ACCESS_DENIED);
         }
 
         // 이메일로 사용자 조회 (해당하는 사람 확인)
