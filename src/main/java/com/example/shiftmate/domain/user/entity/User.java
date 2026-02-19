@@ -41,4 +41,24 @@ public class User extends BaseCreateEntity {
         this.password = password;
         this.phoneNumber = phoneNumber;
     }
+
+    // 비밀번호 변경 메서드
+    // 서비스에서 새 비밀번호를 인코딩한 뒤 이 메서드로 반영
+    public void changePassword(String encodedPassword) {
+        // 인코딩된 비밀번호로 교체
+        this.password = encodedPassword;
+    }
+
+    // 내 프로필(이름/전화번호) 수정 메서드
+    public void updateProfile(String name, String phoneNumber) {
+        // 이름이 null/빈값이 아니면 변경
+        if (name != null && !name.isBlank()) {
+            this.name = name.trim();
+        }
+
+        // 전화번호가 null/빈값이 아니면 변경
+        if (phoneNumber != null && !phoneNumber.isBlank()) {
+            this.phoneNumber = phoneNumber.trim();
+        }
+    }
 }
