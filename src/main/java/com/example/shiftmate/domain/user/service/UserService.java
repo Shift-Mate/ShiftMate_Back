@@ -224,6 +224,8 @@ public class UserService {
                         .estimatedPay(acc.estimatedPay)
                         // DTO 빌드 완료
                         .build())
+                // 월 변경 시 카드 순서가 흔들리지 않도록 storeId 기준 고정 정렬
+                .sorted(Comparator.comparingLong(StoreMonthlySalaryResDto::getStoreId))
                 // List로 수집
                 .collect(Collectors.toList());
 
