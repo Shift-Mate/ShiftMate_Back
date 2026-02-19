@@ -102,9 +102,14 @@ public class StoreService {
     // Store Update, PUT /stores/{storeId}
     @Transactional
     public StoreResDto update(Long storeId, StoreReqDto request, Long userId) {
-        // store 조회 (삭제되지 않은 + 삭제 권한 확인)
-        Store store = storeRepository.findByIdAndUserIdAndDeletedAtIsNull(storeId, userId)
-                .orElseThrow(() -> new CustomException(ErrorCode.STORE_NOT_FOUND)); // 매장 or 권한 없음
+        // store 조회 (삭제되지 않은 것만)
+        Store store = storeRepository.findByIdAndDeletedAtIsNull(storeId)
+                .orElseThrow(() -> new CustomException(ErrorCode.STORE_NOT_FOUND));
+
+        // 해당 매장의 MANAGER만 수정 가능
+        if (!storeMemberRepository.existsByStoreIdAndUserIdAndRoleAndDeletedAtIsNull(storeId, userId, StoreRole.MANAGER)) {
+            throw new CustomException(ErrorCode.STORE_ACCESS_DENIED);
+        }
 
         // 영업 시작 시간은 종료 시간보다 빨라야 함 (변경된 경우만 검사하려면 request 값 기준)
         if (request.getOpenTime() != null && request.getCloseTime() != null
@@ -134,9 +139,14 @@ public class StoreService {
     // DELETE /stores/{storeId}
     @Transactional
     public void delete(Long storeId, Long userId) {
-        // store 조회 (삭제되지 않은 + 삭제 권한 확인)
-        Store store = storeRepository.findByIdAndUserIdAndDeletedAtIsNull(storeId, userId)
-            .orElseThrow(() -> new CustomException(ErrorCode.STORE_NOT_FOUND)); // 매장 없음 or 권한 없음
+        // store 조회 (삭제되지 않은 것만)
+        Store store = storeRepository.findByIdAndDeletedAtIsNull(storeId)
+            .orElseThrow(() -> new CustomException(ErrorCode.STORE_NOT_FOUND));
+
+        // 해당 매장의 MANAGER만 삭제 가능
+        if (!storeMemberRepository.existsByStoreIdAndUserIdAndRoleAndDeletedAtIsNull(storeId, userId, StoreRole.MANAGER)) {
+            throw new CustomException(ErrorCode.STORE_ACCESS_DENIED);
+        }
 
         // Soft Delete 실행
         store.softDelete();

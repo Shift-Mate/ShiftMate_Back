@@ -58,7 +58,7 @@ public class StoreController {
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
-    // 유저가 속해있는 매장 수정(생성자만 수정)
+    // 유저가 속해있는 매장 수정(해당 매장 MANAGER만 수정 가능)
     @PutMapping("/{storeId}")
     public ResponseEntity<ApiResponse<StoreResDto>> updateStore(
         @PathVariable Long storeId,

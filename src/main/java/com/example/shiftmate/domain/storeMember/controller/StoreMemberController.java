@@ -75,15 +75,19 @@ public class StoreMemberController {
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<StoreMemberResDto>> updateStoreMember(
         @PathVariable Long id,
-        @Valid @RequestBody StoreMemberUpdateReqDto request
+        @Valid @RequestBody StoreMemberUpdateReqDto request,
+        @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        StoreMemberResDto response = storeMemberService.update(id, request);
+        StoreMemberResDto response = storeMemberService.update(id, userDetails.getId(), request);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> deleteStoreMember(@PathVariable Long id) {
-        storeMemberService.delete(id);
+    public ResponseEntity<ApiResponse<Void>> deleteStoreMember(
+        @PathVariable Long id,
+        @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        storeMemberService.delete(id, userDetails.getId());
         return ResponseEntity.status(HttpStatus.NO_CONTENT)
             .body(ApiResponse.success(null));
     }
