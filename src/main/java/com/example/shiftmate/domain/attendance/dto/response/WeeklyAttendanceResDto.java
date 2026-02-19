@@ -60,7 +60,7 @@ public class WeeklyAttendanceResDto {
                 .clockOutAt(attendance != null ? attendance.getClockOutAt() : null)
                 .status(attendance != null ? attendance.getStatus() : null)
                 .workedMinutes(minutes)
-                .hasSubstituteRequest(hasSubstituteRequest) // 필드 설정
+                .hasSubstituteRequest(hasSubstituteRequest)
                 .build();
     }
 }
