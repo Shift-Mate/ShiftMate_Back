@@ -36,6 +36,7 @@ public class AuthService {
                 .email(request.getEmail())
                 .name(request.getName())
                 .password(passwordEncoder.encode(request.getPassword()))
+                .phoneNumber(request.getPhoneNumber())
                 .build();
 
         // 3) DB 저장 후 응답 DTO 반환

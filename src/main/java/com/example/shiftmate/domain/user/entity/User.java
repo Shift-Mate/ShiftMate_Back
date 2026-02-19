@@ -31,10 +31,14 @@ public class User extends BaseCreateEntity {
     @Column(nullable = false)
     private String password;
 
+    @Column(nullable = false)
+    private String phoneNumber;
+
     @Builder
-    public User(String email, String name, String password) {
+    public User(String email, String name, String password, String phoneNumber) {
         this.email = email;
         this.name = name;
         this.password = password;
+        this.phoneNumber = phoneNumber;
     }
 }
