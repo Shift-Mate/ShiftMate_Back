@@ -4,14 +4,16 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'ShiftMate_Back/**'
   workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     env:
-      IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/shiftmate-back
-      BACK_ENV_FILE: /home/ubuntu/ShiftMate-Back/.env
+      IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/shiftmate_back
+#      BACK_ENV_FILE: /home/ubuntu/ShiftMate_Back/.env
 
     steps:
       - name: Checkout
@@ -29,8 +31,8 @@ jobs:
       - name: Build and push image
         uses: docker/build-push-action@v6
         with:
-          context: .
-          file: ./Dockerfile
+          context: ./ShiftMate_Back
+          file: ./ShiftMate_Back/Dockerfile
           push: true
           tags: |
             ${{ env.IMAGE_NAME }}:latest
@@ -50,23 +52,12 @@ jobs:
           envs: IMAGE_NAME,BACK_ENV_FILE
           script: |
             set -e
-            docker pull ${IMAGE_NAME}:latest
-            if docker ps -a --format '{{.Names}}' | grep -Eq '^shiftmate-back$'; then
-              docker rm -f shiftmate-back
-            fi
-            test -f ${BACK_ENV_FILE}
-            docker run -d \
-              --name shiftmate-back \
-              --restart unless-stopped \
-              -p 8081:8080 \
-              --env-file ${BACK_ENV_FILE} \
-              ${IMAGE_NAME}:latest
-
-            # Remove old tags for this service image, keep latest.
-            docker images "${IMAGE_NAME}" --format '{{.Repository}}:{{.Tag}} {{.ID}}' \
-              | awk '$1 !~ /:latest$/ {print $2}' \
-              | sort -u \
-              | xargs -r docker rmi || true
-
-            # Remove dangling images left after rebuilds.
-            docker image prune -f
+            # 서버 내 docker-compose.yml이 위치한 프로젝트 루트 폴더로 이동 
+            cd /home/ubuntu/ShiftMate
+            
+            # 최신 이미지를 pull 받고 docker-compose로 재시작 (네트워크 자동 연결)
+            docker-compose pull backend
+            docker-compose up -d backend
+            
+            # 사용하지 않는 이전 도커 이미지 정리
+            docker image prune -af
