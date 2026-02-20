@@ -1,0 +1,63 @@
+name: Back Deploy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/shiftmate_back
+      BACK_ENV_FILE: /home/ubuntu/ShiftMate_Back/.env
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: |
+            ${{ env.IMAGE_NAME }}:latest
+            ${{ env.IMAGE_NAME }}:${{ github.sha }}
+          platforms: linux/amd64
+
+      - name: Deploy to server
+        uses: appleboy/ssh-action@v1.2.0
+        env:
+          IMAGE_NAME: ${{ env.IMAGE_NAME }}
+          BACK_ENV_FILE: ${{ env.BACK_ENV_FILE }}
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          envs: IMAGE_NAME,BACK_ENV_FILE
+          script: |
+            set -e
+            docker pull ${IMAGE_NAME}:latest
+            if docker ps -a --format '{{.Names}}' | grep -Eq '^shiftmate-back$'; then
+              docker rm -f shiftmate-back
+            fi
+            test -f ${BACK_ENV_FILE}
+            docker run -d \
+              --name shiftmate-back \
+              --restart unless-stopped \
+              -p 8081:8080 \
+              --env-file ${BACK_ENV_FILE} \
+              ${IMAGE_NAME}:latest
