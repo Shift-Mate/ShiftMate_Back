@@ -61,3 +61,12 @@ jobs:
               -p 8081:8080 \
               --env-file ${BACK_ENV_FILE} \
               ${IMAGE_NAME}:latest
+
+            # Remove old tags for this service image, keep latest.
+            docker images "${IMAGE_NAME}" --format '{{.Repository}}:{{.Tag}} {{.ID}}' \
+              | awk '$1 !~ /:latest$/ {print $2}' \
+              | sort -u \
+              | xargs -r docker rmi || true
+
+            # Remove dangling images left after rebuilds.
+            docker image prune -f
