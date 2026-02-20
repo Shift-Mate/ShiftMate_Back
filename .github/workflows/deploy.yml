@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/shiftmate_back
-      BACK_ENV_FILE: /home/ubuntu/ShiftMate_Back/.env
+      BACK_ENV_FILE: /home/ubuntu/ShiftMate-Back/.env
 
     steps:
       - name: Checkout
