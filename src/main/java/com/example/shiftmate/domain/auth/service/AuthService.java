@@ -15,8 +15,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.context.i18n.LocaleContextHolder;
 
 import java.time.Instant;
+import java.util.Locale;
 import java.util.UUID;
 
 @Slf4j
@@ -152,8 +154,9 @@ public class AuthService {
 
         // 토큰 저장 후, 사용자 이메일로 재설정 링크 발송
         try {
+            Locale locale = LocaleContextHolder.getLocale();
             // 메일 발송 실패하더라도 API 응답은 동일하게 유지(보안상)
-            passwordResetMailService.sendResetMail(user.getEmail(), token);
+            passwordResetMailService.sendResetMail(user.getEmail(), token, locale);
         } catch (Exception e) {
             // 운영 추적용 로그 (사용자에게는 에러 노출 X)
             log.warn("Password reset mail send failed. email={}", request.getEmail(), e);
