@@ -1,0 +1,94 @@
+package com.example.shiftmate.domain.storeMember.controller;
+
+import com.example.shiftmate.domain.storeMember.dto.request.StoreMemberReqDto;
+import com.example.shiftmate.domain.storeMember.dto.request.StoreMemberUpdateReqDto;
+import com.example.shiftmate.domain.storeMember.dto.response.StoreMemberListResDto;
+import com.example.shiftmate.domain.storeMember.dto.response.StoreMemberResDto;
+import com.example.shiftmate.domain.storeMember.dto.response.UserStoreListResDto;
+import com.example.shiftmate.domain.storeMember.entity.Department;
+import com.example.shiftmate.domain.storeMember.entity.MemberStatus;
+import com.example.shiftmate.domain.storeMember.entity.StoreRole;
+import com.example.shiftmate.domain.storeMember.service.StoreMemberService;
+import com.example.shiftmate.global.common.dto.ApiResponse;
+import com.example.shiftmate.global.exception.CustomException;
+import com.example.shiftmate.global.exception.ErrorCode;
+import com.example.shiftmate.global.security.CustomUserDetails;
+import jakarta.validation.Valid;
+import java.util.List;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/stores/{storeId}/store-members")
+@RequiredArgsConstructor
+public class StoreMemberController {
+
+    private final StoreMemberService storeMemberService;
+
+    // StoreMember create
+    @PostMapping("/{userId}")
+    public ResponseEntity<ApiResponse<Void>> createStoreMember(
+        @PathVariable Long storeId,
+        @PathVariable Long userId,
+        @Valid @RequestBody StoreMemberReqDto request,
+        @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        storeMemberService.createWithStoreId(
+            storeId, userDetails.getId(), request, userId);
+        return ResponseEntity.status(HttpStatus.CREATED)
+            .body(ApiResponse.success(null));
+    }
+
+    // 단일 조회
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<StoreMemberResDto>> getStoreMember(@PathVariable Long id) {
+        StoreMemberResDto response = storeMemberService.findById(id);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+
+    // 가게 기준 조회 (가게에 소속된 유저들) - 필터링 옵션: status, role, department
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<StoreMemberListResDto>>> getMembersByStoreId(
+        @PathVariable Long storeId,
+        @AuthenticationPrincipal CustomUserDetails userDetails,
+        @RequestParam(required = false) MemberStatus status,
+        @RequestParam(required = false) StoreRole role,
+        @RequestParam(required = false) Department department
+    ) {
+        List<StoreMemberListResDto> response = storeMemberService.getMembersByStoreId(
+            storeId, userDetails.getId(), status, role, department);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponse<StoreMemberResDto>> updateStoreMember(
+        @PathVariable Long id,
+        @Valid @RequestBody StoreMemberUpdateReqDto request,
+        @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        StoreMemberResDto response = storeMemberService.update(id, userDetails.getId(), request);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse<Void>> deleteStoreMember(
+        @PathVariable Long id,
+        @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        storeMemberService.delete(id, userDetails.getId());
+        return ResponseEntity.status(HttpStatus.NO_CONTENT)
+            .body(ApiResponse.success(null));
+    }
+}

@@ -8,6 +8,27 @@ import org.springframework.http.HttpStatus;
 @RequiredArgsConstructor
 public enum ErrorCode {
 
+    //Store
+    STORE_NOT_FOUND(HttpStatus.NOT_FOUND, "가게 정보를 찾을 수 없습니다."),
+    INVALID_TIME_RANGE(HttpStatus.BAD_REQUEST, "시작 시간은 종료 시간보다 빨라야 합니다."),
+    STORE_ACCESS_DENIED(HttpStatus.FORBIDDEN, "매장 수정 권한이 없습니다."),
+
+    // Store Member
+    STORE_MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "매장 멤버 정보를 찾을 수 없습니다."),
+    STORE_MEMBER_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 해당 매장에 등록된 멤버입니다."),
+    STORE_MEMBER_STORE_ID_MISMATCH(HttpStatus.BAD_REQUEST, "요청한 매장 ID가 해당 멤버의 매장 ID와 일치하지 않습니다."),
+    STORE_MEMBER_USER_ID_MISMATCH(HttpStatus.BAD_REQUEST, "요청한 사용자 ID가 해당 멤버의 사용자 ID와 일치하지 않습니다."),
+    STORE_MEMBER_ACCESS_DENIED(HttpStatus.FORBIDDEN, "매장 멤버 관리 권한이 없습니다."),
+
+    //Preference
+    PREFERENCE_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 선호 시간이 존재합니다."),
+    PREFERENCE_NOT_FOUND(HttpStatus.NOT_FOUND, "선호 시간이 존재하지 않습니다."),
+
+
+    //Template
+    TEMPLATE_NOT_FOUND(HttpStatus.NOT_FOUND,"템플릿이 존재하지 않습니다."),
+    TEMPLATE_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 가게 템플릿이 생성되어 있습니다."),
+    TYPE_NOT_FOUND(HttpStatus.NOT_FOUND,"타입이 존재하지 않습니다."),
 
     //Token
     EXPIRED_TOKEN(HttpStatus.UNAUTHORIZED, "토큰이 만료되었습니다."),
@@ -22,7 +43,49 @@ public enum ErrorCode {
 
     // User
     MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "회원 정보를 찾을 수 없습니다."),
-    EMAIL_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 사용 중인 이메일입니다.");
+    EMAIL_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 사용 중인 이메일입니다."),
+
+    // Password Change
+    PASSWORD_NOT_MATCH(HttpStatus.BAD_REQUEST, "현재 비밀번호가 일치하지 않습니다."),
+    NEW_PASSWORD_CONFIRM_MISMATCH(HttpStatus.BAD_REQUEST, "새 비밀번호 확인이 일치하지 않습니다."),
+    NEW_PASSWORD_SAME_AS_OLD(HttpStatus.BAD_REQUEST, "새 비밀번호는 기존 비밀번호와 달라야 합니다."),
+
+    // ShiftAssignment
+    WEEK_ALREADY_EXISTS(HttpStatus.CONFLICT, "해당 주에는 이미 시간표가 생성되어 있습니다."),
+    NOT_MONDAY_START_DATE(HttpStatus.BAD_REQUEST, "시작 요일은 월요일이어야 합니다."),
+
+    SHIFT_ASSIGNMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "배정된 스케줄을 찾을 수 없습니다."),
+
+    // Attendance
+    ATTENDANCE_NOT_FOUND(HttpStatus.NOT_FOUND, "출근 기록을 찾을 수 없습니다."),
+    ATTENDANCE_ALREADY_CLOSED(HttpStatus.BAD_REQUEST, "이미 퇴근처리된 스케줄입니다."),
+    INVALID_PIN_CODE(HttpStatus.UNAUTHORIZED, "핀번호가 일치하지 않습니다."),
+    STORE_MISMATCH(HttpStatus.BAD_REQUEST, "해당 매장의 스케줄이 아닙니다."),
+    NOT_CLOCK_IN_TIME(HttpStatus.BAD_REQUEST, "해당 스케줄의 출근 처리 가능 시간이 아닙니다."),
+    NOT_CLOCK_OUT_TIME(HttpStatus.BAD_REQUEST, "해당 스케줄의 퇴근 처리 가능 시간이 아닙니다."),
+    TOO_FAST_CLOCK_OUT(HttpStatus.BAD_REQUEST, "출근 처리 5분 후 퇴근 처리가 가능합니다."),
+
+    // Substitute
+    SUBSTITUTE_REQ_NOT_FOUND(HttpStatus.NOT_FOUND, "대타 요청을 찾을 수 없습니다."),
+    ALREADY_REQUESTED(HttpStatus.CONFLICT, "이미 대타 요청이 진행 중인 스케줄입니다."),
+    NOT_AUTHORIZED(HttpStatus.FORBIDDEN, "권한이 없습니다."),
+    CANNOT_CANCEL(HttpStatus.BAD_REQUEST, "취소할 수 없는 상태입니다."),
+    PAST_SCHEDULE_CANNOT_REQUEST(HttpStatus.BAD_REQUEST, "이미 지난 스케줄에는 대타 요청을 할 수 없습니다."),
+    TOO_LATE_FOR_SUBSTITUTE(HttpStatus.BAD_REQUEST, "대타 요청은 근무 시작 최소 24시간 전까지만 가능합니다."),
+
+    //Application
+    ALREADY_APPLIED(HttpStatus.CONFLICT, "이미 지원한 요청입니다."),
+    CANNOT_APPLY(HttpStatus.BAD_REQUEST, "대타 요청에 지원할 수 없는 상태입니다."),
+    CANNOT_SELECT(HttpStatus.BAD_REQUEST, "승인할 수 없는 지원입니다."),
+    APPLICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "대타 지원을 찾을 수 없습니다."),
+    NOT_SUBSTITUTE_APPLICATION(HttpStatus.FORBIDDEN, "해당 대타 요청의 지원이 아닙니다."),
+    DEPARTMENT_MISMATCH(HttpStatus.BAD_REQUEST, "다른 부서의 근무에는 대타 지원을 할 수 없습니다."),
+    DUPLICATE_SHIFT(HttpStatus.CONFLICT, "이미 배정된 스케줄과 시간이 겹쳐 대타 지원이 불가능합니다."),
+    PAST_SCHEDULE_CANNOT_APPROVE(HttpStatus.BAD_REQUEST, "이미 지난 스케줄의 대타 지원은 승인할 수 없습니다."),
+
+    // Bizno API
+    BIZNO_API_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "사업자 번호 조회 API 호출에 실패했습니다."),
+    INVALID_BIZNO(HttpStatus.BAD_REQUEST, "유효하지 않은 사업자 번호입니다.");
 
 
 
