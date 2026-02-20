@@ -65,8 +65,8 @@ jobs:
             fi
 
             # 최신 이미지를 pull 받고 docker-compose로 재시작 (네트워크 자동 연결)
-            docker-compose pull backend
-            docker-compose up -d backend
+            docker compose pull backend
+            docker compose up -d backend
 
             # 사용하지 않는 이전 도커 이미지 정리
             docker image prune -af
