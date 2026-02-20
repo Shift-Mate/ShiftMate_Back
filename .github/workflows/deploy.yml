@@ -51,7 +51,7 @@ jobs:
           script: |
             set -e
             # 서버 내 docker-compose.yml이 위치한 프로젝트 루트 폴더로 이동 
-            cd /home/ubuntu/ShiftMate
+            cd /home/ubuntu
 
             # MySQL/Redis 이미지로 생성된 컨테이너가 있으면 먼저 기동
             MYSQL_CONTAINER_ID=$(docker ps -aq --filter "ancestor=mysql:8.0" | head -n 1)
