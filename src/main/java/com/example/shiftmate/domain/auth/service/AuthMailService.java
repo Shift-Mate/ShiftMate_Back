@@ -11,7 +11,7 @@ import java.util.Locale;
 
 @Service
 @RequiredArgsConstructor
-public class PasswordResetMailService {
+public class AuthMailService {
 
     private final JavaMailSender mailSender;
     private final MessageSource messageSource;
@@ -44,6 +44,27 @@ public class PasswordResetMailService {
                 bodyIntro + "\n\n"
                         + resetUrl
                         + "\n\n" + bodyExpire
+        );
+
+        mailSender.send(message);
+    }
+
+    public void sendSignupVerificationCodeMail(String toEmail, String code, Locale locale) {
+        // locale 별 메시지 로드
+        String subject = messageSource.getMessage("mail.signup.verify.subject", null, locale);
+        String intro = messageSource.getMessage("mail.signup.verify.body.intro", null, locale);
+        String expire = messageSource.getMessage("mail.signup.verify.body.expire", null, locale);
+
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom(from);
+        message.setTo(toEmail);
+        message.setSubject(subject);
+
+        // 코드가 눈에 띄게 줄바꿈 구성
+        message.setText(
+                intro + "\n\n" +
+                        "Code: " + code + "\n\n" +
+                        expire
         );
 
         mailSender.send(message);
