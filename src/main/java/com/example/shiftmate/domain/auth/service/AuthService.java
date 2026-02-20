@@ -4,7 +4,9 @@ import com.example.shiftmate.domain.auth.dto.request.*;
 import com.example.shiftmate.domain.auth.dto.response.AuthResponse;
 import com.example.shiftmate.domain.auth.dto.response.SignUpResponse;
 import com.example.shiftmate.domain.auth.entity.PasswordResetToken;
+import com.example.shiftmate.domain.auth.entity.SignupEmailVerification;
 import com.example.shiftmate.domain.auth.repository.PasswordResetTokenRepository;
+import com.example.shiftmate.domain.auth.repository.SignupEmailVerificationRepository;
 import com.example.shiftmate.domain.user.entity.User;
 import com.example.shiftmate.domain.user.repository.UserRepository;
 import com.example.shiftmate.global.exception.CustomException;
@@ -31,11 +33,24 @@ public class AuthService {
     private final JwtProvider jwtProvider;
     private final RefreshTokenService refreshTokenService;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
-    private final PasswordResetMailService passwordResetMailService;
+    private final AuthMailService authMailService;
+    private final SignupEmailVerificationRepository signupEmailVerificationRepository;
 
     public SignUpResponse signUp(SignUpRequest request) {
+
+        String email = request.getEmail().trim().toLowerCase();
+
+        // 회원가입 전 이메일 인증 완료 여부 확인
+        SignupEmailVerification verification = signupEmailVerificationRepository
+                .findTopByEmailOrderByIdDesc(email)
+                .orElseThrow(() -> new CustomException(ErrorCode.SIGNUP_EMAIL_NOT_VERIFIED));
+
+        if (!verification.isVerified() || verification.isExpired()) {
+            throw new CustomException(ErrorCode.SIGNUP_EMAIL_NOT_VERIFIED);
+        }
+
         // 1) 이메일 중복 체크: 동일 이메일로 중복 가입 방지
-        if (userRepository.existsByEmail(request.getEmail())) {
+        if (userRepository.existsByEmail(email)) {
             throw new CustomException(ErrorCode.EMAIL_ALREADY_EXISTS);
         }
 
@@ -46,7 +61,7 @@ public class AuthService {
 
         // 2) 사용자 엔티티 생성 (비밀번호는 평문 저장 금지 → BCrypt로 해시)
         User user = User.builder()
-                .email(request.getEmail())
+                .email(email)
                 .name(request.getName())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .phoneNumber(request.getPhoneNumber())
@@ -54,7 +69,10 @@ public class AuthService {
 
         // 3) DB 저장 후 응답 DTO 반환
         User saved = userRepository.save(user);
+        // 가입 완료 후 인증 기록 정리
+        signupEmailVerificationRepository.deleteByEmail(email);
         return SignUpResponse.from(saved);
+
     }
 
     public AuthResponse login(LoginRequest request) {
@@ -156,7 +174,7 @@ public class AuthService {
         try {
             Locale locale = LocaleContextHolder.getLocale();
             // 메일 발송 실패하더라도 API 응답은 동일하게 유지(보안상)
-            passwordResetMailService.sendResetMail(user.getEmail(), token, locale);
+            authMailService.sendResetMail(user.getEmail(), token, locale);
         } catch (Exception e) {
             // 운영 추적용 로그 (사용자에게는 에러 노출 X)
             log.warn("Password reset mail send failed. email={}", request.getEmail(), e);
@@ -189,5 +207,58 @@ public class AuthService {
 
         // 사용한 재설정 토큰은 1회성이라 즉시 삭제
         passwordResetTokenRepository.delete(resetToken);
+    }
+
+    public void requestSignupEmailVerification(SignupEmailVerificationRequest request) {
+        String email = request.getEmail().trim().toLowerCase();
+
+        // 이미 가입된 이메일이면 인증코드 발송하지 않음
+        if (userRepository.existsByEmail(email)) {
+            throw new CustomException(ErrorCode.EMAIL_ALREADY_EXISTS);
+        }
+
+        // 기존 코드 정리 후 새 코드 발급
+        signupEmailVerificationRepository.deleteByEmail(email);
+
+        // 6자리 숫자 코드 생성 (100000 ~ 999999)
+        int raw = 100000 + new java.util.Random().nextInt(900000);
+        String code = String.valueOf(raw);
+
+        SignupEmailVerification verification = SignupEmailVerification.builder()
+                .email(email)
+                .code(code)
+                .expiresAt(Instant.now().plusSeconds(10 * 60)) // 10분
+                .verified(false)
+                .build();
+
+        signupEmailVerificationRepository.save(verification);
+
+        try {
+            Locale locale = org.springframework.context.i18n.LocaleContextHolder.getLocale();
+            authMailService.sendSignupVerificationCodeMail(email, code, locale);
+        } catch (Exception e) {
+            // 메일 발송 실패 로그만 남기고, 필요 시 정책에 따라 예외로 전환 가능
+            log.warn("Signup verify mail send failed. email={}", email, e);
+        }
+    }
+
+    public void confirmSignupEmailVerification(SignupEmailVerificationConfirmRequest request) {
+        String email = request.getEmail().trim().toLowerCase();
+        String code = request.getCode().trim();
+
+        SignupEmailVerification verification = signupEmailVerificationRepository
+                .findTopByEmailOrderByIdDesc(email)
+                .orElseThrow(() -> new CustomException(ErrorCode.SIGNUP_VERIFICATION_NOT_FOUND));
+
+        if (verification.isExpired()) {
+            throw new CustomException(ErrorCode.SIGNUP_VERIFICATION_EXPIRED);
+        }
+
+        if (!verification.getCode().equals(code)) {
+            throw new CustomException(ErrorCode.SIGNUP_VERIFICATION_CODE_MISMATCH);
+        }
+
+        // 코드 일치 + 만료 아님 => 인증 완료 처리
+        verification.markVerified();
     }
 }

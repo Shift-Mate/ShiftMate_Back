@@ -48,6 +48,12 @@ public enum ErrorCode {
     // SignUp
     PASSWORD_CONFIRM_MISMATCH(HttpStatus.BAD_REQUEST, "비밀번호와 비밀번호 확인이 일치하지 않습니다."),
 
+    // SignUp Email Verification
+    SIGNUP_EMAIL_NOT_VERIFIED(HttpStatus.BAD_REQUEST, "이메일 인증이 완료되지 않았습니다."),
+    SIGNUP_VERIFICATION_NOT_FOUND(HttpStatus.BAD_REQUEST, "이메일 인증 요청을 찾을 수 없습니다."),
+    SIGNUP_VERIFICATION_EXPIRED(HttpStatus.BAD_REQUEST, "이메일 인증 코드가 만료되었습니다."),
+    SIGNUP_VERIFICATION_CODE_MISMATCH(HttpStatus.BAD_REQUEST, "이메일 인증 코드가 일치하지 않습니다."),
+
     // Password Change
     PASSWORD_NOT_MATCH(HttpStatus.BAD_REQUEST, "현재 비밀번호가 일치하지 않습니다."),
     NEW_PASSWORD_CONFIRM_MISMATCH(HttpStatus.BAD_REQUEST, "새 비밀번호 확인이 일치하지 않습니다."),
