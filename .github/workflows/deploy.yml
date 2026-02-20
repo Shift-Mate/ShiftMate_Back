@@ -54,6 +54,17 @@ jobs:
             set -e
             # 서버 내 docker-compose.yml이 위치한 프로젝트 루트 폴더로 이동 
             cd /home/ubuntu/ShiftMate
+
+            # MySQL/Redis 이미지로 생성된 컨테이너가 있으면 먼저 기동
+            MYSQL_CONTAINER_ID=$(docker ps -aq --filter "ancestor=mysql:8.0" | head -n 1)
+            if [ -n "$MYSQL_CONTAINER_ID" ]; then
+              docker start "$MYSQL_CONTAINER_ID" >/dev/null
+            fi
+
+            REDIS_CONTAINER_ID=$(docker ps -aq --filter "ancestor=redis:7" | head -n 1)
+            if [ -n "$REDIS_CONTAINER_ID" ]; then
+              docker start "$REDIS_CONTAINER_ID" >/dev/null
+            fi
             
             # 최신 이미지를 pull 받고 docker-compose로 재시작 (네트워크 자동 연결)
             docker-compose pull backend
