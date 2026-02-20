@@ -4,14 +4,16 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'ShiftMate_Back/**'
   workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     env:
-      IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/shiftmate-back
-      BACK_ENV_FILE: /home/ubuntu/ShiftMate-Back/.env
+      IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/shiftmate_back
+#      BACK_ENV_FILE: /home/ubuntu/ShiftMate_Back/.env
 
     steps:
       - name: Checkout
@@ -29,8 +31,8 @@ jobs:
       - name: Build and push image
         uses: docker/build-push-action@v6
         with:
-          context: .
-          file: ./Dockerfile
+          context: ./ShiftMate_Back
+          file: ./ShiftMate_Back/Dockerfile
           push: true
           tags: |
             ${{ env.IMAGE_NAME }}:latest

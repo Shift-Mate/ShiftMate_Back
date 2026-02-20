@@ -1,21 +1,27 @@
 package com.example.shiftmate.domain.auth.service;
 
-import com.example.shiftmate.domain.auth.dto.request.LoginRequest;
-import com.example.shiftmate.domain.auth.dto.request.LogoutRequest;
-import com.example.shiftmate.domain.auth.dto.request.SignUpRequest;
+import com.example.shiftmate.domain.auth.dto.request.*;
 import com.example.shiftmate.domain.auth.dto.response.AuthResponse;
 import com.example.shiftmate.domain.auth.dto.response.SignUpResponse;
+import com.example.shiftmate.domain.auth.entity.PasswordResetToken;
+import com.example.shiftmate.domain.auth.repository.PasswordResetTokenRepository;
 import com.example.shiftmate.domain.user.entity.User;
 import com.example.shiftmate.domain.user.repository.UserRepository;
 import com.example.shiftmate.global.exception.CustomException;
 import com.example.shiftmate.global.exception.ErrorCode;
 import com.example.shiftmate.global.security.JwtProvider;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.example.shiftmate.domain.auth.dto.request.RefreshRequest;
+import org.springframework.context.i18n.LocaleContextHolder;
 
+import java.time.Instant;
+import java.util.Locale;
+import java.util.UUID;
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -24,11 +30,18 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
     private final RefreshTokenService refreshTokenService;
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
+    private final PasswordResetMailService passwordResetMailService;
 
     public SignUpResponse signUp(SignUpRequest request) {
         // 1) 이메일 중복 체크: 동일 이메일로 중복 가입 방지
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new CustomException(ErrorCode.EMAIL_ALREADY_EXISTS);
+        }
+
+        // 비밀번호와 비밀번호 확인 일치 검증
+        if (!request.getPassword().equals(request.getPasswordConfirm())) {
+            throw new CustomException(ErrorCode.PASSWORD_CONFIRM_MISMATCH);
         }
 
         // 2) 사용자 엔티티 생성 (비밀번호는 평문 저장 금지 → BCrypt로 해시)
@@ -116,5 +129,65 @@ public class AuthService {
             throw new CustomException(ErrorCode.MALFORMED_TOKEN);
         }
         refreshTokenService.delete(email);
+    }
+
+    /**
+     * 비밀번호 재설정 요청: 이메일로 토큰 발급 후 저장 (이메일 발송은 추후 연동)
+     */
+    public void requestPasswordReset(ForgotPasswordRequest request) {
+        User user = userRepository.findByEmail(request.getEmail().trim()).orElse(null);
+        if (user == null) {
+            return; // 보안상 해당 이메일이 없어도 동일 응답
+        }
+
+        passwordResetTokenRepository.deleteByUserId(user.getId());
+
+        String token = UUID.randomUUID().toString();
+        Instant expiresAt = Instant.now().plusSeconds(30 * 60); // 30분
+
+        PasswordResetToken resetToken = PasswordResetToken.builder()
+                .token(token)
+                .user(user)
+                .expiresAt(expiresAt)
+                .build();
+        passwordResetTokenRepository.save(resetToken);
+
+        // 토큰 저장 후, 사용자 이메일로 재설정 링크 발송
+        try {
+            Locale locale = LocaleContextHolder.getLocale();
+            // 메일 발송 실패하더라도 API 응답은 동일하게 유지(보안상)
+            passwordResetMailService.sendResetMail(user.getEmail(), token, locale);
+        } catch (Exception e) {
+            // 운영 추적용 로그 (사용자에게는 에러 노출 X)
+            log.warn("Password reset mail send failed. email={}", request.getEmail(), e);
+        }
+    }
+
+    /**
+     * 토큰 + 새 비밀번호로 비밀번호 재설정
+     */
+    public void resetPassword(ResetPasswordRequest request) {
+        PasswordResetToken resetToken = passwordResetTokenRepository.findByToken(request.getToken())
+                .orElseThrow(() -> new CustomException(ErrorCode.PASSWORD_RESET_TOKEN_NOT_FOUND));
+
+        if (resetToken.isExpired()) {
+            passwordResetTokenRepository.delete(resetToken);
+            throw new CustomException(ErrorCode.PASSWORD_RESET_TOKEN_EXPIRED);
+        }
+
+        if (!request.getNewPassword().equals(request.getNewPasswordConfirm())) {
+            throw new CustomException(ErrorCode.NEW_PASSWORD_CONFIRM_MISMATCH);
+        }
+
+        User user = resetToken.getUser();
+        user.changePassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+
+        // 비밀번호가 바뀌었으므로 기존 refresh 토큰을 삭제해서
+        // 다른 기기/기존 로그인 세션이 자동으로 끊기도록 처리
+        refreshTokenService.delete(user.getEmail());
+
+        // 사용한 재설정 토큰은 1회성이라 즉시 삭제
+        passwordResetTokenRepository.delete(resetToken);
     }
 }
