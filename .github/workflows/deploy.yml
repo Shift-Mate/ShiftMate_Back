@@ -4,15 +4,13 @@ on:
   push:
     branches:
       - main
-    paths:
-      - "ShiftMate_Back/**"
   workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     env:
-      IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/shiftmate_back
+      IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/shiftmate-back
       BACK_ENV_FILE: /home/ubuntu/ShiftMate_Back/.env
 
     steps:
