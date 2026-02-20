@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - 'ShiftMate_Back/**'
+      - "ShiftMate_Back/**"
   workflow_dispatch:
 
 jobs:
@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/shiftmate_back
-#      BACK_ENV_FILE: /home/ubuntu/ShiftMate_Back/.env
+      BACK_ENV_FILE: /home/ubuntu/ShiftMate_Back/.env
 
     steps:
       - name: Checkout
@@ -65,10 +65,10 @@ jobs:
             if [ -n "$REDIS_CONTAINER_ID" ]; then
               docker start "$REDIS_CONTAINER_ID" >/dev/null
             fi
-            
+
             # 최신 이미지를 pull 받고 docker-compose로 재시작 (네트워크 자동 연결)
             docker-compose pull backend
             docker-compose up -d backend
-            
+
             # 사용하지 않는 이전 도커 이미지 정리
             docker image prune -af
