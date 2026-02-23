@@ -25,7 +25,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 public class SecurityConfig {
 
     private final JwtFilter jwtFilter;
-    @Value("${cors.allowed-origins:http://localhost:5173,http://localhost:3000,http://3.37.128.149:3000/}")
+    @Value("${cors.allowed-origins:http://localhost:5173,http://localhost:3000,http://3.36.205.249:3000/}")
     private String allowedOrigins;
 
     // 비밀번호 암호화 Bean
