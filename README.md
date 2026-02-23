@@ -272,8 +272,3 @@ docker run -p 8080:8080 --env-file .env shiftmate-back
 
 - GitHub Actions 워크플로우: `.github/workflows/deploy.yml`
 - `main` 브랜치 push 시 Docker 이미지 빌드/푸시 후 원격 서버에서 `docker-compose`로 백엔드 재기동
-
----
-
-이 README는 현재 코드 기준으로 작성되었습니다.  
-기능 변경 시 컨트롤러 경로, 환경변수, 보안 정책 섹션을 함께 업데이트하는 것을 권장합니다.

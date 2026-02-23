@@ -62,4 +62,20 @@ public class AuthController {
         authService.resetPassword(request);
         return ApiResponse.success("비밀번호가 변경되었습니다.");
     }
+
+    @PostMapping("/signup/email-verification/request")
+    public ApiResponse<String> requestSignupEmailVerification(
+            @Valid @RequestBody SignupEmailVerificationRequest request
+    ) {
+        authService.requestSignupEmailVerification(request);
+        return ApiResponse.success("인증 코드가 이메일로 발송되었습니다.");
+    }
+
+    @PostMapping("/signup/email-verification/confirm")
+    public ApiResponse<String> confirmSignupEmailVerification(
+            @Valid @RequestBody SignupEmailVerificationConfirmRequest request
+    ) {
+        authService.confirmSignupEmailVerification(request);
+        return ApiResponse.success("이메일 인증이 완료되었습니다.");
+    }
 }

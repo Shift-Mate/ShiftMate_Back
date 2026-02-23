@@ -25,7 +25,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 public class SecurityConfig {
 
     private final JwtFilter jwtFilter;
-    @Value("${cors.allowed-origins:http://localhost:5173,http://localhost:3000,http://3.36.205.249:3000/}")
+    @Value("${cors.allowed-origins:http://localhost:5173,http://localhost:3000,http://3.37.128.149:3000}")
     private String allowedOrigins;
 
     // 비밀번호 암호화 Bean
@@ -63,13 +63,7 @@ public class SecurityConfig {
 
         configuration.setAllowedOrigins(origins);
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of(
-            "Content-Type",
-            "Authorization",
-            "Accept",
-            "Origin",
-            "X-Requested-With"
-        ));
+        configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
         configuration.setExposedHeaders(List.of("Authorization"));
 

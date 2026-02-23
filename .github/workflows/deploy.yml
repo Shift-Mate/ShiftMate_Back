@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - main
-    paths:
-      - 'ShiftMate_Back/**'
   workflow_dispatch:
 
 jobs:
@@ -13,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/shiftmate_back
-#      BACK_ENV_FILE: /home/ubuntu/ShiftMate_Back/.env
+      BACK_ENV_FILE: /home/ubuntu/ShiftMate_Back/.env
 
     steps:
       - name: Checkout
@@ -31,8 +29,8 @@ jobs:
       - name: Build and push image
         uses: docker/build-push-action@v6
         with:
-          context: ./ShiftMate_Back
-          file: ./ShiftMate_Back/Dockerfile
+          context: .
+          file: ./Dockerfile
           push: true
           tags: |
             ${{ env.IMAGE_NAME }}:latest
@@ -53,11 +51,22 @@ jobs:
           script: |
             set -e
             # 서버 내 docker-compose.yml이 위치한 프로젝트 루트 폴더로 이동 
-            cd /home/ubuntu/ShiftMate
-            
+            cd /home/ubuntu
+
+            # MySQL/Redis 이미지로 생성된 컨테이너가 있으면 먼저 기동
+            MYSQL_CONTAINER_ID=$(docker ps -aq --filter "ancestor=mysql:8.0" | head -n 1)
+            if [ -n "$MYSQL_CONTAINER_ID" ]; then
+              docker start "$MYSQL_CONTAINER_ID" >/dev/null
+            fi
+
+            REDIS_CONTAINER_ID=$(docker ps -aq --filter "ancestor=redis:7" | head -n 1)
+            if [ -n "$REDIS_CONTAINER_ID" ]; then
+              docker start "$REDIS_CONTAINER_ID" >/dev/null
+            fi
+
             # 최신 이미지를 pull 받고 docker-compose로 재시작 (네트워크 자동 연결)
-            docker-compose pull backend
-            docker-compose up -d backend
-            
+            docker compose pull backend
+            docker compose up -d backend
+
             # 사용하지 않는 이전 도커 이미지 정리
             docker image prune -af
