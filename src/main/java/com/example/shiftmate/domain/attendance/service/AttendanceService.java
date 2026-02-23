@@ -40,6 +40,7 @@ public class AttendanceService {
     private final AttendanceRepository attendanceRepository;
     private final StoreMemberRepository storeMemberRepository;
     private final SubstituteRequestRepository substituteRequestRepository;
+    private final OtpService otpService;
 
     private static final ZoneId KST_TIME = ZoneId.of("Asia/Seoul");
 
@@ -63,8 +64,8 @@ public class AttendanceService {
         boolean isClockIn = checkAttendance.isEmpty();
         LocalDateTime now = LocalDateTime.now(KST_TIME);
 
-        // 매장 일치 여부 및 핀번호 검증
-        validateRequest(storeId, reqDto.getPinCode(), assignment, isClockIn);
+        // 매장 일치 여부 및 OTP 번호 검증
+        validateRequest(storeId, reqDto.getOtp(), assignment, isClockIn);
 
         if(isClockIn) { // 출근 기록이 없는 경우 -> 출근 처리
             return processClockIn(assignment);
@@ -87,7 +88,7 @@ public class AttendanceService {
     }
 
     // 검증 로직
-    private void validateRequest(Long storeId, String pinCode, ShiftAssignment assignment, boolean isClockIn) {
+    private void validateRequest(Long storeId, String otp, ShiftAssignment assignment, boolean isClockIn) {
         LocalDateTime now = LocalDateTime.now(KST_TIME);
         LocalDateTime start = assignment.getUpdatedStartTime();
         LocalDateTime end = assignment.getUpdatedEndTime();
@@ -99,10 +100,10 @@ public class AttendanceService {
             throw new CustomException(ErrorCode.STORE_MISMATCH);
         }
 
-        // 핀번호가 해당 스케줄의 근무자의 핀번호와 일치하는지 확인
-        // assignment의 근무자의 핀번호와 pinCode가 일치하는지 확인
-        if(!assignment.getMember().getPinCode().equals(pinCode)) {
-            throw new CustomException(ErrorCode.INVALID_PIN_CODE);
+        // OTP 번호가 해당 스케줄의 근무자가 발급받은 OTP와 일치하는지 확인
+        Long workerId = assignment.getMember().getUser().getId();
+        if(!otpService.validateOtp(workerId, otp)) {
+            throw new CustomException(ErrorCode.INVALID_OTP);
         }
 
         if(isClockIn) {
