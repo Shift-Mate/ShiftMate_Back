@@ -3,13 +3,14 @@ package com.example.shiftmate.domain.auth.controller;
 import com.example.shiftmate.domain.auth.dto.request.*;
 import com.example.shiftmate.domain.auth.dto.response.SignUpResponse;
 import com.example.shiftmate.domain.auth.service.AuthService;
+import com.example.shiftmate.domain.user.entity.AuthProvider;
 import com.example.shiftmate.global.common.dto.ApiResponse;
+import com.example.shiftmate.global.exception.CustomException;
+import com.example.shiftmate.global.exception.ErrorCode;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 import com.example.shiftmate.domain.auth.dto.response.AuthResponse;
 
 @RestController
@@ -77,5 +78,29 @@ public class AuthController {
     ) {
         authService.confirmSignupEmailVerification(request);
         return ApiResponse.success("이메일 인증이 완료되었습니다.");
+    }
+
+    @PostMapping("/kakao")
+    public ApiResponse<AuthResponse> kakaoLogin(@Valid @RequestBody KakaoLoginRequest request) {
+        // 구경로 호환: 내부는 공통 소셜 로직으로 위임
+        AuthResponse response = authService.socialLogin(AuthProvider.KAKAO, request.getCode());
+        return ApiResponse.success(response);
+    }
+
+    @PostMapping("/social/{provider}")
+    public ApiResponse<AuthResponse> socialLogin(
+            @PathVariable String provider,
+            @Valid @RequestBody SocialLoginRequest request
+    ) {
+        AuthProvider authProvider;
+        try {
+            // kakao / google 문자열을 enum으로 변환
+            authProvider = AuthProvider.valueOf(provider.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST);
+        }
+
+        AuthResponse response = authService.socialLogin(authProvider, request.getCode());
+        return ApiResponse.success(response);
     }
 }
