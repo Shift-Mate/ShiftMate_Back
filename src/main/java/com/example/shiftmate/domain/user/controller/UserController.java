@@ -1,11 +1,13 @@
 package com.example.shiftmate.domain.user.controller;
 
+import com.example.shiftmate.domain.attendance.service.OtpService;
 import com.example.shiftmate.domain.user.dto.request.UpdateMyProfileReqDto;
 import com.example.shiftmate.domain.user.dto.response.*;
 import com.example.shiftmate.domain.user.service.UserService;
 import com.example.shiftmate.global.common.dto.ApiResponse;
 import com.example.shiftmate.global.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,6 +26,7 @@ public class UserController {
 
     // 사용자 서비스 주입
     private final UserService userService;
+    private final OtpService otpService;
 
     @GetMapping("/admin/user-info")
     public ApiResponse<UserInfoResDto> getUserInfoForManager(
@@ -99,5 +102,14 @@ public class UserController {
 
         // 공통 성공 응답
         return ApiResponse.success(result);
+    }
+
+    // 출퇴근 처리용 OTP 번호 발급
+    @PostMapping("/my/otp")
+    public ResponseEntity<ApiResponse<String>> generateMyOtp(
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        String otp = otpService.generateAndSaveOtp(userDetails.getId());
+        return ResponseEntity.ok(ApiResponse.success(otp));
     }
 }

@@ -72,7 +72,7 @@ public enum ErrorCode {
     // Attendance
     ATTENDANCE_NOT_FOUND(HttpStatus.NOT_FOUND, "출근 기록을 찾을 수 없습니다."),
     ATTENDANCE_ALREADY_CLOSED(HttpStatus.BAD_REQUEST, "이미 퇴근처리된 스케줄입니다."),
-    INVALID_PIN_CODE(HttpStatus.UNAUTHORIZED, "핀번호가 일치하지 않습니다."),
+    INVALID_OTP(HttpStatus.UNAUTHORIZED, "OTP 번호가 일치하지 않거나 만료되었습니다."),
     STORE_MISMATCH(HttpStatus.BAD_REQUEST, "해당 매장의 스케줄이 아닙니다."),
     NOT_CLOCK_IN_TIME(HttpStatus.BAD_REQUEST, "해당 스케줄의 출근 처리 가능 시간이 아닙니다."),
     NOT_CLOCK_OUT_TIME(HttpStatus.BAD_REQUEST, "해당 스케줄의 퇴근 처리 가능 시간이 아닙니다."),
