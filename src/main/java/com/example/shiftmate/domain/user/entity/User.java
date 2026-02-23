@@ -1,12 +1,7 @@
 package com.example.shiftmate.domain.user.entity;
 
 import com.example.shiftmate.global.common.entity.BaseCreateEntity;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -15,7 +10,13 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "users")
+@Table(
+        name = "users",
+        // 소셜 계정 고유 식별 (provider + providerId)
+        uniqueConstraints = {
+                @UniqueConstraint(name = "uk_users_provider_provider_id", columnNames = {"provider", "provider_id"})
+        }
+)
 public class User extends BaseCreateEntity {
 
     @Id
@@ -34,12 +35,26 @@ public class User extends BaseCreateEntity {
     @Column(nullable = false)
     private String phoneNumber;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20, columnDefinition = "varchar(20) default 'LOCAL'")
+    private AuthProvider provider; // LOCAL / KAKAO / GOOGLE
+
+    @Column(name = "provider_id", length = 100)
+    private String providerId;     // 소셜일 때 필수, LOCAL은 null 가능
+
+    @Column(nullable = false, columnDefinition = "tinyint(1) default 1")
+    private boolean profileCompleted; // 소셜 가입 후 이름/전화번호 입력 완료 여부
+
     @Builder
-    public User(String email, String name, String password, String phoneNumber) {
+    public User(String email, String name, String password, String phoneNumber,
+                AuthProvider provider, String providerId, boolean profileCompleted) {
         this.email = email;
         this.name = name;
         this.password = password;
         this.phoneNumber = phoneNumber;
+        this.provider = provider;
+        this.providerId = providerId;
+        this.profileCompleted = profileCompleted;
     }
 
     // 비밀번호 변경 메서드
@@ -60,5 +75,9 @@ public class User extends BaseCreateEntity {
         if (phoneNumber != null && !phoneNumber.isBlank()) {
             this.phoneNumber = phoneNumber.trim();
         }
+
+        // 이름/전화번호가 모두 유효하게 채워지면 프로필 완료 상태로 전환
+        this.profileCompleted = this.name != null && !this.name.isBlank()
+                && this.phoneNumber != null && !this.phoneNumber.isBlank();
     }
 }

@@ -11,6 +11,7 @@ public class UserInfoResDto {
     private String name;
     private String email;
     private String phoneNumber;
+    private boolean profileCompleted;
 
     public static UserInfoResDto from(User user){
         return UserInfoResDto.builder()
@@ -18,6 +19,7 @@ public class UserInfoResDto {
                    .name(user.getName())
                    .email(user.getEmail())
                    .phoneNumber(user.getPhoneNumber())
+                   .profileCompleted(user.isProfileCompleted())
                    .build();
     }
 }

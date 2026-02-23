@@ -3,10 +3,12 @@ package com.example.shiftmate.domain.auth.service;
 import com.example.shiftmate.domain.auth.dto.request.*;
 import com.example.shiftmate.domain.auth.dto.response.AuthResponse;
 import com.example.shiftmate.domain.auth.dto.response.SignUpResponse;
+import com.example.shiftmate.domain.auth.dto.response.SocialUserInfo;
 import com.example.shiftmate.domain.auth.entity.PasswordResetToken;
 import com.example.shiftmate.domain.auth.entity.SignupEmailVerification;
 import com.example.shiftmate.domain.auth.repository.PasswordResetTokenRepository;
 import com.example.shiftmate.domain.auth.repository.SignupEmailVerificationRepository;
+import com.example.shiftmate.domain.user.entity.AuthProvider;
 import com.example.shiftmate.domain.user.entity.User;
 import com.example.shiftmate.domain.user.repository.UserRepository;
 import com.example.shiftmate.global.exception.CustomException;
@@ -35,6 +37,8 @@ public class AuthService {
     private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final AuthMailService authMailService;
     private final SignupEmailVerificationRepository signupEmailVerificationRepository;
+    private final KakaoOauthService kakaoOauthService;
+    private final GoogleOauthService googleOauthService;
 
     public SignUpResponse signUp(SignUpRequest request) {
 
@@ -65,6 +69,9 @@ public class AuthService {
                 .name(request.getName())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .phoneNumber(request.getPhoneNumber())
+                .provider(AuthProvider.LOCAL) // 로컬 계정 표시
+                .providerId(null)
+                .profileCompleted(true)
                 .build();
 
         // 3) DB 저장 후 응답 DTO 반환
@@ -73,6 +80,57 @@ public class AuthService {
         signupEmailVerificationRepository.deleteByEmail(email);
         return SignUpResponse.from(saved);
 
+    }
+
+    public AuthResponse socialLogin(AuthProvider provider, String code) {
+        if (provider == AuthProvider.LOCAL) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST);
+        }
+
+        SocialUserInfo socialUser = switch (provider) {
+            case KAKAO -> kakaoOauthService.getSocialUserInfo(code);
+            case GOOGLE -> googleOauthService.getSocialUserInfo(code);
+            default -> throw new CustomException(ErrorCode.INVALID_REQUEST);
+        };
+
+        String providerId = socialUser.getProviderId();
+        String email = socialUser.getEmail();
+
+        // 요구사항: 이메일 없으면 가입/로그인 불가
+        if (email == null || email.isBlank()) {
+            throw new CustomException(ErrorCode.OAUTH_USER_INFO_FAILED);
+            // 원하면 SOCIAL_EMAIL_REQUIRED 코드 새로 만들어서 더 명확히 처리 가능
+        }
+
+        // 1) provider+providerId 계정 있으면 그대로 로그인
+        User user = userRepository.findByProviderAndProviderId(provider, providerId).orElse(null);
+
+        // 2) 없으면 "회원가입" 처리
+        if (user == null) {
+            // 일반 회원가입처럼 이메일 중복 막기
+            if (userRepository.existsByEmail(email)) {
+                throw new CustomException(ErrorCode.EMAIL_ALREADY_EXISTS);
+            }
+
+            user = userRepository.save(User.builder()
+                    .email(email)
+                    .name((socialUser.getName() == null || socialUser.getName().isBlank()) ? "social_user" : socialUser.getName())
+                    // 소셜 계정은 비밀번호 로그인 안 쓰므로 랜덤 저장
+                    .password(passwordEncoder.encode(java.util.UUID.randomUUID().toString()))
+                    // 현재 스키마 대응 기본값(추후 프로필 보완 유도 가능)
+                    .phoneNumber("01000000000")
+                    .provider(provider)
+                    .providerId(providerId)
+                    // 소셜 가입 직후에는 이름/전화번호 재입력을 강제
+                    .profileCompleted(false)
+                    .build());
+        }
+
+        String accessToken = jwtProvider.createAccessToken(user.getId(), user.getEmail());
+        String refreshToken = jwtProvider.createRefreshToken(user.getId(), user.getEmail());
+        refreshTokenService.save(user.getEmail(), refreshToken);
+
+        return AuthResponse.from(accessToken, refreshToken);
     }
 
     public AuthResponse login(LoginRequest request) {
@@ -237,8 +295,9 @@ public class AuthService {
             Locale locale = org.springframework.context.i18n.LocaleContextHolder.getLocale();
             authMailService.sendSignupVerificationCodeMail(email, code, locale);
         } catch (Exception e) {
-            // 메일 발송 실패 로그만 남기고, 필요 시 정책에 따라 예외로 전환 가능
+            // 메일 발송 실패 시 API도 실패로 응답해 프론트에서 즉시 인지 가능하게 한다.
             log.warn("Signup verify mail send failed. email={}", email, e);
+            throw new CustomException(ErrorCode.MAIL_SEND_FAILED);
         }
     }
 
@@ -260,5 +319,9 @@ public class AuthService {
 
         // 코드 일치 + 만료 아님 => 인증 완료 처리
         verification.markVerified();
+    }
+    public AuthResponse kakaoLogin(String code) {
+        // 구 엔드포인트 호환용: 공통 소셜 로직으로 위임
+        return socialLogin(AuthProvider.KAKAO, code);
     }
 }
