@@ -55,7 +55,7 @@ public class AttendanceController {
     }
 
     @GetMapping("/daily/my")
-    public ResponseEntity<ApiResponse<List<TodayAttendanceResDto>>> getMyAttendance(
+    public ResponseEntity<ApiResponse<List<TodayAttendanceResDto>>> getMyTodayAttendance(
             @PathVariable Long storeId,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
