@@ -27,4 +27,7 @@ public class StoreResDto {
     private LocalDateTime updatedAt;
     
     private Long monthlySales;
+
+    private String location;
+    private Integer storeMemberCount;
 }
