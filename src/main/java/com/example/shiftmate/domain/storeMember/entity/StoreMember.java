@@ -61,16 +61,8 @@ public class StoreMember extends BaseTimeEntity {
     @Column(nullable = true)
     private MemberStatus status;
 
-    @Column(nullable = false)
-    private String pinCode;
-
-    // PIN 코드 반환, null이면 기본값 반환
-    private static String getPinCodeOrDefault(String pinCode) {
-        return (pinCode != null) ? pinCode : DEFAULT_PIN_CODE;
-    }
-
     @Builder
-    public StoreMember(Store store, User user, StoreRole role, StoreRank memberRank, Department department, Integer hourlyWage, Integer minHoursPerWeek, MemberStatus status, String pinCode) {
+    public StoreMember(Store store, User user, StoreRole role, StoreRank memberRank, Department department, Integer hourlyWage, Integer minHoursPerWeek, MemberStatus status) {
         this.store = store;
         this.user = user;
         this.role = role;
@@ -79,11 +71,10 @@ public class StoreMember extends BaseTimeEntity {
         this.hourlyWage = hourlyWage;
         this.minHoursPerWeek = minHoursPerWeek;
         this.status = status;
-        this.pinCode = getPinCodeOrDefault(pinCode);
     }
 
     public void update(StoreRole role, StoreRank memberRank, Department department,
-        Integer hourlyWage, Integer minHoursPerWeek, MemberStatus status, String pinCode) {
+        Integer hourlyWage, Integer minHoursPerWeek, MemberStatus status) {
 
         this.role = role;
         this.memberRank = memberRank;
@@ -91,7 +82,6 @@ public class StoreMember extends BaseTimeEntity {
         this.hourlyWage = hourlyWage;
         this.minHoursPerWeek = minHoursPerWeek;
         this.status = status;
-        this.pinCode = getPinCodeOrDefault(pinCode);
     }
 
     // soft delete

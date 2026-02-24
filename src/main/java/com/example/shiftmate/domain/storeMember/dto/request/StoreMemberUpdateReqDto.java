@@ -30,8 +30,4 @@ public class StoreMemberUpdateReqDto {
 
     @NotNull(message = "멤버 상태는 필수입니다.")
     private MemberStatus status;
-
-    @Size(min = 4, max = 6, message = "PIN 코드는 4~6자리여야 합니다.")
-    @Pattern(regexp = "^[0-9]*$", message = "PIN 코드는 숫자만 입력 가능합니다.")
-    private String pinCode;
 }

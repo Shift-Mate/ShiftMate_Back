@@ -69,7 +69,6 @@ public class StoreMemberService {
             .hourlyWage(request.getHourlyWage())
             .minHoursPerWeek(request.getMinHoursPerWeek())
             .status(request.getStatus())
-            .pinCode(request.getPinCode())
             .build();
 
         StoreMember saved = storeMemberRepository.save(storeMember);
@@ -112,8 +111,7 @@ public class StoreMemberService {
             request.getDepartment(),
             request.getHourlyWage(),
             request.getMinHoursPerWeek(),
-            request.getStatus(),
-            request.getPinCode()
+            request.getStatus()
         );
 
         // DTO 변환
@@ -196,7 +194,6 @@ public class StoreMemberService {
             .hourlyWage(storeMember.getHourlyWage())
             .minHoursPerWeek(storeMember.getMinHoursPerWeek())
             .status(storeMember.getStatus())
-            .pinCode(storeMember.getPinCode())
             .createdAt(storeMember.getCreatedAt())
             .updatedAt(storeMember.getUpdatedAt())
             .build();

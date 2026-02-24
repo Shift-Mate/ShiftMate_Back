@@ -66,7 +66,6 @@ public class StoreService {
             .hourlyWage(null)
             .minHoursPerWeek(0)
             .status(MemberStatus.ACTIVE)
-            .pinCode(null)
             .build();
         storeMemberRepository.save(creatorMember);
 
