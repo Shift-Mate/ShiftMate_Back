@@ -33,7 +33,4 @@ public class StoreMemberReqDto {
     private Integer minHoursPerWeek;
 
     private MemberStatus status;
-
-    private String pinCode;
-
 }
