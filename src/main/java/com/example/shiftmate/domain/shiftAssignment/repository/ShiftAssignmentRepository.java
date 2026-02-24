@@ -99,6 +99,18 @@ public interface ShiftAssignmentRepository extends JpaRepository<ShiftAssignment
             @Param("startTime") LocalDateTime startTime,
             @Param("endTime") LocalDateTime endTime);
 
-
+    // 특정 매장의 특정 근무자의 특정 날짜의 스케줄 조회
+    @Query("SELECT sa FROM ShiftAssignment sa " +
+            "JOIN FETCH sa.member m " +
+            "JOIN FETCH sa.shiftTemplate st " +
+            "JOIN FETCH m.user " +
+            "WHERE m.store.id = :storeId " +
+            "AND m.id = :memberId " +
+            "AND sa.workDate = :date")
+    List<ShiftAssignment> findAllByStoreIdAndMemberIdAndDate(
+            @Param("storeId") Long storeId,
+            @Param("memberId") Long memberId,
+            @Param("date") LocalDate date
+    );
 
 }
