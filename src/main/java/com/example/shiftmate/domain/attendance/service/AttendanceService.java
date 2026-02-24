@@ -284,4 +284,35 @@ public class AttendanceService {
 
         return MyWeeklyAttendanceResDto.of(dtoList);
     }
+
+    public List<TodayAttendanceResDto> getMyTodayAttendance(Long storeId, Long userId) {
+        // 해당 매장의 멤버인지 검증
+        StoreMember member = storeMemberRepository.findByStoreIdAndUserId(storeId, userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.STORE_MEMBER_NOT_FOUND));
+
+        // 오늘 날짜 구하기
+        LocalDate today = LocalDate.now(KST_TIME);
+
+        // 오늘 날짜의 스케줄 가져오기
+        List<ShiftAssignment> assignments = shiftAssignmentRepository.findAllByStoreIdAndMemberIdAndDate(storeId, member.getId(), today);
+
+        if(assignments.isEmpty()) {
+            return List.of();
+        }
+
+        List<Attendance> attendances = attendanceRepository.findAllByShiftAssignmentIn(assignments);
+
+        Map<Long, Attendance> attendanceMap = attendances.stream()
+                .collect(Collectors.toMap(
+                        a -> a.getShiftAssignment().getId(),
+                        a -> a
+                ));
+
+        return assignments.stream()
+                .map(assignment -> TodayAttendanceResDto.of(
+                        assignment,
+                        attendanceMap.get(assignment.getId())
+                ))
+                .collect(Collectors.toList());
+    }
 }
