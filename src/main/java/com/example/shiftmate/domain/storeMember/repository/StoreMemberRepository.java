@@ -41,6 +41,8 @@ public interface StoreMemberRepository extends JpaRepository<StoreMember, Long>,
     @Query("SELECT sm FROM StoreMember sm WHERE sm.store.id = :storeId AND sm.deletedAt IS NULL")
     List<StoreMember> findByStoreId(@Param("storeId") Long storeId);
 
+    int countByStoreIdAndDeletedAtIsNull(Long storeId);
+
     // 단건 조회 - 활성만 (soft delete 필터링)
     Optional<StoreMember> findByIdAndDeletedAtIsNull(Long id);
 
