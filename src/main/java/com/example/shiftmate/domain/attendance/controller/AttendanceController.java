@@ -54,6 +54,15 @@ public class AttendanceController {
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
+    @GetMapping("/daily/my")
+    public ResponseEntity<ApiResponse<List<TodayAttendanceResDto>>> getMyAttendance(
+            @PathVariable Long storeId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        List<TodayAttendanceResDto> response = attendanceService.getMyTodayAttendance(storeId, userDetails.getId());
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
     @GetMapping("/weekly/my")
     public ResponseEntity<ApiResponse<MyWeeklyAttendanceResDto>> getMyWeeklyAttendance(
             @PathVariable Long storeId,
