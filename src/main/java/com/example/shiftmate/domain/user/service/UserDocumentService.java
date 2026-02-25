@@ -117,24 +117,60 @@ public class UserDocumentService {
 
     @Transactional(readOnly = true)
     public List<UserDocumentResDto> getMemberDocumentsForManager(Long managerUserId, Long storeId, Long memberUserId) {
-        // [향후 매니저 열람용]
-        // 1) 요청자가 해당 매장 MANAGER인지 확인
+        // 1) 요청자가 진짜 "해당 store의 MANAGER"인지 확인한다.
+        //    다른 매장 매니저거나 일반 직원이면 즉시 차단한다.
+        validateManagerAccessToMember(managerUserId, storeId, memberUserId);
+
+        // 2) 권한 검증 통과 후에만 대상 멤버 문서 목록을 조회한다.
+        //    보건증/신분증이 있으면 리스트로 내려가고, 없으면 빈 리스트가 내려간다.
+        return userDocumentRepository.findByUserId(memberUserId).stream()
+                .map(UserDocumentResDto::from)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public FileStorageService.DownloadedFile downloadMemberDocumentForManager(
+            Long managerUserId,
+            Long storeId,
+            Long memberUserId,
+            UserDocumentType type
+    ) {
+        // 1) 먼저 "같은 스토어 소속 + 매니저 권한"을 검증한다.
+        //    이 검증이 없으면 임의 userId로 타인 문서를 내려받을 수 있으므로 필수다.
+        validateManagerAccessToMember(managerUserId, storeId, memberUserId);
+
+        // 2) 대상 멤버가 해당 타입 문서를 실제로 업로드했는지 확인한다.
+        //    없으면 404(DOCUMENT_NOT_FOUND)로 명확하게 응답한다.
+        UserDocument doc = userDocumentRepository.findByUserIdAndType(memberUserId, type)
+                .orElseThrow(() -> new CustomException(ErrorCode.DOCUMENT_NOT_FOUND));
+
+        // 3) 실제 파일 읽기는 storage 구현체(local/s3)에 위임한다.
+        //    서비스는 "권한/도메인 검증"에 집중하고 저장소 구현 세부사항은 감춘다.
+        return fileStorageService.download(
+                doc.getFilePath(),
+                doc.getOriginalFileName(),
+                doc.getContentType()
+        );
+    }
+
+    private void validateManagerAccessToMember(Long managerUserId, Long storeId, Long memberUserId) {
+        // 1) 요청자가 해당 store의 MANAGER인지 확인한다.
+        //    role + deletedAtIsNull 조건으로 "현재 유효한 매니저"만 허용한다.
         boolean managerInStore = storeMemberRepository
                 .existsByStoreIdAndUserIdAndRoleAndDeletedAtIsNull(storeId, managerUserId, StoreRole.MANAGER);
+
         if (!managerInStore) {
             throw new CustomException(ErrorCode.STORE_MEMBER_ACCESS_DENIED);
         }
 
-        // 2) 대상 유저가 같은 매장 소속인지 확인
-        boolean memberInStore = storeMemberRepository.findByStoreIdAndUserId(storeId, memberUserId).isPresent();
+        // 2) 대상 멤버가 같은 store에 실제 소속되어 있는지 확인한다.
+        //    다른 가게 직원 문서를 조회/다운로드하지 못하게 막는다.
+        boolean memberInStore = storeMemberRepository
+                .existsByStoreIdAndUserIdAndDeletedAtIsNull(storeId, memberUserId);
+
         if (!memberInStore) {
             throw new CustomException(ErrorCode.STORE_MEMBER_ACCESS_DENIED);
         }
-
-        // 3) 소속 조건 통과 시 대상 문서 조회
-        return userDocumentRepository.findByUserId(memberUserId).stream()
-                .map(UserDocumentResDto::from)
-                .toList();
     }
 
     private void validateFile(MultipartFile file) {

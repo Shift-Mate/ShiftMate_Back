@@ -509,3 +509,54 @@ JOIN store_members sm ON sa.member_id = sm.id
 WHERE sm.user_id = 11 AND sm.store_id = 1 AND sa.work_date = '2026-02-24'
 LIMIT 1;
 
+-- ============================================================
+-- [매니저 문서 열람 기능 테스트 전용 계정]
+-- - 목적:
+--   1) staff 계정으로 로그인 후 보건증/신분증 업로드
+--   2) manager 계정으로 로그인 후 같은 스토어 멤버 문서 조회/다운로드
+-- - 두 계정을 같은 store_id=1에 소속시켜 권한 조건을 만족시킨다.
+-- ============================================================
+
+-- A. 테스트 매니저 계정 생성
+-- - 비밀번호는 기존 시드와 동일한 bcrypt 해시를 사용한다.
+-- - (팀에서 사용하던 테스트 비번 규칙과 동일)
+INSERT INTO users (email, name, password, phone_number, created_at)
+VALUES ('doc.manager@test.com', '문서매니저', '$2a$12$6FOiv9dZY05vhTR2a9x4zO6IMFsFhWLG085AxYZSExuYHGMsAEHJe', '01099990001', NOW());
+
+-- B. 테스트 멤버 계정 생성
+-- - 이 계정으로 로그인해서 보건증/신분증을 업로드하면 된다.
+INSERT INTO users (email, name, password, phone_number, created_at)
+VALUES ('doc.staff@test.com', '문서직원', '$2a$12$6FOiv9dZY05vhTR2a9x4zO6IMFsFhWLG085AxYZSExuYHGMsAEHJe', '01099990002', NOW());
+
+-- C. 매니저를 1번 스토어에 MANAGER로 소속시킨다.
+-- - user_id를 하드코딩하지 않고 이메일 조회로 연결해 id 의존성을 없앤다.
+INSERT INTO store_members (store_id, user_id, role, member_rank, department, hourly_wage, min_hours_per_week, status, created_at, updated_at)
+VALUES (
+    1,
+    (SELECT id FROM users WHERE email = 'doc.manager@test.com' LIMIT 1),
+    'MANAGER',
+    'MANAGER',
+    'HALL',
+    0,
+    40,
+    'ACTIVE',
+    NOW(),
+    NOW()
+);
+
+-- D. 직원을 1번 스토어에 STAFF로 소속시킨다.
+-- - 같은 store_id=1로 맞춰 "같은 스토어 소속" 권한 조건을 만족시킨다.
+INSERT INTO store_members (store_id, user_id, role, member_rank, department, hourly_wage, min_hours_per_week, status, created_at, updated_at)
+VALUES (
+    1,
+    (SELECT id FROM users WHERE email = 'doc.staff@test.com' LIMIT 1),
+    'STAFF',
+    'STAFF',
+    'KITCHEN',
+    12000,
+    20,
+    'ACTIVE',
+    NOW(),
+    NOW()
+);
+
