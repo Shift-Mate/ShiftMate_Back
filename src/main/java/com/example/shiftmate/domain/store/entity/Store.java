@@ -52,6 +52,18 @@ public class Store extends BaseTimeEntity {
     @Column(nullable = true)
     private Long monthlySales;
 
+    @Column(nullable = true)
+    private String imagePath;
+
+    @Column(nullable = true)
+    private String imageOriginalFileName;
+
+    @Column(nullable = true)
+    private String imageContentType;
+
+    @Column(nullable = true)
+    private Long imageSize;
+
     @Builder
     public Store(String name, String location, LocalTime openTime, LocalTime closeTime,
         Integer nShifts, String brn, User user, String alias, Long monthlySales) {
@@ -82,5 +94,30 @@ public class Store extends BaseTimeEntity {
         if (user != null) this.user = user;
         if (alias != null) this.alias = alias;
         if (monthlySales != null) this.monthlySales = monthlySales;
+    }
+
+
+    public boolean hasImage() {
+        // 이미지 경로가 있으면 "가게 이미지가 등록되어 있다"로 간주한다.
+        // 파일명/타입/사이즈는 부가 메타이고, 실체 파일 식별자는 imagePath다.
+        return imagePath != null && !imagePath.isBlank();
+    }
+
+    public void replaceImage(String imagePath, String imageOriginalFileName, String imageContentType, Long imageSize) {
+        // 업로드 성공 후 새 이미지 메타를 한 번에 교체한다.
+        // 이 메서드는 "기존 이미지 덮어쓰기"와 "최초 등록" 둘 다 처리한다.
+        this.imagePath = imagePath;
+        this.imageOriginalFileName = imageOriginalFileName;
+        this.imageContentType = imageContentType;
+        this.imageSize = imageSize;
+    }
+
+    public void clearImage() {
+        // 이미지 삭제 API 호출 시 DB 메타를 null로 비운다.
+        // 실제 파일 삭제는 서비스 계층에서 먼저 수행한 뒤 이 메서드를 호출한다.
+        this.imagePath = null;
+        this.imageOriginalFileName = null;
+        this.imageContentType = null;
+        this.imageSize = null;
     }
 }
