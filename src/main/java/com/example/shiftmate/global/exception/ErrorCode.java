@@ -68,6 +68,13 @@ public enum ErrorCode {
     PASSWORD_RESET_TOKEN_NOT_FOUND(HttpStatus.BAD_REQUEST, "유효하지 않거나 만료된 재설정 링크입니다."),
     PASSWORD_RESET_TOKEN_EXPIRED(HttpStatus.BAD_REQUEST, "재설정 링크가 만료되었습니다."),
 
+    // File Upload
+    DOCUMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "문서를 찾을 수 없습니다."),
+    INVALID_FILE_TYPE(HttpStatus.BAD_REQUEST, "허용되지 않는 파일 형식입니다."),
+    FILE_TOO_LARGE(HttpStatus.BAD_REQUEST, "파일 크기가 제한을 초과했습니다."),
+    DOCUMENT_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "문서 업로드에 실패했습니다."),
+    DOCUMENT_DOWNLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "문서 다운로드에 실패했습니다."),
+
     // ShiftAssignment
     WEEK_ALREADY_EXISTS(HttpStatus.CONFLICT, "해당 주에는 이미 시간표가 생성되어 있습니다."),
     NOT_MONDAY_START_DATE(HttpStatus.BAD_REQUEST, "시작 요일은 월요일이어야 합니다."),
