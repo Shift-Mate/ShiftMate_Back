@@ -22,7 +22,6 @@ public class StoreMemberResDto {
     private Integer hourlyWage;
     private Integer minHoursPerWeek;
     private MemberStatus status;
-    private String pinCode;
 
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime createdAt;

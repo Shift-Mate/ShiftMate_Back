@@ -66,7 +66,6 @@ public class StoreService {
             .hourlyWage(null)
             .minHoursPerWeek(0)
             .status(MemberStatus.ACTIVE)
-            .pinCode(null)
             .build();
         storeMemberRepository.save(creatorMember);
 
@@ -154,6 +153,8 @@ public class StoreService {
 
     // Store -> StoreResDto 변환
     private StoreResDto toResponseDto(Store store) {
+        int storeMemberCount = storeMemberRepository.countByStoreIdAndDeletedAtIsNull(store.getId());
+
         return StoreResDto.builder()
             .id(store.getId())
             .name(store.getName())
@@ -163,6 +164,8 @@ public class StoreService {
             .createdAt(store.getCreatedAt())
             .updatedAt(store.getUpdatedAt())
             .monthlySales(store.getMonthlySales())
+            .storeMemberCount(storeMemberCount)
+            .location(store.getLocation())
             .build();
     }
 }
