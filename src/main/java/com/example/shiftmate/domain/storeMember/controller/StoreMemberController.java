@@ -126,12 +126,7 @@ public class StoreMemberController {
     ) {
         // 1) path 문자열(type)을 enum으로 안전 변환한다.
         //    지원 타입 외 값이면 INVALID_REQUEST로 차단한다.
-        final UserDocumentType documentType;
-        try {
-            documentType = UserDocumentType.valueOf(type.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            throw new CustomException(ErrorCode.INVALID_REQUEST);
-        }
+        UserDocumentType documentType = parseDocumentType(type);
 
         // 2) 서비스에서 권한검증 + 파일조회까지 처리한 다운로드 객체를 받는다.
         FileStorageService.DownloadedFile downloaded =
@@ -142,27 +137,80 @@ public class StoreMemberController {
                         documentType
                 );
 
-        // 3) 응답 바디 리소스 생성
-        //    (네 프로젝트에서 현재 쓰는 "내 문서 다운로드" 방식과 동일하게 맞춰서 사용)
-        //    - ByteArrayResource 방식이면 bytes 기반
-        //    - InputStreamResource 방식이면 inputStream 기반
+        // 3) 다운로드 목적이므로 attachment 모드 응답을 생성한다.
+        return buildFileResponse(downloaded, true, false);
+    }
+
+    @GetMapping("/{memberUserId}/documents/{type}/preview")
+    public ResponseEntity<Resource> previewMemberDocumentForManager(
+            @PathVariable Long storeId,
+            @PathVariable Long memberUserId,
+            @PathVariable String type,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        // 1) 문서 타입 문자열을 enum으로 안전 변환한다.
+        //    잘못된 타입은 INVALID_REQUEST로 처리한다.
+        UserDocumentType documentType = parseDocumentType(type);
+
+        // 2) 서비스에서 "매니저 권한 검증 + 대상 멤버 문서 조회"를 한 번에 수행한다.
+        //    - 요청자가 해당 스토어 MANAGER인지
+        //    - 대상 멤버가 같은 스토어 소속인지
+        //    위 조건을 통과한 경우에만 파일 스트림을 반환한다.
+        FileStorageService.DownloadedFile downloaded =
+                userDocumentService.downloadMemberDocumentForManager(
+                        userDetails.getId(),
+                        storeId,
+                        memberUserId,
+                        documentType
+                );
+
+        // 3) 미리보기 목적이므로 inline 모드 + no-cache 응답을 생성한다.
+        return buildFileResponse(downloaded, false, true);
+    }
+
+    private UserDocumentType parseDocumentType(String type) {
+        // path 변수로 받은 type 문자열을 enum으로 변환한다.
+        // 지원하지 않는 값은 INVALID_REQUEST로 일관 처리한다.
+        try {
+            return UserDocumentType.valueOf(type.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST);
+        }
+    }
+
+    private ResponseEntity<Resource> buildFileResponse(
+            FileStorageService.DownloadedFile downloaded,
+            boolean asAttachment,
+            boolean disableCache
+    ) {
+        // 저장소에서 받은 스트림을 Resource 형태로 감싸서 응답 바디에 사용한다.
         InputStreamResource resource = new InputStreamResource(downloaded.inputStream());
 
-        // 4) 파일 다운로드 헤더 구성
+        // 다운로드/미리보기 공통 헤더를 구성한다.
+        // asAttachment=true 면 저장 다운로드, false 면 브라우저 inline 렌더링을 유도한다.
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.parseMediaType(downloaded.contentType()));
-        headers.setContentDisposition(
-                ContentDisposition.attachment()
-                        .filename(downloaded.fileName(), StandardCharsets.UTF_8)
-                        .build()
-        );
 
-        // 5) length가 제공되는 구현이면 헤더에 넣어준다.
+        ContentDisposition disposition = asAttachment
+                ? ContentDisposition.attachment()
+                    .filename(downloaded.fileName(), StandardCharsets.UTF_8)
+                    .build()
+                : ContentDisposition.inline()
+                    .filename(downloaded.fileName(), StandardCharsets.UTF_8)
+                    .build();
+        headers.setContentDisposition(disposition);
+
         if (downloaded.contentLength() != null && downloaded.contentLength() >= 0) {
             headers.setContentLength(downloaded.contentLength());
         }
 
-        // 6) 최종 파일 응답 반환
+        // 민감 문서 미리보기는 브라우저/프록시 캐시를 금지한다.
+        if (disableCache) {
+            headers.setCacheControl("no-store, no-cache, must-revalidate, max-age=0");
+            headers.add("Pragma", "no-cache");
+            headers.add("X-Content-Type-Options", "nosniff");
+        }
+
         return ResponseEntity.ok()
                 .headers(headers)
                 .body(resource);
