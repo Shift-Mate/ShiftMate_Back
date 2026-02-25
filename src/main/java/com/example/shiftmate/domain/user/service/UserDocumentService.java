@@ -165,7 +165,8 @@ public class UserDocumentService {
 
         // 2) 대상 멤버가 같은 store에 실제 소속되어 있는지 확인한다.
         //    다른 가게 직원 문서를 조회/다운로드하지 못하게 막는다.
-        boolean memberInStore = storeMemberRepository.findByStoreIdAndUserId(storeId, memberUserId).isPresent();
+        boolean memberInStore = storeMemberRepository
+                .existsByStoreIdAndUserIdAndDeletedAtIsNull(storeId, memberUserId);
 
         if (!memberInStore) {
             throw new CustomException(ErrorCode.STORE_MEMBER_ACCESS_DENIED);

@@ -19,6 +19,7 @@ public interface StoreMemberRepository extends JpaRepository<StoreMember, Long>,
     Optional<StoreMember> findByStoreIdAndUserId(@Param("storeId") Long storeId, @Param("userId") Long userId);
 
     boolean existsByStoreIdAndUserIdAndRoleAndDeletedAtIsNull(Long storeId, Long userId, StoreRole role);
+    boolean existsByStoreIdAndUserIdAndDeletedAtIsNull(Long storeId, Long userId);
 
     // 전체 조회 (N+1 방지) -> 삭제 되지 않은 것만
     @EntityGraph(attributePaths = {"store", "user"})
