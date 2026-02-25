@@ -134,13 +134,7 @@ public class UserController {
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         // path type 문자열을 enum으로 안전 변환
-        final UserDocumentType documentType;
-        try {
-            documentType = UserDocumentType.valueOf(type.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            // HEALTH_CERTIFICATE / IDENTIFICATION / BANKBOOK_COPY 외 타입 방어
-            throw new CustomException(ErrorCode.INVALID_REQUEST);
-        }
+        UserDocumentType documentType = parseDocumentType(type);
 
         // 로그인 본인 문서 업로드
         UserDocumentResDto result =
@@ -163,12 +157,7 @@ public class UserController {
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         // path type 문자열을 enum으로 안전 변환
-        final UserDocumentType documentType;
-        try {
-            documentType = UserDocumentType.valueOf(type.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            throw new CustomException(ErrorCode.INVALID_REQUEST);
-        }
+        UserDocumentType documentType = parseDocumentType(type);
 
         // 본인 문서 삭제
         userDocumentService.deleteMyDocument(userDetails.getId(), documentType);
@@ -183,36 +172,77 @@ public class UserController {
     ) {
         // 1) path 문자열을 enum으로 안전 변환한다.
         //    잘못된 타입 값이면 INVALID_REQUEST로 방어한다.
-        final UserDocumentType documentType;
-        try {
-            documentType = UserDocumentType.valueOf(type.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            throw new CustomException(ErrorCode.INVALID_REQUEST);
-        }
+        UserDocumentType documentType = parseDocumentType(type);
 
         // 2) 서비스에서 본인 문서 스트림을 조회한다.
         FileStorageService.DownloadedFile downloaded =
                 userDocumentService.downloadMyDocument(userDetails.getId(), documentType);
 
-        // 3) 파일 응답 바디로 사용할 스트림 리소스를 만든다.
+        // 3) 다운로드 목적이므로 attachment 모드로 응답을 생성한다.
+        return buildFileResponse(downloaded, true, false);
+    }
+
+    @GetMapping("/me/documents/{type}/preview")
+    public ResponseEntity<Resource> previewMyDocument(
+            @PathVariable String type,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        // 1) 경로로 들어온 type 문자열을 enum으로 안전 변환한다.
+        //    허용되지 않은 타입 값이면 즉시 INVALID_REQUEST로 차단한다.
+        UserDocumentType documentType = parseDocumentType(type);
+
+        // 2) 서비스에서 "본인 문서" 파일 스트림을 조회한다.
+        //    여기서 문서 존재 여부/권한(본인 기준) 검증이 함께 처리된다.
+        FileStorageService.DownloadedFile downloaded =
+                userDocumentService.downloadMyDocument(userDetails.getId(), documentType);
+
+        // 3) 미리보기 목적이므로 inline 모드 + no-cache 응답을 생성한다.
+        return buildFileResponse(downloaded, false, true);
+    }
+
+    private UserDocumentType parseDocumentType(String type) {
+        // path 변수로 받은 문자열을 enum으로 변환한다.
+        // 컨트롤러의 모든 문서 API에서 공통으로 재사용해 중복을 줄인다.
+        try {
+            return UserDocumentType.valueOf(type.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            // 지원하지 않는 문서 타입 요청은 일관되게 INVALID_REQUEST 처리한다.
+            throw new CustomException(ErrorCode.INVALID_REQUEST);
+        }
+    }
+
+    private ResponseEntity<Resource> buildFileResponse(
+            FileStorageService.DownloadedFile downloaded,
+            boolean asAttachment,
+            boolean disableCache
+    ) {
+        // 저장소에서 받은 스트림을 HTTP 응답 바디 리소스로 감싼다.
         InputStreamResource resource = new InputStreamResource(downloaded.inputStream());
 
-        // 4) 응답 헤더 구성
-        //    - Content-Type: 브라우저/클라이언트가 파일 형식을 인식
-        //    - Content-Disposition: attachment로 다운로드 유도
-        //    - Content-Length: 다운로드 진행/검증에 활용
+        // 파일명/타입/길이를 기반으로 다운로드 또는 미리보기 헤더를 구성한다.
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.parseMediaType(downloaded.contentType()));
-        headers.setContentDisposition(
-                ContentDisposition.attachment()
-                        .filename(downloaded.fileName(), StandardCharsets.UTF_8)
-                        .build()
-        );
+
+        ContentDisposition disposition = asAttachment
+                ? ContentDisposition.attachment()
+                    .filename(downloaded.fileName(), StandardCharsets.UTF_8)
+                    .build()
+                : ContentDisposition.inline()
+                    .filename(downloaded.fileName(), StandardCharsets.UTF_8)
+                    .build();
+        headers.setContentDisposition(disposition);
+
         if (downloaded.contentLength() != null && downloaded.contentLength() >= 0) {
             headers.setContentLength(downloaded.contentLength());
         }
 
-        // 5) 파일 스트림 응답 반환
+        // preview 응답은 캐시 금지를 강제해 민감 문서가 브라우저에 남지 않게 한다.
+        if (disableCache) {
+            headers.setCacheControl("no-store, no-cache, must-revalidate, max-age=0");
+            headers.add("Pragma", "no-cache");
+            headers.add("X-Content-Type-Options", "nosniff");
+        }
+
         return ResponseEntity.ok()
                 .headers(headers)
                 .body(resource);
