@@ -5,8 +5,9 @@ import com.example.shiftmate.global.exception.ErrorCode;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
-import software.amazon.awssdk.core.ResponseBytes;
+import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
@@ -44,9 +45,11 @@ public class S3FileStorageService implements FileStorageService {
     public StoredFile save(Long userId, String typeFolder, MultipartFile file) {
         try {
             // 파일명이 비어있을 수 있으므로 기본값 보정
-            String originalName = (file.getOriginalFilename() == null || file.getOriginalFilename().isBlank())
+            String originalFilename = file.getOriginalFilename();
+            String cleanedFilename = (originalFilename == null) ? null : StringUtils.cleanPath(originalFilename);
+            String originalName = (cleanedFilename == null || cleanedFilename.isBlank())
                     ? "file"
-                    : file.getOriginalFilename();
+                    : cleanedFilename;
 
             // 공백/특수문자 문제를 줄이기 위해 안전한 파일명으로 인코딩
             String encodedName = URLEncoder.encode(originalName, StandardCharsets.UTF_8)
@@ -71,8 +74,8 @@ public class S3FileStorageService implements FileStorageService {
                     .contentType(file.getContentType())
                     .build();
 
-            // MultipartFile 바이트를 S3에 업로드
-            s3Client.putObject(request, RequestBody.fromBytes(file.getBytes()));
+            // MultipartFile 스트림을 S3에 업로드 (대용량 업로드 시 메모리 사용량 절감)
+            s3Client.putObject(request, RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
 
             // DB의 storedPath에는 "실제 저장 식별자"를 저장한다.
             // local은 파일 경로, s3는 object key를 저장하면 delete 시 재사용 가능하다.
@@ -115,25 +118,25 @@ public class S3FileStorageService implements FileStorageService {
                 throw new CustomException(ErrorCode.DOCUMENT_DOWNLOAD_FAILED);
             }
 
-            // 2) S3에서 객체 바이트를 조회한다.
+            // 2) S3에서 객체 스트림을 조회한다.
             //    권한 문제/키 없음/네트워크 오류 등은 catch에서 통합 처리한다.
             GetObjectRequest request = GetObjectRequest.builder()
                     .bucket(bucket)
                     .key(storedPath)
                     .build();
 
-            ResponseBytes<GetObjectResponse> objectBytes = s3Client.getObjectAsBytes(request);
-            byte[] bytes = objectBytes.asByteArray();
+            ResponseInputStream<GetObjectResponse> inputStream = s3Client.getObject(request);
 
             // 3) contentType 우선순위
             //    DB 값 -> S3 메타데이터 -> binary fallback
             String resolvedContentType = contentType;
             if (resolvedContentType == null || resolvedContentType.isBlank()) {
-                resolvedContentType = objectBytes.response().contentType();
+                resolvedContentType = inputStream.response().contentType();
             }
             if (resolvedContentType == null || resolvedContentType.isBlank()) {
                 resolvedContentType = "application/octet-stream";
             }
+            Long contentLength = inputStream.response().contentLength();
 
             // 4) 파일명 보정
             String fileName = (originalFileName == null || originalFileName.isBlank())
@@ -141,7 +144,7 @@ public class S3FileStorageService implements FileStorageService {
                     : originalFileName;
 
             // 5) 컨트롤러 파일 응답에 바로 쓰도록 반환
-            return new DownloadedFile(bytes, fileName, resolvedContentType);
+            return new DownloadedFile(inputStream, fileName, resolvedContentType, contentLength);
         } catch (CustomException e) {
             throw e;
         } catch (Exception e) {

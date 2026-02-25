@@ -5,9 +5,11 @@ import com.example.shiftmate.global.exception.ErrorCode;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.*;
 import java.util.UUID;
 
@@ -31,9 +33,11 @@ public class LocalFileStorageService implements FileStorageService {
             // 1) 파일명 정리
             // - 원본 이름이 비어있으면 기본값 사용
             // - 공백은 '_'로 치환해 경로/URL 안정성 확보
-            String safeName = (file.getOriginalFilename() == null || file.getOriginalFilename().isBlank())
+            String originalFilename = file.getOriginalFilename();
+            String cleanedFilename = (originalFilename == null) ? null : StringUtils.cleanPath(originalFilename);
+            String safeName = (cleanedFilename == null || cleanedFilename.isBlank())
                     ? "file"
-                    : file.getOriginalFilename().replaceAll("\\s+", "_");
+                    : cleanedFilename.replaceAll("\\s+", "_");
 
             // 2) UUID를 파일명 앞에 붙여 동일 이름 충돌 방지
             String fileName = UUID.randomUUID() + "-" + safeName;
@@ -93,8 +97,9 @@ public class LocalFileStorageService implements FileStorageService {
                 throw new CustomException(ErrorCode.DOCUMENT_DOWNLOAD_FAILED);
             }
 
-            // 3) 실제 파일 바이트를 메모리로 읽는다.
-            byte[] bytes = Files.readAllBytes(path);
+            // 3) 파일 스트림과 길이를 구한다.
+            InputStream inputStream = Files.newInputStream(path);
+            long contentLength = Files.size(path);
 
             // 4) 응답 contentType 보정
             //    - DB contentType을 우선 사용
@@ -114,8 +119,8 @@ public class LocalFileStorageService implements FileStorageService {
                     ? "document"
                     : originalFileName;
 
-            // 6) 컨트롤러가 바로 응답으로 내릴 수 있도록 묶어서 반환한다.
-            return new DownloadedFile(bytes, fileName, resolvedContentType);
+            // 6) 컨트롤러가 스트리밍 응답으로 내릴 수 있도록 반환한다.
+            return new DownloadedFile(inputStream, fileName, resolvedContentType, contentLength);
         } catch (CustomException e) {
             // 도메인 에러는 그대로 전달한다.
             throw e;

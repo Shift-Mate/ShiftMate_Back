@@ -12,7 +12,8 @@ import com.example.shiftmate.domain.user.entity.UserDocumentType;
 import com.example.shiftmate.domain.user.service.UserDocumentService;
 import com.example.shiftmate.global.exception.CustomException;
 import com.example.shiftmate.global.exception.ErrorCode;
-import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -176,7 +177,7 @@ public class UserController {
     }
 
     @GetMapping("/me/documents/{type}/download")
-    public ResponseEntity<ByteArrayResource> downloadMyDocument(
+    public ResponseEntity<Resource> downloadMyDocument(
             @PathVariable String type,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
@@ -189,12 +190,12 @@ public class UserController {
             throw new CustomException(ErrorCode.INVALID_REQUEST);
         }
 
-        // 2) 서비스에서 본인 문서 바이트를 조회한다.
+        // 2) 서비스에서 본인 문서 스트림을 조회한다.
         FileStorageService.DownloadedFile downloaded =
                 userDocumentService.downloadMyDocument(userDetails.getId(), documentType);
 
-        // 3) 파일 응답 바디로 사용할 리소스를 만든다.
-        ByteArrayResource resource = new ByteArrayResource(downloaded.bytes());
+        // 3) 파일 응답 바디로 사용할 스트림 리소스를 만든다.
+        InputStreamResource resource = new InputStreamResource(downloaded.inputStream());
 
         // 4) 응답 헤더 구성
         //    - Content-Type: 브라우저/클라이언트가 파일 형식을 인식
@@ -207,7 +208,9 @@ public class UserController {
                         .filename(downloaded.fileName(), StandardCharsets.UTF_8)
                         .build()
         );
-        headers.setContentLength(downloaded.bytes().length);
+        if (downloaded.contentLength() != null && downloaded.contentLength() >= 0) {
+            headers.setContentLength(downloaded.contentLength());
+        }
 
         // 5) 파일 스트림 응답 반환
         return ResponseEntity.ok()

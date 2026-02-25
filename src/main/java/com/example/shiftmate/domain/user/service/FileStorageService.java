@@ -2,6 +2,8 @@ package com.example.shiftmate.domain.user.service;
 
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.InputStream;
+
 // 저장소 추상화 계층
 // - 지금은 Local 구현 사용
 // - 나중에 S3 구현으로 교체할 때 서비스 코드 변경 최소화
@@ -26,8 +28,9 @@ public interface FileStorageService {
     record StoredFile(String storedPath, String fileUrl) {}
 
     // 다운로드 반환값 묶음
-    // - bytes: 실제 파일 바이트
+    // - inputStream: 실제 파일 스트림
     // - fileName: 다운로드 시 사용자에게 보여줄 파일명
     // - contentType: 응답 Content-Type
-    record DownloadedFile(byte[] bytes, String fileName, String contentType) {}
+    // - contentLength: 응답 Content-Length (알 수 없으면 null)
+    record DownloadedFile(InputStream inputStream, String fileName, String contentType, Long contentLength) {}
 }
