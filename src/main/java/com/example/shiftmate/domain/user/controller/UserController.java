@@ -138,7 +138,7 @@ public class UserController {
         try {
             documentType = UserDocumentType.valueOf(type.toUpperCase());
         } catch (IllegalArgumentException e) {
-            // HEALTH_CERTIFICATE / IDENTIFICATION 외 타입 방어
+            // HEALTH_CERTIFICATE / IDENTIFICATION / BANKBOOK_COPY 외 타입 방어
             throw new CustomException(ErrorCode.INVALID_REQUEST);
         }
 
