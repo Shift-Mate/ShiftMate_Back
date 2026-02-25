@@ -16,10 +16,13 @@ import com.example.shiftmate.domain.storeMember.entity.StoreRank;
 import com.example.shiftmate.domain.storeMember.entity.StoreRole;
 import com.example.shiftmate.global.exception.ErrorCode;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
@@ -33,6 +36,12 @@ public class StoreService {
     private final FileStorageService fileStorageService;
 
     private static final long MAX_IMAGE_BYTES = 10L * 1024 * 1024;
+    private static final String STORE_IMAGE_PREVIEW_PATH_FORMAT = "/api/stores/%d/image/preview";
+    private static final Set<String> ALLOWED_STORE_IMAGE_CONTENT_TYPES = Set.of(
+            "image/png",
+            "image/jpg",
+            "image/jpeg"
+    );
 
     @Transactional
     public StoreResDto create(StoreReqDto request, Long userId) {
@@ -184,12 +193,9 @@ public class StoreService {
         String typeFolder = "store-image";
         FileStorageService.StoredFile stored = fileStorageService.save(storeId, typeFolder, file);
 
-        // 6) 기존 이미지 파일이 있으면 저장소에서 먼저 정리한다.
-        //    새 파일 저장은 완료된 상태이므로 old 파일 삭제 실패가 전체 트랜잭션을 깨지 않게
-        //    try-catch로 감싸서 로그만 남기고 진행할 수도 있다(운영 정책에 따라 선택).
-        if (store.hasImage()) {
-            fileStorageService.delete(store.getImagePath());
-        }
+        // 6) 기존 이미지 경로를 먼저 보관한다.
+        //    새 메타데이터 반영 후 "커밋 완료 시점"에 old 파일을 지우기 위해 필요하다.
+        String oldImagePath = store.hasImage() ? store.getImagePath() : null;
 
         // 7) DB 메타데이터 교체
         //    프론트 노출 URL은 저장소 URL이 아니라 preview API URL로 내려줄 예정이라
@@ -201,7 +207,27 @@ public class StoreService {
                 file.getSize()
         );
 
-        // 8) 응답 DTO 반환
+        // 8) old 파일 삭제는 트랜잭션 커밋 이후에 수행한다.
+        //    커밋 전에 삭제하면, 이후 커밋 실패 시 DB는 롤백되고 파일만 사라져 불일치가 발생할 수 있다.
+        //    afterCommit에서 정리하면 DB 상태가 확정된 뒤에만 old 파일을 삭제한다.
+        if (oldImagePath != null && !oldImagePath.isBlank()
+                && !oldImagePath.equals(stored.storedPath())
+                && TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    // 스토리지 delete는 보조 정리 작업이다.
+                    // 실패하더라도 사용자 요청 자체는 이미 성공이므로 예외 전파 없이 best-effort로 처리한다.
+                    try {
+                        fileStorageService.delete(oldImagePath);
+                    } catch (Exception ignored) {
+                        // no-op
+                    }
+                }
+            });
+        }
+
+        // 9) 응답 DTO 반환
         //    업로드 직후 화면에서 즉시 반영할 수 있도록 최신 DTO를 반환한다.
         return toResponseDto(store);
     }
@@ -240,11 +266,30 @@ public class StoreService {
             throw new CustomException(ErrorCode.STORE_IMAGE_NOT_FOUND);
         }
 
-        // 3) 실제 파일 먼저 삭제
-        fileStorageService.delete(store.getImagePath());
+        // 3) 삭제 대상 파일 경로를 보관하고 DB 메타를 먼저 제거한다.
+        //    커밋 이후에만 실제 파일을 삭제하기 위해 old 경로를 별도로 저장한다.
+        String imagePathToDelete = store.getImagePath();
 
         // 4) DB 메타 제거
         store.clearImage();
+
+        // 5) 파일 삭제는 트랜잭션 커밋 이후에 수행한다.
+        //    커밋 실패 시 DB 롤백이 발생하므로 파일도 그대로 남아야 일관성이 유지된다.
+        if (imagePathToDelete != null && !imagePathToDelete.isBlank()
+                && TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    // 파일 정리는 best-effort로 처리한다.
+                    // 커밋 완료 후 부가 작업이므로 삭제 실패를 API 실패로 전파하지 않는다.
+                    try {
+                        fileStorageService.delete(imagePathToDelete);
+                    } catch (Exception ignored) {
+                        // no-op
+                    }
+                }
+            });
+        }
     }
 
     private void validateManagerAccess(Long storeId, Long userId) {
@@ -269,10 +314,7 @@ public class StoreService {
         // 2) MIME 제한
         //    브라우저/모바일 업로드 호환성을 위해 jpg/jpeg/png만 허용한다.
         String ct = file.getContentType() == null ? "" : file.getContentType().toLowerCase();
-        boolean allowed =
-                ct.equals("image/png") ||
-                        ct.equals("image/jpg") ||
-                        ct.equals("image/jpeg");
+        boolean allowed = ALLOWED_STORE_IMAGE_CONTENT_TYPES.contains(ct);
 
         if (!allowed) {
             throw new CustomException(ErrorCode.INVALID_FILE_TYPE);
@@ -286,7 +328,7 @@ public class StoreService {
         // 프론트가 <img src>로 바로 사용할 수 있게
         // S3 직링크가 아니라 "백엔드 preview 엔드포인트"를 내려준다.
         String previewUrl = store.hasImage()
-                ? "/api/stores/" + store.getId() + "/image/preview"
+                ? String.format(STORE_IMAGE_PREVIEW_PATH_FORMAT, store.getId())
                 : null;
 
         return StoreResDto.builder()
