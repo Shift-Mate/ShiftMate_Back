@@ -30,4 +30,6 @@ public class StoreResDto {
 
     private String location;
     private Integer storeMemberCount;
+
+    private String imageUrl;
 }
