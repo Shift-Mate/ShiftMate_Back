@@ -82,7 +82,6 @@ public enum ErrorCode {
     // ShiftAssignment
     WEEK_ALREADY_EXISTS(HttpStatus.CONFLICT, "해당 주에는 이미 시간표가 생성되어 있습니다."),
     NOT_MONDAY_START_DATE(HttpStatus.BAD_REQUEST, "시작 요일은 월요일이어야 합니다."),
-
     SHIFT_ASSIGNMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "배정된 스케줄을 찾을 수 없습니다."),
 
     // Attendance
@@ -104,19 +103,21 @@ public enum ErrorCode {
 
     //Application
     ALREADY_APPLIED(HttpStatus.CONFLICT, "이미 지원한 요청입니다."),
-    CANNOT_APPLY(HttpStatus.BAD_REQUEST, "대타 요청에 지원할 수 없는 상태입니다."),
+    CANNOT_APPLY(HttpStatus.BAD_REQUEST, "요청에 지원할 수 없는 상태입니다."),
     CANNOT_SELECT(HttpStatus.BAD_REQUEST, "승인할 수 없는 지원입니다."),
-    APPLICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "대타 지원을 찾을 수 없습니다."),
-    NOT_SUBSTITUTE_APPLICATION(HttpStatus.FORBIDDEN, "해당 대타 요청의 지원이 아닙니다."),
+    APPLICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "지원을 찾을 수 없습니다."),
+    NOT_SUBSTITUTE_APPLICATION(HttpStatus.FORBIDDEN, "해당 요청의 지원이 아닙니다."),
     DEPARTMENT_MISMATCH(HttpStatus.BAD_REQUEST, "다른 부서의 근무에는 대타 지원을 할 수 없습니다."),
     DUPLICATE_SHIFT(HttpStatus.CONFLICT, "이미 배정된 스케줄과 시간이 겹쳐 대타 지원이 불가능합니다."),
     PAST_SCHEDULE_CANNOT_APPROVE(HttpStatus.BAD_REQUEST, "이미 지난 스케줄의 대타 지원은 승인할 수 없습니다."),
 
     // Bizno API
     BIZNO_API_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "사업자 번호 조회 API 호출에 실패했습니다."),
-    INVALID_BIZNO(HttpStatus.BAD_REQUEST, "유효하지 않은 사업자 번호입니다.");
+    INVALID_BIZNO(HttpStatus.BAD_REQUEST, "유효하지 않은 사업자 번호입니다."),
 
-
+    // OpenShift
+    PAST_DATE_CANNOT_REQUEST(HttpStatus.BAD_REQUEST, "이미 지난 날짜에는 오픈시프트를 생성할 수 없습니다."),
+    OPEN_SHIFT_NOT_FOUND(HttpStatus.BAD_REQUEST, "오픈시프트를 찾을 수 없습니다.");
 
     private final HttpStatus status;
     private final String message;
