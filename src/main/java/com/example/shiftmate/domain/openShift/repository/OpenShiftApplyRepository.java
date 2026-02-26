@@ -33,4 +33,14 @@ public interface OpenShiftApplyRepository extends JpaRepository<OpenShiftApply, 
             "WHERE a.request.id = :requestId " +
             "ORDER BY a.createdAt ASC")
     List<OpenShiftApply> findAllByRequestId(@Param("requestId") Long requestId);
+
+    // 나의 지원 내역 조회
+    @Query("SELECT a FROM OpenShiftApply a " +
+            "JOIN FETCH a.request r " +
+            "JOIN FETCH r.shiftTemplate " +
+            "JOIN FETCH a.applicant m " +
+            "JOIN FETCH m.user u " +
+            "WHERE m.id = :applicantId " +
+            "ORDER BY a.createdAt DESC")
+    List<OpenShiftApply> findAllByApplicantId(@Param("applicantId") Long applicantId);
 }
