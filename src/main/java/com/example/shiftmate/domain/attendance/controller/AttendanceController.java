@@ -32,6 +32,7 @@ public class AttendanceController {
             ) {
         AttendanceResDto response = attendanceService.processAttendance(storeId, reqDto, userDetails.getId());
         return ResponseEntity.ok(ApiResponse.success(response));
+        
     }
 
     @GetMapping("/daily")
