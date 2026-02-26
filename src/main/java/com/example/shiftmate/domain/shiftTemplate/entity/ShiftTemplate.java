@@ -76,4 +76,8 @@ public class ShiftTemplate {
     public void shiftStaff(Integer staffCount) {
         this.requiredStaff = staffCount;
     }
+
+    public void updateName(String name) {
+        this.name = name;
+    }
 }

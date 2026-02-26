@@ -16,6 +16,7 @@ public class TemplateResDto {
     private String name;
     private LocalTime startTime;
     private LocalTime endTime;
+    private Integer requiredStaff;
 
     public static TemplateResDto from(ShiftTemplate shiftTemplate) {
         return TemplateResDto.builder()
@@ -25,6 +26,7 @@ public class TemplateResDto {
                 .name(shiftTemplate.getName())
                 .startTime(shiftTemplate.getStartTime())
                 .endTime(shiftTemplate.getEndTime())
+                .requiredStaff(shiftTemplate.getRequiredStaff())
                 .build();
     }
 }

@@ -28,6 +28,8 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class ShiftTemplateService {
 
+    private static final long SLOT_MINUTES = 30L;
+
     private final ShiftTemplateRepository shiftTemplateRepository;
     private final StoreRepository storeRepository;
     private final StoreMemberRepository storeMemberRepository;
@@ -75,25 +77,15 @@ public class ShiftTemplateService {
     // 기본 n교대 생성 로직 (시간 변형 없음)
     private List<ShiftTemplate> createBaseShifts(Store store, TemplateType templateType) {
         List<ShiftTemplate> shifts = new ArrayList<>();
-        LocalTime openTime = store.getOpenTime();
-        LocalTime closeTime = store.getCloseTime();
-
-        validateTimeRange(openTime, closeTime);
-
-        long totalMinutes = Duration.between(openTime, closeTime).toMinutes();
-        long shiftDurationMinutes = totalMinutes / store.getNShifts();
-
-        LocalTime currentStart = openTime;
+        List<LocalTime> boundaries = buildShiftBoundaries(
+            store.getOpenTime(),
+            store.getCloseTime(),
+            store.getNShifts()
+        );
 
         for (int i = 0; i < store.getNShifts(); i++) {
-            LocalTime currentEnd;
-
-            if (i == store.getNShifts() - 1) {
-                currentEnd = closeTime;
-            } else {
-                currentEnd = currentStart.plusMinutes(shiftDurationMinutes);
-            }
-
+            LocalTime currentStart = boundaries.get(i);
+            LocalTime currentEnd = boundaries.get(i + 1);
             shifts.add(ShiftTemplate.builder()
                            .store(store)
                            .name("Shift " + (i + 1))
@@ -103,7 +95,6 @@ public class ShiftTemplateService {
                            .dayType(DayType.WEEKDAY)
                            .templateType(templateType)
                            .build());
-            currentStart = currentEnd;
         }
         return shifts;
     }
@@ -133,20 +124,12 @@ public class ShiftTemplateService {
         LocalTime closeTime = store.getCloseTime();
 
         validateTimeRange(openTime, closeTime);
-
-        long totalMinutes = Duration.between(openTime, closeTime).toMinutes();
-        long shiftDurationMinutes = totalMinutes / store.getNShifts();
-
-        LocalTime currentStart = openTime;
+        List<LocalTime> boundaries = buildShiftBoundaries(openTime, closeTime, store.getNShifts());
+        LocalTime previousEnd = openTime;
 
         for (int i = 0; i < store.getNShifts(); i++) {
-            LocalTime currentEnd;
-
-            if (i == store.getNShifts() - 1) {
-                currentEnd = closeTime;
-            } else {
-                currentEnd = currentStart.plusMinutes(shiftDurationMinutes);
-            }
+            LocalTime currentStart = boundaries.get(i);
+            LocalTime currentEnd = boundaries.get(i + 1);
 
             // --- CostSaver용 시간 조정 로직 ---
             LocalTime adjustedStart = currentStart;
@@ -162,6 +145,17 @@ public class ShiftTemplateService {
                 adjustedEnd = pEnd;
             }
 
+            // 일반 시프트끼리는 겹치지 않도록 이전 종료 시각 이후로 보정
+            if (adjustedStart.isBefore(previousEnd)) {
+                adjustedStart = previousEnd;
+            }
+            if (!adjustedEnd.isAfter(adjustedStart)) {
+                adjustedEnd = currentEnd.isAfter(adjustedStart) ? currentEnd : adjustedStart.plusMinutes(1);
+            }
+            if (adjustedEnd.isAfter(closeTime)) {
+                adjustedEnd = closeTime;
+            }
+
             shifts.add(ShiftTemplate.builder()
                            .store(store)
                            .name("Shift " + (i + 1))
@@ -172,9 +166,65 @@ public class ShiftTemplateService {
                            .templateType(TemplateType.COSTSAVER)
                            .build());
 
-            currentStart = currentEnd; // 다음 Shift 시작 시간은 조정되지 않은 원래 종료 시간 기준
+            previousEnd = adjustedEnd;
         }
         return shifts;
+    }
+
+    private List<LocalTime> buildShiftBoundaries(LocalTime openTime, LocalTime closeTime, int nShifts) {
+        validateTimeRange(openTime, closeTime);
+
+        long openMinutes = toMinutes(openTime);
+        long closeMinutes = toMinutes(closeTime);
+        long totalMinutes = Duration.between(openTime, closeTime).toMinutes();
+
+        List<LocalTime> boundaries = new ArrayList<>();
+        boundaries.add(openTime);
+
+        // 영업 시간이 너무 짧으면 분 단위 균등 분할로 fallback
+        if (totalMinutes < SLOT_MINUTES * nShifts) {
+            for (int i = 1; i < nShifts; i++) {
+                long minute = openMinutes + Math.round((double) totalMinutes * i / nShifts);
+                boundaries.add(toLocalTime(minute));
+            }
+            boundaries.add(closeTime);
+            return boundaries;
+        }
+
+        long previousBoundary = openMinutes;
+        for (int i = 1; i < nShifts; i++) {
+            long ideal = openMinutes + Math.round((double) totalMinutes * i / nShifts);
+            long snapped = roundToNearestSlot(ideal);
+
+            long remainingShifts = nShifts - i;
+            long minAllowed = previousBoundary + SLOT_MINUTES;
+            long maxAllowed = closeMinutes - (SLOT_MINUTES * remainingShifts);
+
+            long clamped = Math.max(minAllowed, Math.min(snapped, maxAllowed));
+            boundaries.add(toLocalTime(clamped));
+            previousBoundary = clamped;
+        }
+
+        boundaries.add(closeTime);
+        return boundaries;
+    }
+
+    private long roundToNearestSlot(long minutes) {
+        long remainder = minutes % SLOT_MINUTES;
+        if (remainder < SLOT_MINUTES / 2) {
+            return minutes - remainder;
+        }
+        return minutes + (SLOT_MINUTES - remainder);
+    }
+
+    private long toMinutes(LocalTime time) {
+        return (long) time.getHour() * 60 + time.getMinute();
+    }
+
+    private LocalTime toLocalTime(long minutes) {
+        int hour = (int) (minutes / 60);
+        int minute = (int) (minutes % 60);
+        return LocalTime.of(hour, minute);
     }
 
     private void validateTimeRange(LocalTime start, LocalTime end) {
@@ -207,6 +257,10 @@ public class ShiftTemplateService {
         );
 
         template.shiftStaff(templateShiftStaffReqDto.getRequiredStaff());
+        String shiftName = templateShiftStaffReqDto.getName();
+        if (shiftName != null && !shiftName.trim().isEmpty()) {
+            template.updateName(shiftName.trim());
+        }
 
         return TemplateResDto.from(template);
     }
