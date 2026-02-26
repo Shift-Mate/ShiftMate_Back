@@ -52,6 +52,16 @@ public class OpenShiftController {
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
+    // 나의 오픈시프트 지원 내역 조회
+    @GetMapping("/my-applies")
+    public ResponseEntity<ApiResponse<List<OpenShiftApplyResDto>>> getMyOpenShiftApplies(
+            @PathVariable Long storeId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        List<OpenShiftApplyResDto> response = openShiftService.getMyOpenShiftApplies(storeId, userDetails.getId());
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
     // 오픈시프트 지원자 목록 조회
     @GetMapping("/{openShiftId}/applies")
     public ResponseEntity<ApiResponse<List<OpenShiftApplyResDto>>> getOpenShiftApplies(
