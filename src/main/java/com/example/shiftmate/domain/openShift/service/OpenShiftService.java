@@ -123,6 +123,15 @@ public class OpenShiftService {
         }
     }
 
+    public List<OpenShiftApplyResDto> getMyOpenShiftApplies(Long storeId, Long userId) {
+        StoreMember member = storeMemberRepository.findByStoreIdAndUserId(storeId, userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+
+        return openShiftApplyRepository.findAllByApplicantId(member.getId()).stream()
+                .map(OpenShiftApplyResDto::from)
+                .collect(Collectors.toList());
+    }
+
     public List<OpenShiftApplyResDto> getOpenShiftApplies(Long storeId, Long openShiftId, Long userId) {
         // 해당 매장의 관리자인지 검증
         StoreMember manager = storeMemberRepository.findByStoreIdAndUserId(storeId, userId)
