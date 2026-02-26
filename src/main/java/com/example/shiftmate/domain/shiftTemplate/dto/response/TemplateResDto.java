@@ -10,7 +10,7 @@ import lombok.Getter;
 @Builder
 @Getter
 public class TemplateResDto {
-
+    private Long id;
     private TemplateType templateType;
     private ShiftType shiftType;
     private String name;
@@ -19,11 +19,12 @@ public class TemplateResDto {
 
     public static TemplateResDto from(ShiftTemplate shiftTemplate) {
         return TemplateResDto.builder()
-                   .templateType(shiftTemplate.getTemplateType())
-                   .shiftType(shiftTemplate.getShiftType())
-                   .name(shiftTemplate.getName())
-                   .startTime(shiftTemplate.getStartTime())
-                   .endTime(shiftTemplate.getEndTime())
-                   .build();
+                .id(shiftTemplate.getId())
+                .templateType(shiftTemplate.getTemplateType())
+                .shiftType(shiftTemplate.getShiftType())
+                .name(shiftTemplate.getName())
+                .startTime(shiftTemplate.getStartTime())
+                .endTime(shiftTemplate.getEndTime())
+                .build();
     }
 }
