@@ -11,33 +11,23 @@ ShiftMate Backend는 매장 단위 근무 운영을 위한 API 서버입니다.
 
 ## 2. 기술 스택
 
-### Language
-![Java](https://img.shields.io/badge/Java-21-007396?style=flat&logo=openjdk&logoColor=white)
+![JAVA](https://img.shields.io/badge/JAVA-21-4A4A4A?style=flat&logo=openjdk&logoColor=white)
+![SPRING BOOT](https://img.shields.io/badge/SPRING_BOOT-4.0.2-6DB33F?style=flat&logo=springboot&logoColor=white)
+![SPRING WEB MVC](https://img.shields.io/badge/SPRING_WEB-MVC-6DB33F?style=flat&logo=spring&logoColor=white)
+![SPRING SECURITY](https://img.shields.io/badge/SPRING_SECURITY-6.x-6DB33F?style=flat&logo=springsecurity&logoColor=white)
 
-### Framework / Web
-![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.0.2-6DB33F?style=flat&logo=springboot&logoColor=white)
-![Spring Web MVC](https://img.shields.io/badge/Spring%20Web-MVC-6DB33F?style=flat&logo=spring&logoColor=white)
+![SPRING DATA JPA](https://img.shields.io/badge/JPA-HIBERNATE-59666C?style=flat&logo=hibernate&logoColor=white)
+![MYSQL](https://img.shields.io/badge/MYSQL-8.x-4479A1?style=flat&logo=mysql&logoColor=white)
 
-### Persistence
-![Spring Data JPA](https://img.shields.io/badge/Spring%20Data%20JPA-Hibernate-59666C?style=flat&logo=hibernate&logoColor=white)
-![MySQL](https://img.shields.io/badge/MySQL-8.x-4479A1?style=flat&logo=mysql&logoColor=white)
+![REDIS](https://img.shields.io/badge/REDIS-TOKEN_STORE-DC382D?style=flat&logo=redis&logoColor=white)
+![JWT](https://img.shields.io/badge/JWT-AUTH-000000?style=flat&logo=jsonwebtokens)
 
-### Auth
-![Spring Security](https://img.shields.io/badge/Spring%20Security-6.x-6DB33F?style=flat&logo=springsecurity&logoColor=white)
-![JWT](https://img.shields.io/badge/JWT-jjwt-000000?style=flat&logo=jsonwebtokens)
+![SPRING MAIL](https://img.shields.io/badge/SPRING_MAIL-PASSWORD_RESET-6DB33F?style=flat&logo=spring&logoColor=white)
 
-### Cache / Token Store
-![Redis](https://img.shields.io/badge/Redis-Token%20Store-DC382D?style=flat&logo=redis&logoColor=white)
+![GRADLE](https://img.shields.io/badge/GRADLE-BUILD-02303A?style=flat&logo=gradle&logoColor=white)
 
-### Mail
-![Spring Mail](https://img.shields.io/badge/Spring%20Mail-Password%20Reset-6DB33F?style=flat&logo=spring&logoColor=white)
-
-### Build
-![Gradle](https://img.shields.io/badge/Gradle-Build-02303A?style=flat&logo=gradle&logoColor=white)
-
-### Infra
-![Docker](https://img.shields.io/badge/Docker-Multi--Stage%20Build-2496ED?style=flat&logo=docker&logoColor=white)
-![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-CI%2FCD-2088FF?style=flat&logo=githubactions&logoColor=white)
+![DOCKER](https://img.shields.io/badge/DOCKER-MULTI_STAGE_BUILD-2496ED?style=flat&logo=docker&logoColor=white)
+![GITHUB ACTIONS](https://img.shields.io/badge/GITHUB_ACTIONS-CI%2FCD-2088FF?style=flat&logo=githubactions&logoColor=white)
 
 ## 3. 패키지 구조
 
