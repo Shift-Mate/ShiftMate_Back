@@ -11,15 +11,35 @@ ShiftMate Backend는 매장 단위 근무 운영을 위한 API 서버입니다.
 
 ## 2. 기술 스택
 
-- Language: Java 21
-- Framework: Spring Boot 4.0.2
-- Web: Spring Web MVC
-- Persistence: Spring Data JPA, MySQL
-- Auth: Spring Security, JWT (`jjwt`)
-- Cache/Token Store: Redis
-- Mail: Spring Mail (비밀번호 재설정)
-- Build: Gradle
-- Infra: Docker (multi-stage build), GitHub Actions 배포 워크플로우
+## 🔧 기술 스택
+
+### Language
+![Java](https://img.shields.io/badge/Java-21-007396?style=flat&logo=openjdk&logoColor=white)
+
+### Framework / Web
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.0.2-6DB33F?style=flat&logo=springboot&logoColor=white)
+![Spring Web MVC](https://img.shields.io/badge/Spring%20Web-MVC-6DB33F?style=flat&logo=spring&logoColor=white)
+
+### Persistence
+![Spring Data JPA](https://img.shields.io/badge/Spring%20Data%20JPA-Hibernate-59666C?style=flat&logo=hibernate&logoColor=white)
+![MySQL](https://img.shields.io/badge/MySQL-8.x-4479A1?style=flat&logo=mysql&logoColor=white)
+
+### Auth
+![Spring Security](https://img.shields.io/badge/Spring%20Security-6.x-6DB33F?style=flat&logo=springsecurity&logoColor=white)
+![JWT](https://img.shields.io/badge/JWT-jjwt-000000?style=flat&logo=jsonwebtokens)
+
+### Cache / Token Store
+![Redis](https://img.shields.io/badge/Redis-Token%20Store-DC382D?style=flat&logo=redis&logoColor=white)
+
+### Mail
+![Spring Mail](https://img.shields.io/badge/Spring%20Mail-Password%20Reset-6DB33F?style=flat&logo=spring&logoColor=white)
+
+### Build
+![Gradle](https://img.shields.io/badge/Gradle-Build-02303A?style=flat&logo=gradle&logoColor=white)
+
+### Infra
+![Docker](https://img.shields.io/badge/Docker-Multi--Stage%20Build-2496ED?style=flat&logo=docker&logoColor=white)
+![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-CI%2FCD-2088FF?style=flat&logo=githubactions&logoColor=white)
 
 ## 3. 패키지 구조
 
