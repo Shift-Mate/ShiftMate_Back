@@ -11,8 +11,6 @@ ShiftMate Backend는 매장 단위 근무 운영을 위한 API 서버입니다.
 
 ## 2. 기술 스택
 
-## 🔧 기술 스택
-
 ### Language
 ![Java](https://img.shields.io/badge/Java-21-007396?style=flat&logo=openjdk&logoColor=white)
 
